@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="NahidaTool.Pages.SettingPages.AboutSettingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NahidaTool.Pages.SettingPages"
+    xmlns:lang="using:NahidaTool"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:NahidaTool.Models"
+    x:DefaultBindMode="OneWay"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer>
+        <StackPanel Padding="0,0,24,0">
+
+            <TextBlock Margin="0,24,0,0"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Text="{x:Bind models:Lang.AboutSettingPage_AppName}"/>
+            <TextBlock Margin="0,4,0,0"
+                       Text="{x:Bind models:Lang.AboutSettingPage_AppDescription}"
+                       Opacity="0.8"/>
+
+            <StackPanel Margin="0,12,0,0"
+                        Orientation="Horizontal"
+                        Spacing="4">
+                <TextBlock Text="{x:Bind models:Lang.AboutSettingPage_CurrentVersion}"/>
+                <TextBlock x:Name="VersionTextBlock"
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                           Text="0.0.0"/>
+            </StackPanel>
+
+            <TextBlock Margin="0,4,0,0" Opacity="0.8">
+                <Run Text="{x:Bind models:Lang.AboutSettingPage_Author}"/>
+                <Run Text=""/>
+            </TextBlock>
+
+            <TextBlock Margin="0,20,0,0"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Text="{x:Bind models:Lang.AboutSettingPage_RelatedLinks}"/>
+
+            <TextBlock Margin="0,8,0,0" HorizontalAlignment="Left">
+                <Hyperlink NavigateUri="https://github.com/IkunPS/NahidaTool" UnderlineStyle="None">
+                    <Run FontWeight="Bold"
+                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                         Text="{x:Bind models:Lang.AboutSettingPage_ProjectHomepage}"/>
+                </Hyperlink>
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</Page>

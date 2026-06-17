@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fw:WindowEx
+    x:Class="NahidaTool.SystemTrayWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:hn="using:H.NotifyIcon"
+    xmlns:fw="using:NahidaTool.Frameworks"
+    Title="NahidaToolTray">
+
+    <Grid x:Name="RootGrid">
+        <hn:TaskbarIcon x:Name="TrayIcon"
+                        NoLeftClickDelay="True"
+                        ToolTipText="NahidaTool"/>
+
+        <StackPanel Padding="8">
+            <Button Height="36"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Style="{ThemeResource DateTimePickerFlyoutButtonStyle}"
+                    Click="ShowMainWindow_Click">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE80F;" FontSize="16"/>
+                    <TextBlock VerticalAlignment="Center" Text="显示主窗口"/>
+                </StackPanel>
+            </Button>
+            <Button Height="36"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Style="{ThemeResource DateTimePickerFlyoutButtonStyle}"
+                    Click="Exit_Click">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <FontIcon Glyph="&#xE7E8;" FontSize="16"/>
+                    <TextBlock VerticalAlignment="Center" Text="退出"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+
+</fw:WindowEx>

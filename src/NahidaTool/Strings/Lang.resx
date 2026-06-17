@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- MainWindow Navigation -->
+  <data name="HomePage_Title" xml:space="preserve"><value>Home</value></data>
+  <data name="LauncherPage_Title" xml:space="preserve"><value>Launcher</value></data>
+  <data name="ServerSwitchPage_Title" xml:space="preserve"><value>Server Switch</value></data>
+
+  <!-- SettingsPage -->
+  <data name="SettingsPage_Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsPage_About" xml:space="preserve"><value>About</value></data>
+  <data name="SettingsPage_General" xml:space="preserve"><value>General</value></data>
+  <data name="SettingsPage_Download" xml:space="preserve"><value>Download</value></data>
+
+  <!-- GeneralSettingPage -->
+  <data name="GeneralSettingPage_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="GeneralSettingPage_FollowSystem" xml:space="preserve"><value>Follow System</value></data>
+  <data name="GeneralSettingPage_CloseWindowBehavior" xml:space="preserve"><value>Close Window Behavior</value></data>
+  <data name="GeneralSettingPage_MinimizeToSystemTray" xml:space="preserve"><value>Minimize to System Tray</value></data>
+  <data name="GeneralSettingPage_ExitCompletely" xml:space="preserve"><value>Exit Completely</value></data>
+
+  <!-- AboutSettingPage -->
+  <data name="AboutSettingPage_AppName" xml:space="preserve"><value>NahidaTool</value></data>
+  <data name="AboutSettingPage_AppDescription" xml:space="preserve"><value>Download &amp; Management Tool</value></data>
+  <data name="AboutSettingPage_CurrentVersion" xml:space="preserve"><value>Current Version:</value></data>
+  <data name="AboutSettingPage_Author" xml:space="preserve"><value>Author:</value></data>
+  <data name="AboutSettingPage_RelatedLinks" xml:space="preserve"><value>Related Links</value></data>
+  <data name="AboutSettingPage_ProjectHomepage" xml:space="preserve"><value>Project Homepage</value></data>
+
+  <!-- DownloadSettingPage -->
+  <data name="DownloadSettingPage_Title" xml:space="preserve"><value>Download Settings</value></data>
+  <data name="DownloadSettingPage_DownloadDirectory" xml:space="preserve"><value>Download Directory</value></data>
+  <data name="DownloadSettingPage_Browse" xml:space="preserve"><value>Browse</value></data>
+  <data name="DownloadSettingPage_GameVersion" xml:space="preserve"><value>Game Version</value></data>
+  <data name="DownloadSettingPage_GameVersionHint" xml:space="preserve"><value>Enter game version to download</value></data>
+  <data name="DownloadSettingPage_ServerRegion" xml:space="preserve"><value>Server Region</value></data>
+  <data name="DownloadSettingPage_ServerRegionHint" xml:space="preserve"><value>Select download server region</value></data>
+  <data name="DownloadSettingPage_CN" xml:space="preserve"><value>CN</value></data>
+  <data name="DownloadSettingPage_OS" xml:space="preserve"><value>OS</value></data>
+  <data name="DownloadSettingPage_VoiceLanguage" xml:space="preserve"><value>Voice Language</value></data>
+  <data name="DownloadSettingPage_VoiceLanguageHint" xml:space="preserve"><value>Select voice pack to download</value></data>
+  <data name="DownloadSettingPage_VoiceNone" xml:space="preserve"><value>No Voice Pack</value></data>
+  <data name="DownloadSettingPage_VoiceChinese" xml:space="preserve"><value>Chinese</value></data>
+  <data name="DownloadSettingPage_VoiceEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="DownloadSettingPage_VoiceJapanese" xml:space="preserve"><value>Japanese</value></data>
+  <data name="DownloadSettingPage_VoiceKorean" xml:space="preserve"><value>Korean</value></data>
+
+  <!-- HomePage -->
+  <data name="HomePage_DragDropHint" xml:space="preserve"><value>Drag image or video file to set custom background</value></data>
+  <data name="HomePage_Proxy" xml:space="preserve"><value>Proxy</value></data>
+  <data name="HomePage_ProxyNotStarted" xml:space="preserve"><value>Not Started</value></data>
+  <data name="HomePage_ProxyRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="HomePage_ProxyAddress" xml:space="preserve"><value>Proxy Address</value></data>
+  <data name="HomePage_ProxyUrlError" xml:space="preserve"><value>URL format error: must start with https:// or http://</value></data>
+  <data name="HomePage_StartGame" xml:space="preserve"><value>Start Game</value></data>
+  <data name="HomePage_GameRunning" xml:space="preserve"><value>Game Running</value></data>
+  <data name="HomePage_LocateGame" xml:space="preserve"><value>Locate Game</value></data>
+  <data name="HomePage_Installed" xml:space="preserve"><value>Installed, </value></data>
+  <data name="HomePage_LocateGameLink" xml:space="preserve"><value>Locate Game</value></data>
+  <data name="HomePage_SelectGameDir" xml:space="preserve"><value>Select game installation directory</value></data>
+  <data name="HomePage_InvalidPath" xml:space="preserve"><value>Invalid Path</value></data>
+  <data name="HomePage_InvalidPathMessage" xml:space="preserve"><value>{0} not found in selected directory. Please choose the correct game installation directory.</value></data>
+  <data name="HomePage_UrlFormatError" xml:space="preserve"><value>URL Format Error</value></data>
+  <data name="HomePage_ProxyUrlFormatContent" xml:space="preserve"><value>Proxy address must start with https:// or http://.&#xA;&#xA;Example: https://127.0.0.1:8080</value></data>
+  <data name="HomePage_ProxyUrlFormatStartMessage" xml:space="preserve"><value>Proxy address must start with https:// or http://. Please fix before launching.</value></data>
+  <data name="HomePage_OK" xml:space="preserve"><value>OK</value></data>
+
+  <!-- DownloadPage -->
+  <data name="DownloadPage_ResourceInfo" xml:space="preserve"><value>Resource Info</value></data>
+  <data name="DownloadPage_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="DownloadPage_FileCount" xml:space="preserve"><value>Files</value></data>
+  <data name="DownloadPage_ChunkCount" xml:space="preserve"><value>Chunks</value></data>
+  <data name="DownloadPage_CompressedSize" xml:space="preserve"><value>Compressed</value></data>
+  <data name="DownloadPage_UncompressedSize" xml:space="preserve"><value>Uncompressed</value></data>
+  <data name="DownloadPage_DownloadProgress" xml:space="preserve"><value>Download Progress</value></data>
+  <data name="DownloadPage_Progress" xml:space="preserve"><value>Progress:</value></data>
+  <data name="DownloadPage_Speed" xml:space="preserve"><value>Speed: -- MB/s</value></data>
+  <data name="DownloadPage_Remaining" xml:space="preserve"><value>Remaining: --</value></data>
+  <data name="DownloadPage_StartDownload" xml:space="preserve"><value>Start Download</value></data>
+  <data name="DownloadPage_ContinueDownload" xml:space="preserve"><value>Continue Download</value></data>
+  <data name="DownloadPage_PauseDownload" xml:space="preserve"><value>Pause Download</value></data>
+  <data name="DownloadPage_DownloadLog" xml:space="preserve"><value>Download Log</value></data>
+  <data name="DownloadPage_GettingResourceInfo" xml:space="preserve"><value>Getting {0} resource info...</value></data>
+  <data name="DownloadPage_ResourceInfoSuccess" xml:space="preserve"><value>{0} resource info retrieved</value></data>
+  <data name="DownloadPage_UnknownVersion" xml:space="preserve"><value>Unknown</value></data>
+  <data name="DownloadPage_NoResourceInfo" xml:space="preserve"><value>Failed to get resource info</value></data>
+  <data name="DownloadPage_GetResourceFailed" xml:space="preserve"><value>Failed to get resource: {0}</value></data>
+  <data name="DownloadPage_Calculating" xml:space="preserve"><value>Calculating...</value></data>
+  <data name="DownloadPage_VoiceSuffix" xml:space="preserve"><value> Voice</value></data>
+  <data name="DownloadPage_SpeedFormat" xml:space="preserve"><value>Download: {0:F2} MB/s | Write: {1:F2} MB/s</value></data>
+  <data name="DownloadPage_RemainingFormat" xml:space="preserve"><value>Remaining: {0}</value></data>
+
+  <!-- ServerSwitchPage -->
+  <data name="ServerSwitchPage_Description" xml:space="preserve"><value>Switch game client between CN and OS server</value></data>
+  <data name="ServerSwitchPage_CurrentServer" xml:space="preserve"><value>Current Server</value></data>
+  <data name="ServerSwitchPage_Detecting" xml:space="preserve"><value>Detecting...</value></data>
+  <data name="ServerSwitchPage_ReDetect" xml:space="preserve"><value>Re-detect</value></data>
+  <data name="ServerSwitchPage_SelectTargetServer" xml:space="preserve"><value>Select Target Server</value></data>
+  <data name="ServerSwitchPage_CN" xml:space="preserve"><value>CN</value></data>
+  <data name="ServerSwitchPage_CN_Short" xml:space="preserve"><value>CN</value></data>
+  <data name="ServerSwitchPage_OS" xml:space="preserve"><value>OS</value></data>
+  <data name="ServerSwitchPage_OS_Short" xml:space="preserve"><value>OS</value></data>
+  <data name="ServerSwitchPage_Warning" xml:space="preserve"><value>Please make sure the game is completely closed before switching. First time switch requires about 500MB download.</value></data>
+  <data name="ServerSwitchPage_Preparing" xml:space="preserve"><value>Preparing...</value></data>
+  <data name="ServerSwitchPage_NotSelectedPath" xml:space="preserve"><value>Game path not selected</value></data>
+  <data name="ServerSwitchPage_CN_Display" xml:space="preserve"><value>CN</value></data>
+  <data name="ServerSwitchPage_OS_Display" xml:space="preserve"><value>OS</value></data>
+  <data name="ServerSwitchPage_Tips" xml:space="preserve"><value>Tips</value></data>
+  <data name="ServerSwitchPage_AlreadyCN" xml:space="preserve"><value>Game is already on CN server</value></data>
+  <data name="ServerSwitchPage_AlreadyOS" xml:space="preserve"><value>Game is already on OS server</value></data>
+  <data name="ServerSwitchPage_ConfirmSwitch" xml:space="preserve"><value>Confirm Switch</value></data>
+  <data name="ServerSwitchPage_ConfirmSwitchToCN" xml:space="preserve"><value>Switch from OS to CN server?&#xA;&#xA;Current version: {0}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching&#xA;- First time switch requires about 100MB download</value></data>
+  <data name="ServerSwitchPage_ConfirmSwitchToOS" xml:space="preserve"><value>Switch from CN to OS server?&#xA;&#xA;Current version: {0}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching&#xA;- First time switch requires about 100MB download</value></data>
+  <data name="ServerSwitchPage_SwitchComplete" xml:space="preserve"><value>Switch Complete</value></data>
+  <data name="ServerSwitchPage_SwitchCompleteMessage" xml:space="preserve"><value>Game server switched successfully!&#xA;&#xA;You can now launch the game.</value></data>
+  <data name="ServerSwitchPage_SwitchFailed" xml:space="preserve"><value>Switch Failed</value></data>
+  <data name="ServerSwitchPage_SwitchFailedMessage" xml:space="preserve"><value>Error during server switch:&#xA;&#xA;{0}</value></data>
+  <data name="ServerSwitchPage_OK" xml:space="preserve"><value>OK</value></data>
+  <data name="ServerSwitchPage_Cancel" xml:space="preserve"><value>Cancel</value></data>
+
+  <!-- HomeSettingDialog -->
+  <data name="HomeSettingDialog_Title" xml:space="preserve"><value>Game Settings</value></data>
+  <data name="HomeSettingDialog_BasicInfo" xml:space="preserve"><value>Basic Info</value></data>
+  <data name="HomeSettingDialog_LaunchArgs" xml:space="preserve"><value>Launch Arguments</value></data>
+  <data name="HomeSettingDialog_CustomBg" xml:space="preserve"><value>Custom Background</value></data>
+  <data name="HomeSettingDialog_ProxySettings" xml:space="preserve"><value>Proxy Settings</value></data>
+  <data name="HomeSettingDialog_LocateGame" xml:space="preserve"><value>Locate Game</value></data>
+  <data name="HomeSettingDialog_UninstallGame" xml:space="preserve"><value>Uninstall Game</value></data>
+  <data name="HomeSettingDialog_UninstallWarning" xml:space="preserve"><value>Delete game folder requires re-download or re-locate. Confirm uninstall?</value></data>
+  <data name="HomeSettingDialog_ConfirmUninstall" xml:space="preserve"><value>Confirm Uninstall</value></data>
+  <data name="HomeSettingDialog_Size" xml:space="preserve"><value>Size </value></data>
+  <data name="HomeSettingDialog_Relocate" xml:space="preserve"><value>Relocate</value></data>
+  <data name="HomeSettingDialog_CmdArgs" xml:space="preserve"><value>Command-line Arguments</value></data>
+  <data name="HomeSettingDialog_MoreCmdArgs" xml:space="preserve"><value>Learn more about command-line arguments</value></data>
+  <data name="HomeSettingDialog_AfterStartGame" xml:space="preserve"><value>After Game Launch</value></data>
+  <data name="HomeSettingDialog_NoAction" xml:space="preserve"><value>No Action</value></data>
+  <data name="HomeSettingDialog_MinimizeToTaskbar" xml:space="preserve"><value>Minimize to Taskbar</value></data>
+  <data name="HomeSettingDialog_MinimizeToTray" xml:space="preserve"><value>Minimize to System Tray</value></data>
+  <data name="HomeSettingDialog_CustomLauncher" xml:space="preserve"><value>Custom Launcher</value></data>
+  <data name="HomeSettingDialog_Select" xml:space="preserve"><value>Select</value></data>
+  <data name="HomeSettingDialog_CustomBgSwitch" xml:space="preserve"><value>Custom Background (Supports Video)</value></data>
+  <data name="HomeSettingDialog_CustomBgHint" xml:space="preserve"><value>Please choose images with dimensions matching the app window. Large images may affect performance.</value></data>
+  <data name="HomeSettingDialog_DragDropHere" xml:space="preserve"><value>Drag image or video file here</value></data>
+  <data name="HomeSettingDialog_EnableProxy" xml:space="preserve"><value>Enable Proxy</value></data>
+  <data name="HomeSettingDialog_ProxyHint" xml:space="preserve"><value>When enabled, a proxy card will appear at the bottom-left of the home page. Game traffic will be routed through the proxy server.</value></data>
+  <data name="HomeSettingDialog_UninstallCA" xml:space="preserve"><value>Uninstall CA Certificate</value></data>
+  <data name="HomeSettingDialog_CannotDeleteRoot" xml:space="preserve"><value>Cannot delete the root directory of a drive</value></data>
+  <data name="HomeSettingDialog_NahidaInGameFolder" xml:space="preserve"><value>NahidaTool is located inside the game folder and would be deleted as well. Please move NahidaTool outside the game folder and try again.</value></data>
+  <data name="HomeSettingDialog_GameIsRunning" xml:space="preserve"><value>Game is currently running. Please close the game first.</value></data>
+  <data name="HomeSettingDialog_UninstallFailed" xml:space="preserve"><value>Uninstall failed: {0}</value></data>
+  <data name="HomeSettingDialog_CannotDecode" xml:space="preserve"><value>Cannot decode file. Please select a valid image or video file.</value></data>
+  <data name="HomeSettingDialog_UnknownError" xml:space="preserve"><value>An unknown error occurred. Please check the logs.</value></data>
+
+</root>

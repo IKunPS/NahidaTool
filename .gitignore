@@ -1,0 +1,90 @@
+## Visual Studio / MSBuild
+.vs/
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## JetBrains Rider
+.idea/
+
+## .NET / NuGet
+packages/
+*.nupkg
+*.snupkg
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+*.aps
+*.ipdb
+*.iobj
+*.recipe
+
+## Chutzpah Test files
+_Chutzpah*
+
+## Visual C++ cache files
+ipch/
+*.lib
+
+## MSTest / test run results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## NUnit
+*.VisualState.xml
+TestResult.xml
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## WinUI / UWP
+**/AppPackages/
+**/*.appx
+**/*.appxbundle
+**/*.appxupload
+
+## macOS / OSX
+.DS_Store
+*.swp
+
+## VS Code
+.vscode/
+
+## Windows
+Thumbs.db
+
+## Game / misc local files
+*-log_*.txt
