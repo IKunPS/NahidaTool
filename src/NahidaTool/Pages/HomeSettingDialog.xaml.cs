@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,6 +45,7 @@ public sealed partial class HomeSettingDialog : ContentDialog
     private string _startGameArgument = string.Empty;
     private AppSettings? _settings;
     private bool _isInitializing; // 初始化期间阻止 Toggled 事件级联
+    private static readonly ConcurrentDictionary<string, string> _gameSizeCache = new();
 
     public HomeSettingDialog()
     {
@@ -142,7 +144,23 @@ public sealed partial class HomeSettingDialog : ContentDialog
         if (hasPath)
         {
             InstallPathText.Text = _gameInstallPath;
-            GameSizeText.Text = GetGameSize(_gameInstallPath);
+            GameSizeText.Text = Lang.DownloadPage_Calculating;
+            _ = RefreshGameSizeAsync(_gameInstallPath);
+        }
+    }
+
+    private async Task RefreshGameSizeAsync(string path)
+    {
+        try
+        {
+            string sizeText = await Task.Run(() => GetGameSize(path));
+            // 计算期间路径可能已改变，仅当路径仍匹配时才更新
+            if (_gameInstallPath == path)
+                GameSizeText.Text = sizeText;
+        }
+        catch (Exception ex)
+        {
+            LogService.Debug($"异步计算游戏大小失败: {ex.Message}");
         }
     }
 
@@ -150,11 +168,29 @@ public sealed partial class HomeSettingDialog : ContentDialog
     {
         if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
             return Lang.DownloadPage_UnknownVersion;
+
+        if (_gameSizeCache.TryGetValue(path, out string? cached))
+            return cached;
+
         try
         {
-            var size = new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
+            long size = 0;
+            foreach (var file in new DirectoryInfo(path).EnumerateFiles("*", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    size += file.Length;
+                }
+                catch
+                {
+                    // 忽略无权限或被占用的文件
+                }
+            }
+
             var gb = (double)size / (1 << 30);
-            return $"{gb:F2} GB";
+            var result = $"{gb:F2} GB";
+            _gameSizeCache[path] = result;
+            return result;
         }
         catch (Exception ex)
         {
@@ -191,17 +227,7 @@ public sealed partial class HomeSettingDialog : ContentDialog
 
             if (args.InvokedItemContainer?.Tag is string index && int.TryParse(index, out int target))
             {
-                int steps = target - FlipView_Settings.SelectedIndex;
-                if (steps > 0)
-                {
-                    for (int i = 0; i < steps; i++)
-                        FlipView_Settings.SelectedIndex++;
-                }
-                else
-                {
-                    for (int i = 0; i < -steps; i++)
-                        FlipView_Settings.SelectedIndex--;
-                }
+                FlipView_Settings.SelectedIndex = target;
             }
         }
         catch (Exception ex)

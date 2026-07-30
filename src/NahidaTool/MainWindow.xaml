@@ -119,6 +119,24 @@
                     </NavigationViewItem.Content>
                 </NavigationViewItem>
 
+                <!-- 文档 -->
+                <NavigationViewItem Tag="Document"
+                                    ToolTipService.Placement="Right">
+                    <ToolTipService.ToolTip>
+                        <ToolTip HorizontalOffset="12">
+                            <TextBlock Text="{x:Bind models:Lang.HomeSettingDialog_Document}"/>
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE736;" FontSize="20"/>
+                    </NavigationViewItem.Icon>
+                    <NavigationViewItem.Content>
+                        <Border Height="40">
+                            <TextBlock VerticalAlignment="Center" Text="{x:Bind models:Lang.HomeSettingDialog_Document}"/>
+                        </Border>
+                    </NavigationViewItem.Content>
+                </NavigationViewItem>
+
             </NavigationView.MenuItems>
 
             <Frame x:Name="ContentFrame" Margin="0,48,0,0"/>

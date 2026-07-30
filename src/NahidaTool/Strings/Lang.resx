@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -161,6 +161,33 @@
   <data name="HomeSettingDialog_GameIsRunning" xml:space="preserve"><value>Game is currently running. Please close the game first.</value></data>
   <data name="HomeSettingDialog_UninstallFailed" xml:space="preserve"><value>Uninstall failed: {0}</value></data>
   <data name="HomeSettingDialog_CannotDecode" xml:space="preserve"><value>Cannot decode file. Please select a valid image or video file.</value></data>
+  <data name="HomeSettingDialog_Document" xml:space="preserve"><value>Document</value></data>
   <data name="HomeSettingDialog_UnknownError" xml:space="preserve"><value>An unknown error occurred. Please check the logs.</value></data>
 
+  <!-- DocumentSettingPage -->
+  <data name="DocumentSettingPage_HowToPlay" xml:space="preserve"><value>How to Play</value></data>
+  <data name="DocumentSettingPage_Step1" xml:space="preserve"><value>Enable Proxy</value></data>
+  <data name="DocumentSettingPage_Step1Detail" xml:space="preserve"><value>Go to Proxy Settings tab and enable the proxy. The proxy will redirect game traffic to the target server.</value></data>
+  <data name="DocumentSettingPage_Step2" xml:space="preserve"><value>Configure Proxy Address</value></data>
+  <data name="DocumentSettingPage_Step2Detail" xml:space="preserve"><value>Set the proxy address to your target server (e.g. http://your-server.com). Private servers typically use HTTP.</value></data>
+  <data name="DocumentSettingPage_Step3" xml:space="preserve"><value>Launch the Game</value></data>
+  <data name="DocumentSettingPage_Step3Detail" xml:space="preserve"><value>Return to the home page and click Start Game. The game client will connect through the proxy.</value></data>
+  <data name="DocumentSettingPage_Step4" xml:space="preserve"><value>Troubleshooting</value></data>
+  <data name="DocumentSettingPage_Step4Detail" xml:space="preserve"><value>If you encounter connection errors, check the error codes section below and verify your proxy server is running.</value></data>
+  <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>Error Codes</value></data>
+  <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>Common error codes you may encounter and their solutions:</value></data>
+  <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>Failed to connect to the server. Check your proxy settings and ensure the proxy server is running and accessible.</value></data>
+  <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. The server is not responding. Check that the proxy service is running and the target server is online.</value></data>
+  <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>Client patch error. Make sure the correct server patch is applied and copied to the game directory.</value></data>
+  <data name="DocumentSettingPage_Error4301" xml:space="preserve"><value>Version data request failed. Your game version may not match the server's expected version. Update your game or check server requirements.</value></data>
+  <data name="DocumentSettingPage_Error4308" xml:space="preserve"><value>Resource download failed. The server could not provide required game resources. Check your server's resource directory configuration.</value></data>
+  <data name="DocumentSettingPage_TutorialVideos" xml:space="preserve"><value>Tutorial Videos</value></data>
+  <data name="DocumentSettingPage_VideoConnect" xml:space="preserve"><value>How to Connect to a Private Server</value></data>
+  <data name="DocumentSettingPage_VideoProxy" xml:space="preserve"><value>Setting Up the Proxy</value></data>
+  <data name="DocumentSettingPage_VideoSwitch" xml:space="preserve"><value>Server Region Switching Tutorial</value></data>
+  <data name="DocumentSettingPage_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="DocumentSettingPage_Subtitle" xml:space="preserve"><value>Tutorials, error codes, and video guides for playing on private servers.</value></data>
+
+  <data name="DocumentSettingPage_StepRSA" xml:space="preserve"><value>Enable RSA</value></data>
+  <data name="DocumentSettingPage_StepRSADetail" xml:space="preserve"><value>Go to Basic Info tab and turn on the RSA switch. This patches the game client to bypass official server verification.</value></data>
 </root>

@@ -382,6 +382,10 @@ public sealed partial class MainWindow : WindowEx
                 if (ContentFrame.Content is not ServerSwitchPage)
                     ContentFrame.Navigate(typeof(ServerSwitchPage));
                 break;
+            case "Document":
+                if (ContentFrame.Content is not Pages.SettingPages.DocumentSettingPage)
+                    ContentFrame.Navigate(typeof(Pages.SettingPages.DocumentSettingPage));
+                break;
         }
     }
 

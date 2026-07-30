@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Resources;
 
 namespace NahidaTool.Models;
@@ -157,5 +157,31 @@ public static class Lang
     public static string HomeSettingDialog_GameIsRunning => _resourceManager.GetString("HomeSettingDialog_GameIsRunning") ?? "Game is currently running. Please close the game first.";
     public static string HomeSettingDialog_UninstallFailed => _resourceManager.GetString("HomeSettingDialog_UninstallFailed") ?? "Uninstall failed: {0}";
     public static string HomeSettingDialog_CannotDecode => _resourceManager.GetString("HomeSettingDialog_CannotDecode") ?? "Cannot decode file. Please select a valid image or video file.";
+    public static string HomeSettingDialog_Document => _resourceManager.GetString("HomeSettingDialog_Document") ?? "Document";
     public static string HomeSettingDialog_UnknownError => _resourceManager.GetString("HomeSettingDialog_UnknownError") ?? "An unknown error occurred. Please check the logs.";
+    // DocumentSettingPage
+    public static string DocumentSettingPage_Subtitle => _resourceManager.GetString("DocumentSettingPage_Subtitle") ?? "";
+    public static string DocumentSettingPage_HowToPlay => _resourceManager.GetString("DocumentSettingPage_HowToPlay") ?? "How to Play";
+    public static string DocumentSettingPage_Step1 => _resourceManager.GetString("DocumentSettingPage_Step1") ?? "1. Enable Proxy";
+    public static string DocumentSettingPage_Step1Detail => _resourceManager.GetString("DocumentSettingPage_Step1Detail") ?? "";
+    public static string DocumentSettingPage_StepRSA => _resourceManager.GetString("DocumentSettingPage_StepRSA") ?? "Enable RSA & Hook RSA";
+    public static string DocumentSettingPage_StepRSADetail => _resourceManager.GetString("DocumentSettingPage_StepRSADetail") ?? "";
+    public static string DocumentSettingPage_Step2 => _resourceManager.GetString("DocumentSettingPage_Step2") ?? "Configure Proxy Address";
+    public static string DocumentSettingPage_Step2Detail => _resourceManager.GetString("DocumentSettingPage_Step2Detail") ?? "";
+    public static string DocumentSettingPage_Step3 => _resourceManager.GetString("DocumentSettingPage_Step3") ?? "3. Launch the Game";
+    public static string DocumentSettingPage_Step3Detail => _resourceManager.GetString("DocumentSettingPage_Step3Detail") ?? "";
+    public static string DocumentSettingPage_Step4 => _resourceManager.GetString("DocumentSettingPage_Step4") ?? "4. Troubleshooting";
+    public static string DocumentSettingPage_Step4Detail => _resourceManager.GetString("DocumentSettingPage_Step4Detail") ?? "";
+    public static string DocumentSettingPage_ErrorCodes => _resourceManager.GetString("DocumentSettingPage_ErrorCodes") ?? "Error Codes";
+    public static string DocumentSettingPage_ErrorCodeHint => _resourceManager.GetString("DocumentSettingPage_ErrorCodeHint") ?? "";
+    public static string DocumentSettingPage_Error4201 => _resourceManager.GetString("DocumentSettingPage_Error4201") ?? "";
+    public static string DocumentSettingPage_Error4206 => _resourceManager.GetString("DocumentSettingPage_Error4206") ?? "";
+    public static string DocumentSettingPage_Error4214 => _resourceManager.GetString("DocumentSettingPage_Error4214") ?? "";
+    public static string DocumentSettingPage_Error4301 => _resourceManager.GetString("DocumentSettingPage_Error4301") ?? "";
+    public static string DocumentSettingPage_Error4308 => _resourceManager.GetString("DocumentSettingPage_Error4308") ?? "";
+    public static string DocumentSettingPage_TutorialVideos => _resourceManager.GetString("DocumentSettingPage_TutorialVideos") ?? "Tutorial Videos";
+    public static string DocumentSettingPage_VideoConnect => _resourceManager.GetString("DocumentSettingPage_VideoConnect") ?? "How to Connect to a Private Server";
+    public static string DocumentSettingPage_VideoProxy => _resourceManager.GetString("DocumentSettingPage_VideoProxy") ?? "Setting Up the Proxy";
+    public static string DocumentSettingPage_VideoSwitch => _resourceManager.GetString("DocumentSettingPage_VideoSwitch") ?? "Server Region Switching Tutorial";
+    public static string DocumentSettingPage_Back => _resourceManager.GetString("DocumentSettingPage_Back") ?? "Back";
 }
