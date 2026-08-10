@@ -211,6 +211,20 @@
                                     Visibility="Collapsed">
                                 <TextBlock Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Text="{x:Bind models:Lang.HomeSettingDialog_Relocate}"/>
                             </Button>
+                            <Button x:Name="LdiffUpdateButton"
+                                    Height="36"
+                                    Click="LdiffUpdateButton_Click"
+                                    CornerRadius="8"
+                                    Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
+                                    Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <FontIcon FontSize="14"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              Glyph="&#xE896;"/>
+                                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               Text="{x:Bind models:Lang.Ldiff_Button}"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
 
                         <!-- RSA -->

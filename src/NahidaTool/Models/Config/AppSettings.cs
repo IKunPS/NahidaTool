@@ -59,42 +59,60 @@ public class AppSettings
 
     private static readonly string
         SettingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../config.json");
+    private static readonly object SettingsFileLock = new();
 
     public static AppSettings Load()
     {
-        try
+        lock (SettingsFileLock)
         {
-            if (File.Exists(SettingsFilePath))
+            try
             {
-                string json = File.ReadAllText(SettingsFilePath);
-                return JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.AppSettings) ??
-                       new AppSettings();
+                if (File.Exists(SettingsFilePath))
+                {
+                    string json = File.ReadAllText(SettingsFilePath);
+                    return JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.AppSettings) ??
+                           new AppSettings();
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            LogService.Error("加载配置文件失败，将使用默认配置", ex);
-        }
+            catch (Exception ex)
+            {
+                LogService.Error("加载配置文件失败，将使用默认配置", ex);
+            }
 
-        return new AppSettings();
+            return new AppSettings();
+        }
     }
 
     public void Save()
     {
-        try
+        lock (SettingsFileLock)
         {
-            string? directory = Path.GetDirectoryName(SettingsFilePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                string? directory = Path.GetDirectoryName(SettingsFilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
 
-            string json = JsonSerializer.Serialize(this, AppJsonSerializerContext.Default.AppSettings);
-            File.WriteAllText(SettingsFilePath, json);
+                string json = JsonSerializer.Serialize(this, AppJsonSerializerContext.Default.AppSettings);
+                File.WriteAllText(SettingsFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error("保存配置文件失败", ex);
+            }
         }
-        catch (Exception ex)
+    }
+
+    public static AppSettings Update(Action<AppSettings> update)
+    {
+        lock (SettingsFileLock)
         {
-            LogService.Error("保存配置文件失败", ex);
+            var settings = Load();
+            update(settings);
+            settings.Save();
+            return settings;
         }
     }
 }

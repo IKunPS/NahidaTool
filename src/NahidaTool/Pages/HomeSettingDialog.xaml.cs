@@ -140,6 +140,7 @@ public sealed partial class HomeSettingDialog : ContentDialog
         InstallPathGrid.Visibility = hasPath ? Visibility.Visible : Visibility.Collapsed;
         GameSizeButton.Visibility = hasPath ? Visibility.Visible : Visibility.Collapsed;
         RelocateButton.Visibility = hasPath ? Visibility.Visible : Visibility.Collapsed;
+        LdiffUpdateButton.Visibility = hasPath ? Visibility.Visible : Visibility.Collapsed;
 
         if (hasPath)
         {
@@ -280,6 +281,8 @@ public sealed partial class HomeSettingDialog : ContentDialog
         if (GameLauncherService.IsValidInstallPath(folderPath, _region))
         {
             _gameInstallPath = folderPath;
+            if (_settings != null)
+                _settings.GameInstallPath = folderPath;
             GameLauncherService.SaveInstallPath(folderPath);
             RefreshBasicInfo();
             GameInstallPathChangedMessage.Send();
@@ -289,6 +292,23 @@ public sealed partial class HomeSettingDialog : ContentDialog
             GeneralErrorText.Text = string.Format(Lang.HomePage_InvalidPathMessage, GameLauncherService.GetExeName(_region));
             GeneralErrorText.Visibility = Visibility.Visible;
         }
+    }
+
+    private async void LdiffUpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_settings == null || string.IsNullOrWhiteSpace(_gameInstallPath))
+            return;
+
+        var xamlRoot = XamlRoot;
+        var apiService = new ApiService();
+        apiService.SetRegion(_region);
+        Hide();
+
+        var dialog = new LdiffUpdateDialog(apiService, _settings)
+        {
+            XamlRoot = xamlRoot,
+        };
+        await dialog.ShowAsync();
     }
 
     private void ShowUninstallWarning_Click(object sender, RoutedEventArgs e)
@@ -328,6 +348,8 @@ public sealed partial class HomeSettingDialog : ContentDialog
             {
                 Directory.Delete(_gameInstallPath, true);
                 _gameInstallPath = string.Empty;
+                if (_settings != null)
+                    _settings.GameInstallPath = string.Empty;
                 GameLauncherService.SaveInstallPath("");
             }
 
@@ -357,6 +379,8 @@ public sealed partial class HomeSettingDialog : ContentDialog
     private void DeleteInstallPath_Click(object sender, RoutedEventArgs e)
     {
         _gameInstallPath = string.Empty;
+        if (_settings != null)
+            _settings.GameInstallPath = string.Empty;
         GameLauncherService.SaveInstallPath("");
         RefreshBasicInfo();
         GameInstallPathChangedMessage.Send();

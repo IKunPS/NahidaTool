@@ -11,7 +11,6 @@ public static class ProxyService
 {
     private static string _dispatch = string.Empty;
     private const int LocalPort = 6898;
-    private static System.Net.Security.RemoteCertificateValidationCallback? _previousCertificateValidationCallback;
 
     private static readonly string[] s_redirectDomains =
     {
@@ -69,9 +68,6 @@ public static class ProxyService
             if (!Eavesdropper.Certifier.CreateTrustedRootCertificate())
                 LogService.Info("根证书安装失败或已取消，HTTPS 流量可能无法拦截");
 
-            _previousCertificateValidationCallback ??= ServicePointManager.ServerCertificateValidationCallback;
-            ServicePointManager.ServerCertificateValidationCallback = (_, _, _, _) => true;
-
             Eavesdropper.RequestInterceptedAsync += OnRequestInterceptedAsync;
             Eavesdropper.Initiate(LocalPort);
 
@@ -80,8 +76,6 @@ public static class ProxyService
         }
         catch (Exception ex)
         {
-            ServicePointManager.ServerCertificateValidationCallback = _previousCertificateValidationCallback;
-            _previousCertificateValidationCallback = null;
             LogService.Error("启动代理失败", ex);
             return false;
         }
@@ -98,8 +92,6 @@ public static class ProxyService
         {
             Eavesdropper.RequestInterceptedAsync -= OnRequestInterceptedAsync;
             Eavesdropper.Terminate();
-            ServicePointManager.ServerCertificateValidationCallback = _previousCertificateValidationCallback;
-            _previousCertificateValidationCallback = null;
             LogService.Info("代理已停止");
         }
         catch (Exception ex)

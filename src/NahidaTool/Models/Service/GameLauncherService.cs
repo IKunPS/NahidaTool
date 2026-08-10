@@ -68,8 +68,7 @@ public static class GameLauncherService
         var found = TryFindFromRegistry(region);
         if (found != null)
         {
-            settings.GameInstallPath = found;
-            settings.Save();
+            SaveInstallPath(found);
             return found;
         }
 
@@ -239,9 +238,7 @@ public static class GameLauncherService
     /// </summary>
     public static void SaveInstallPath(string path)
     {
-        var settings = AppSettings.Load();
-        settings.GameInstallPath = path;
-        settings.Save();
+        AppSettings.Update(settings => settings.GameInstallPath = path);
     }
 
     /// <summary>
@@ -249,9 +246,7 @@ public static class GameLauncherService
     /// </summary>
     public static async Task SaveInstallPathAsync(string path)
     {
-        var settings = AppSettings.Load();
-        settings.GameInstallPath = path;
-        await Task.Run(settings.Save);
+        await Task.Run(() => SaveInstallPath(path));
     }
 
     private static string EscapeCmdArgument(string value)

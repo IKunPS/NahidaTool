@@ -22,6 +22,8 @@ public static class ServerConfig
         /// </summary>
         public const string SophonApiUrl = "https://api-takumi.mihoyo.com/downloader/sophon_chunk/api/getBuild";
 
+        public const string SophonPatchApiUrl = "https://downloader-api.mihoyo.com/downloader/sophon_chunk/api/getPatchBuild";
+
         /// <summary>
         /// 启动器ID
         /// </summary>
@@ -52,6 +54,8 @@ public static class ServerConfig
         /// Sophon下载API
         /// </summary>
         public const string SophonApiUrl = "https://sg-public-api.hoyoverse.com/downloader/sophon_chunk/api/getBuild";
+
+        public const string SophonPatchApiUrl = "https://sg-public-api.hoyoverse.com/downloader/sophon_chunk/api/getPatchBuild";
 
         /// <summary>
         /// 启动器ID
@@ -127,6 +131,11 @@ public static class ServerConfig
         return region == ServerRegionType.CN ? CN.SophonApiUrl : OS.SophonApiUrl;
     }
 
+    public static string GetSophonPatchApiUrl(ServerRegionType region)
+    {
+        return region == ServerRegionType.CN ? CN.SophonPatchApiUrl : OS.SophonPatchApiUrl;
+    }
+
     /// <summary>
     /// 根据服务器区域获取启动器ID
     /// </summary>
@@ -159,4 +168,3 @@ public static class ServerConfig
         return region == ServerRegionType.CN ? Lang.DownloadSettingPage_CN : Lang.DownloadSettingPage_OS;
     }
 }
-

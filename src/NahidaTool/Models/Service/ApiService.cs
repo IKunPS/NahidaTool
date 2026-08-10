@@ -3,6 +3,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,6 +76,23 @@ public class ApiService
         {
             Timeout = timeout ?? TimeSpan.FromMinutes(30),
         };
+    }
+
+    public async Task<GameBranch?> GetGameBranchAsync(CancellationToken ct = default)
+    {
+        string branchApiUrl = ServerConfig.GetBranchApiUrl(_currentRegion);
+        string launcherId = ServerConfig.GetLauncherId(_currentRegion);
+        string gameId = ServerConfig.GetGameId(_currentRegion);
+        string url = $"{branchApiUrl}?game_ids[]={gameId}&launcher_id={launcherId}";
+
+        using HttpResponseMessage response = await _httpClient.GetAsync(url, ct);
+        response.EnsureSuccessStatusCode();
+        string json = await response.Content.ReadAsStringAsync(ct);
+        var branchResponse = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.BranchResponse);
+
+        return branchResponse?.Data?.GameBranches?.Count > 0
+            ? branchResponse.Data.GameBranches[0]
+            : null;
     }
 
     /// <summary>
@@ -157,6 +175,35 @@ public class ApiService
         var result = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.BuildResponse) ??
                      new BuildResponse();
         LogService.Info($"构建信息解析成功: Tag={result.Data?.Tag}, Manifests数量={result.Data?.Manifests?.Count ?? 0}");
+
+        return result;
+    }
+
+    public async Task<PatchBuildResponse> GetPatchBuildInfoAsync(CancellationToken ct = default)
+    {
+        var preDownload = (await GetGameBranchAsync(ct))?.PreDownload;
+        if (preDownload == null || string.IsNullOrWhiteSpace(preDownload.PackageId) ||
+            string.IsNullOrWhiteSpace(preDownload.Password))
+            throw new InvalidOperationException("当前没有可用的预下载分支");
+
+        var requestBody = new
+        {
+            branch = "predownload",
+            package_id = preDownload.PackageId,
+            password = preDownload.Password,
+            plat_app = ServerConfig.GetPlatApp(_currentRegion),
+        };
+        string jsonBody = JsonSerializer.Serialize(requestBody);
+        using var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        using HttpResponseMessage response = await _httpClient.PostAsync(
+            ServerConfig.GetSophonPatchApiUrl(_currentRegion), content, ct);
+        response.EnsureSuccessStatusCode();
+
+        string json = await response.Content.ReadAsStringAsync(ct);
+        var result = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.PatchBuildResponse) ??
+                     new PatchBuildResponse();
+        if (result.RetCode != 0 || result.Data == null)
+            throw new InvalidOperationException($"获取 LDiff 构建失败: {result.Message ?? result.RetCode.ToString()}");
 
         return result;
     }

@@ -48,12 +48,6 @@
                         <FontIcon Glyph="&#xE81E;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
-                <NavigationViewItem Content="{x:Bind models:Lang.SettingsPage_Download}" Tag="DownloadSetting">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEBD3;" FontFamily="{StaticResource SegoeFluentIcons}"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <Frame x:Name="Frame_Setting" Margin="24,24,0,0"/>

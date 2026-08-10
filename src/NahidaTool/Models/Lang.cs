@@ -62,7 +62,6 @@ public static class Lang
     public static string HomePage_ProxyUrlError => _resourceManager.GetString("HomePage_ProxyUrlError") ?? "URL format error";
     public static string HomePage_StartGame => _resourceManager.GetString("HomePage_StartGame") ?? "Start Game";
     public static string HomePage_GameRunning => _resourceManager.GetString("HomePage_GameRunning") ?? "Game Running";
-    public static string HomePage_LocateGame => _resourceManager.GetString("HomePage_LocateGame") ?? "Locate Game";
     public static string HomePage_Installed => _resourceManager.GetString("HomePage_Installed") ?? "Installed, ";
     public static string HomePage_LocateGameLink => _resourceManager.GetString("HomePage_LocateGameLink") ?? "Locate Game";
     public static string HomePage_SelectGameDir => _resourceManager.GetString("HomePage_SelectGameDir") ?? "Select game installation directory";
@@ -82,21 +81,36 @@ public static class Lang
     public static string DownloadPage_UncompressedSize => _resourceManager.GetString("DownloadPage_UncompressedSize") ?? "Uncompressed";
     public static string DownloadPage_DownloadProgress => _resourceManager.GetString("DownloadPage_DownloadProgress") ?? "Download Progress";
     public static string DownloadPage_Progress => _resourceManager.GetString("DownloadPage_Progress") ?? "Progress:";
-    public static string DownloadPage_Speed => _resourceManager.GetString("DownloadPage_Speed") ?? "Speed: -- MB/s";
-    public static string DownloadPage_Remaining => _resourceManager.GetString("DownloadPage_Remaining") ?? "Remaining: --";
     public static string DownloadPage_StartDownload => _resourceManager.GetString("DownloadPage_StartDownload") ?? "Start Download";
     public static string DownloadPage_ContinueDownload => _resourceManager.GetString("DownloadPage_ContinueDownload") ?? "Continue Download";
     public static string DownloadPage_PauseDownload => _resourceManager.GetString("DownloadPage_PauseDownload") ?? "Pause Download";
+    public static string DownloadPage_Downloading => _resourceManager.GetString("DownloadPage_Downloading") ?? "Downloading";
+    public static string DownloadPage_Preparing => _resourceManager.GetString("DownloadPage_Preparing") ?? "Preparing download";
+    public static string DownloadPage_CheckingFiles => _resourceManager.GetString("DownloadPage_CheckingFiles") ?? "Checking downloaded files";
+    public static string DownloadPage_Paused => _resourceManager.GetString("DownloadPage_Paused") ?? "Download paused";
     public static string DownloadPage_DownloadLog => _resourceManager.GetString("DownloadPage_DownloadLog") ?? "Download Log";
     public static string DownloadPage_GettingResourceInfo => _resourceManager.GetString("DownloadPage_GettingResourceInfo") ?? "Getting {0} resource info...";
-    public static string DownloadPage_ResourceInfoSuccess => _resourceManager.GetString("DownloadPage_ResourceInfoSuccess") ?? "{0} resource info retrieved";
     public static string DownloadPage_UnknownVersion => _resourceManager.GetString("DownloadPage_UnknownVersion") ?? "Unknown";
     public static string DownloadPage_NoResourceInfo => _resourceManager.GetString("DownloadPage_NoResourceInfo") ?? "Failed to get resource info";
     public static string DownloadPage_GetResourceFailed => _resourceManager.GetString("DownloadPage_GetResourceFailed") ?? "Failed to get resource: {0}";
     public static string DownloadPage_Calculating => _resourceManager.GetString("DownloadPage_Calculating") ?? "Calculating...";
-    public static string DownloadPage_VoiceSuffix => _resourceManager.GetString("DownloadPage_VoiceSuffix") ?? " Voice";
-    public static string DownloadPage_SpeedFormat => _resourceManager.GetString("DownloadPage_SpeedFormat") ?? "Download: {0:F2} MB/s | Write: {1:F2} MB/s";
-    public static string DownloadPage_RemainingFormat => _resourceManager.GetString("DownloadPage_RemainingFormat") ?? "Remaining: {0}";
+
+    // DownloadGameDialog
+    public static string DownloadDialog_Title => _resourceManager.GetString("DownloadDialog_Title") ?? "Select Install Path";
+    public static string DownloadDialog_Change => _resourceManager.GetString("DownloadDialog_Change") ?? "Change";
+    public static string DownloadDialog_Version => _resourceManager.GetString("DownloadDialog_Version") ?? "Game Version";
+    public static string DownloadDialog_VersionHint => _resourceManager.GetString("DownloadDialog_VersionHint") ?? "Leave empty for latest";
+    public static string DownloadDialog_RecommendedVersion => _resourceManager.GetString("DownloadDialog_RecommendedVersion") ?? "Server version {0} - recommended to download";
+    public static string DownloadDialog_GameResource => _resourceManager.GetString("DownloadDialog_GameResource") ?? "Game Resources";
+    public static string DownloadDialog_VoiceResource => _resourceManager.GetString("DownloadDialog_VoiceResource") ?? "Voice Resources";
+    public static string DownloadDialog_DownloadSize => _resourceManager.GetString("DownloadDialog_DownloadSize") ?? "Download: {0}";
+    public static string DownloadDialog_RequiredSpace => _resourceManager.GetString("DownloadDialog_RequiredSpace") ?? "Required Space: {0}";
+    public static string DownloadDialog_AlreadyInstalled => _resourceManager.GetString("DownloadDialog_AlreadyInstalled") ?? "Already installed?";
+    public static string DownloadDialog_LocateGame => _resourceManager.GetString("DownloadDialog_LocateGame") ?? "Locate Game";
+    public static string DownloadDialog_StartInstall => _resourceManager.GetString("DownloadDialog_StartInstall") ?? "Start Install";
+    public static string DownloadDialog_InvalidPath => _resourceManager.GetString("DownloadDialog_InvalidPath") ?? "Select a valid install folder.";
+    public static string DownloadDialog_InsufficientSpace => _resourceManager.GetString("DownloadDialog_InsufficientSpace") ?? "Not enough free space. Required {0}, available {1}.";
+    public static string DownloadDialog_ClientMissingAfterDownload => _resourceManager.GetString("DownloadDialog_ClientMissingAfterDownload") ?? "The resources were downloaded, but the game executable was not found. Check the install path and resume the download.";
 
     // ServerSwitchPage
     public static string ServerSwitchPage_Description => _resourceManager.GetString("ServerSwitchPage_Description") ?? "Switch game client between CN and OS server";
@@ -159,6 +173,41 @@ public static class Lang
     public static string HomeSettingDialog_CannotDecode => _resourceManager.GetString("HomeSettingDialog_CannotDecode") ?? "Cannot decode file. Please select a valid image or video file.";
     public static string HomeSettingDialog_Document => _resourceManager.GetString("HomeSettingDialog_Document") ?? "Document";
     public static string HomeSettingDialog_UnknownError => _resourceManager.GetString("HomeSettingDialog_UnknownError") ?? "An unknown error occurred. Please check the logs.";
+
+    // LDiff update
+    public static string Ldiff_Button => _resourceManager.GetString("Ldiff_Button") ?? "LDiff Update";
+    public static string Ldiff_Title => _resourceManager.GetString("Ldiff_Title") ?? "LDiff Update";
+    public static string Ldiff_Checking => _resourceManager.GetString("Ldiff_Checking") ?? "Checking the official patch manifest...";
+    public static string Ldiff_CurrentVersion => _resourceManager.GetString("Ldiff_CurrentVersion") ?? "Current version";
+    public static string Ldiff_TargetVersion => _resourceManager.GetString("Ldiff_TargetVersion") ?? "Target version";
+    public static string Ldiff_DownloadSize => _resourceManager.GetString("Ldiff_DownloadSize") ?? "LDiff size";
+    public static string Ldiff_Start => _resourceManager.GetString("Ldiff_Start") ?? "Start Update";
+    public static string Ldiff_Close => _resourceManager.GetString("Ldiff_Close") ?? "Close";
+    public static string Ldiff_Cancel => _resourceManager.GetString("Ldiff_Cancel") ?? "Cancel";
+    public static string Ldiff_Done => _resourceManager.GetString("Ldiff_Done") ?? "Done";
+    public static string Ldiff_Ready => _resourceManager.GetString("Ldiff_Ready") ?? "Official manifest loaded. {0} resource package(s) will be updated.";
+    public static string Ldiff_NoUpdate => _resourceManager.GetString("Ldiff_NoUpdate") ?? "No compatible LDiff update is currently available.";
+    public static string Ldiff_GameRunning => _resourceManager.GetString("Ldiff_GameRunning") ?? "Close the game before applying the update.";
+    public static string Ldiff_Success => _resourceManager.GetString("Ldiff_Success") ?? "Updated successfully to {0}.";
+    public static string Ldiff_Failed => _resourceManager.GetString("Ldiff_Failed") ?? "LDiff update failed: {0}";
+    public static string Ldiff_Cancelled => _resourceManager.GetString("Ldiff_Cancelled") ?? "LDiff update cancelled.";
+    public static string Ldiff_Cancelling => _resourceManager.GetString("Ldiff_Cancelling") ?? "Cancelling safely...";
+
+    public static string AppUpdate_Title => _resourceManager.GetString("AppUpdate_Title") ?? "Application Update";
+    public static string AppUpdate_VersionLine => _resourceManager.GetString("AppUpdate_VersionLine") ?? "A new version is available: {0} to {1}";
+    public static string AppUpdate_Published => _resourceManager.GetString("AppUpdate_Published") ?? "Published: {0}";
+    public static string AppUpdate_Source => _resourceManager.GetString("AppUpdate_Source") ?? "Source: {0}";
+    public static string AppUpdate_NoReleaseNotes => _resourceManager.GetString("AppUpdate_NoReleaseNotes") ?? "No release notes.";
+    public static string AppUpdate_DownloadRestart => _resourceManager.GetString("AppUpdate_DownloadRestart") ?? "Update and Restart";
+    public static string AppUpdate_Later => _resourceManager.GetString("AppUpdate_Later") ?? "Later";
+    public static string AppUpdate_Cancel => _resourceManager.GetString("AppUpdate_Cancel") ?? "Cancel";
+    public static string AppUpdate_Close => _resourceManager.GetString("AppUpdate_Close") ?? "Close";
+    public static string AppUpdate_Downloading => _resourceManager.GetString("AppUpdate_Downloading") ?? "Downloading {0:P1} ({1} / {2})";
+    public static string AppUpdate_Restarting => _resourceManager.GetString("AppUpdate_Restarting") ?? "Update ready. Restarting...";
+    public static string AppUpdate_Cancelled => _resourceManager.GetString("AppUpdate_Cancelled") ?? "Update cancelled.";
+    public static string AppUpdate_Cancelling => _resourceManager.GetString("AppUpdate_Cancelling") ?? "Cancelling safely...";
+    public static string AppUpdate_Failed => _resourceManager.GetString("AppUpdate_Failed") ?? "Update failed: {0}";
+
     // DocumentSettingPage
     public static string DocumentSettingPage_Subtitle => _resourceManager.GetString("DocumentSettingPage_Subtitle") ?? "";
     public static string DocumentSettingPage_HowToPlay => _resourceManager.GetString("DocumentSettingPage_HowToPlay") ?? "How to Play";
@@ -181,7 +230,5 @@ public static class Lang
     public static string DocumentSettingPage_Error4308 => _resourceManager.GetString("DocumentSettingPage_Error4308") ?? "";
     public static string DocumentSettingPage_TutorialVideos => _resourceManager.GetString("DocumentSettingPage_TutorialVideos") ?? "Tutorial Videos";
     public static string DocumentSettingPage_VideoConnect => _resourceManager.GetString("DocumentSettingPage_VideoConnect") ?? "How to Connect to a Private Server";
-    public static string DocumentSettingPage_VideoProxy => _resourceManager.GetString("DocumentSettingPage_VideoProxy") ?? "Setting Up the Proxy";
-    public static string DocumentSettingPage_VideoSwitch => _resourceManager.GetString("DocumentSettingPage_VideoSwitch") ?? "Server Region Switching Tutorial";
     public static string DocumentSettingPage_Back => _resourceManager.GetString("DocumentSettingPage_Back") ?? "Back";
 }

@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -39,8 +40,9 @@ public sealed partial class HomePage : Page
     private string _downloadPath;
     private VoiceLanguageType _currentVoiceLanguage = VoiceLanguageType.Chinese;
     private string _requestedVersion = string.Empty;
-    private bool _hasPartialDownload;
     private CancellationTokenSource? _refreshCts;
+    private CancellationTokenSource? _dialogSizeRefreshCts;
+    private bool _isPreparingDownload;
 
     #endregion
 
@@ -86,7 +88,6 @@ public sealed partial class HomePage : Page
 
         _downloadPath = _lastSettings.DownloadPath;
         DownloadService.Instance.Initialize(_downloadPath);
-        _hasPartialDownload = DownloadService.Instance.HasPartialDownload(_downloadPath);
 
         _apiService.SetRegion(_currentRegion);
 
@@ -144,12 +145,19 @@ public sealed partial class HomePage : Page
         StartGame,
         GameIsRunning,
         InstallGame,
+        Downloading,     // 下载客户端中
     }
 
     private void RefreshGameStatus()
     {
         try
         {
+            var settings = AppSettings.Load();
+            _lastSettings = settings;
+            _foundGamePath = GameLauncherService.IsValidInstallPath(settings.GameInstallPath, _currentRegion)
+                ? settings.GameInstallPath
+                : null;
+
             var running = GameLauncherService.GetRunningProcess(_currentRegion);
             if (running != null)
             {
@@ -159,21 +167,28 @@ public sealed partial class HomePage : Page
                 return;
             }
 
-            var settings = AppSettings.Load();
-            if (GameLauncherService.IsValidInstallPath(settings.GameInstallPath, _currentRegion))
-                _foundGamePath = settings.GameInstallPath;
-            else
-                _foundGamePath = null;
-
+            // 已存在可启动的客户端时，下载不抢占启动按钮；
+            // 只有在没有有效安装路径时才用下载状态填充胶囊。
             if (_foundGamePath != null)
+            {
                 UpdateGameState(GameState.StartGame);
-            else
-                UpdateGameState(GameState.InstallGame);
+                return;
+            }
+
+            var downloadService = DownloadService.Instance;
+            if (downloadService.IsDownloading || _isPreparingDownload)
+            {
+                UpdateGameState(GameState.Downloading);
+                return;
+            }
+
+            UpdateGameState(GameState.InstallGame);
         }
         catch (Exception ex)
         {
             LogService.Error("刷新游戏状态失败", ex);
-            UpdateGameState(GameState.StartGame);
+            _foundGamePath = null;
+            UpdateGameState(GameState.InstallGame);
         }
     }
 
@@ -181,10 +196,15 @@ public sealed partial class HomePage : Page
     {
         _gameState = state;
 
+        bool downloadActive = state is GameState.Downloading;
         StartGameButton.IsEnabled = state is not GameState.GameIsRunning;
 
-        bool accentVisible = StartGameButton.IsEnabled;
+        bool accentVisible = StartGameButton.IsEnabled && !downloadActive;
         Rect_AccentBackground.Visibility = accentVisible ? Visibility.Visible : Visibility.Collapsed;
+        NormalActionGrid.Visibility = downloadActive ? Visibility.Collapsed : Visibility.Visible;
+        DownloadActionGrid.Visibility = downloadActive ? Visibility.Visible : Visibility.Collapsed;
+        GameActionProgressRing.Visibility = Visibility.Collapsed;
+        SettingsButton.Visibility = Visibility.Visible;
 
         UpdateButtonForeground();
 
@@ -200,22 +220,38 @@ public sealed partial class HomePage : Page
                     : "";
                 break;
             case GameState.InstallGame:
-                StartGameButtonText.Text = Lang.HomePage_LocateGame;
+                StartGameButtonText.Text = HasPartialClientDownload()
+                    ? Lang.DownloadPage_ContinueDownload
+                    : Lang.DownloadDialog_StartInstall;
+                break;
+            case GameState.Downloading:
+                // 下载：圆环+暂停文字由 UpdateDownloadButtonStates 管理
+                UpdateDownloadButtonStates();
                 break;
         }
+
     }
 
     private void UpdateButtonForeground()
     {
-        var accentVisible = Rect_AccentBackground.Visibility == Visibility.Visible;
+        var accentBrush = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"];
+        var disabledBrush = (Brush)Application.Current.Resources["TextOnAccentFillColorDisabledBrush"];
+        var primaryBrush = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"];
+        bool accentVisible = Rect_AccentBackground.Visibility == Visibility.Visible;
 
-        StartGameButton.Foreground = StartGameButton.IsEnabled && accentVisible
-            ? (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"]
-            : (Brush)Application.Current.Resources["TextOnAccentFillColorDisabledBrush"];
-
-        SettingsButton.Foreground = accentVisible
-            ? (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"]
-            : (Brush)Application.Current.Resources["TextOnAccentFillColorDisabledBrush"];
+        StartGameButton.Foreground = (StartGameButton.IsEnabled, accentVisible, _isActionButtonPointerOver) switch
+        {
+            (false, _, _) => disabledBrush,
+            (true, false, true) => accentBrush,
+            (true, false, false) => disabledBrush,
+            _ => primaryBrush,
+        };
+        SettingsButton.Foreground = (!accentVisible, _isSettingButtonPointerOver) switch
+        {
+            (true, true) => accentBrush,
+            (true, false) => disabledBrush,
+            _ => primaryBrush,
+        };
     }
 
     #endregion
@@ -224,9 +260,35 @@ public sealed partial class HomePage : Page
 
     private async void StartGameButton_Click(object sender, RoutedEventArgs e)
     {
+        // 未安装客户端：弹窗让用户选择下载版本或定位客户端
+        // 下载中：点击切换暂停/恢复
+        if (_gameState is GameState.Downloading)
+        {
+            var ds = DownloadService.Instance;
+            if (!ds.IsDownloading)
+            {
+                // 下载已结束但状态未恢复（如下载失败后未及时刷新），先恢复按钮状态
+                RefreshGameStatus();
+                return;
+            }
+
+            if (ds.IsPaused)
+                ds.ResumeDownload();
+            else
+                ds.PauseDownload();
+            UpdateDownloadButtonStates();
+            return;
+        }
+
         if (_foundGamePath == null)
         {
-            await DoLocateGameAsync();
+            if (HasPartialClientDownload())
+            {
+                await DownloadClientAsync(_lastSettings.GameVersion, _lastSettings.VoiceLanguage);
+                return;
+            }
+
+            await ShowNoClientDialogAsync();
             return;
         }
 
@@ -274,26 +336,34 @@ public sealed partial class HomePage : Page
                 // 启动游戏后操作
                 ApplyAfterStartAction();
             }
+            else
+            {
+                ProxyService.Stop();
+                ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
+                RefreshGameStatus();
+            }
         }
         catch (InvalidOperationException ex)
         {
             LogService.Warn($"启动游戏失败(操作异常): {ex.Message}");
             ProxyService.Stop();
             ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
-            StartGameButton.IsEnabled = true;
-            Rect_AccentBackground.Visibility = Visibility.Visible;
-            UpdateButtonForeground();
+            RefreshGameStatus();
         }
         catch (FileNotFoundException ex)
         {
             LogService.Warn($"启动游戏失败(文件未找到): {ex.Message}");
             ProxyService.Stop();
             ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
-            StartGameButtonText.Text = Lang.HomePage_LocateGame;
-            StartGameButton.IsEnabled = true;
-            Rect_AccentBackground.Visibility = Visibility.Visible;
             _foundGamePath = null;
-            UpdateButtonForeground();
+            RefreshGameStatus();
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("启动游戏失败", ex);
+            ProxyService.Stop();
+            ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
+            RefreshGameStatus();
         }
     }
 
@@ -350,7 +420,6 @@ public sealed partial class HomePage : Page
 
             DownloadService.Instance.Initialize(_downloadPath);
             _apiService.SetRegion(_currentRegion);
-            _hasPartialDownload = DownloadService.Instance.HasPartialDownload(_downloadPath);
 
             // Refresh download info if region/version changed
             var newVersion = _lastSettings.GameVersion ?? string.Empty;
@@ -381,13 +450,68 @@ public sealed partial class HomePage : Page
 
     private void StartGameGrid_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
+        _isPointerOverCapsule = true;
         if (_gameState is GameState.GameIsRunning)
+        {
             Popup_GameInfo.IsOpen = true;
+        }
+        else if (_gameState is GameState.Downloading)
+        {
+            // 悬停立即弹出下载信息气泡（版本/速度，无进度条）
+            DownloadInfoTip.IsOpen = true;
+        }
+        UpdateButtonForeground();
     }
 
     private void StartGameGrid_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
+        _isPointerOverCapsule = false;
+        _isActionButtonPointerOver = false;
+        _isSettingButtonPointerOver = false;
+        UpdateDownloadHoverState(false);
         Popup_GameInfo.IsOpen = false;
+        DownloadInfoTip.IsOpen = false;
+        UpdateButtonForeground();
+    }
+
+    private void StartGameButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        _isActionButtonPointerOver = true;
+        UpdateDownloadHoverState(true);
+        UpdateButtonForeground();
+    }
+
+    private void StartGameButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        _isActionButtonPointerOver = false;
+        UpdateDownloadHoverState(false);
+        UpdateButtonForeground();
+    }
+
+    private void SettingsButton_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        _isSettingButtonPointerOver = true;
+        UpdateButtonForeground();
+    }
+
+    private void SettingsButton_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        _isSettingButtonPointerOver = false;
+        UpdateButtonForeground();
+    }
+
+    /// <summary>
+    /// 构建下载气泡标题（版本号不带 v）
+    /// </summary>
+    private void UpdateDownloadHoverState(bool pointerOver)
+    {
+        var downloadService = DownloadService.Instance;
+        bool showHoverAction = pointerOver && downloadService.IsDownloading && !downloadService.IsPaused;
+        DownloadStatePanel.Visibility = showHoverAction ? Visibility.Collapsed : Visibility.Visible;
+        DownloadHoverActionText.Visibility = showHoverAction ? Visibility.Visible : Visibility.Collapsed;
+        DownloadHoverActionText.Text = downloadService.IsPaused
+            ? Lang.DownloadPage_ContinueDownload
+            : Lang.DownloadPage_PauseDownload;
     }
 
     #endregion
@@ -416,8 +540,8 @@ public sealed partial class HomePage : Page
 
     private void ProxyAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        _lastSettings.ProxyAddress = ProxyAddressTextBox.Text;
-        _lastSettings.Save();
+        string proxyAddress = ProxyAddressTextBox.Text;
+        _lastSettings = AppSettings.Update(settings => settings.ProxyAddress = proxyAddress);
 
         // 输入时隐藏错误提示，失焦时再校验
         if (!_suppressProxyError && ProxyErrorText.Visibility == Visibility.Visible)
@@ -531,50 +655,251 @@ public sealed partial class HomePage : Page
         ds.SpeedUpdated += DownloadService_SpeedUpdated;
     }
 
-    private async void InstallButton_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 未安装客户端：弹出"选择安装路径"毛玻璃弹窗（语言多选/快捷方式/容量）
+    /// </summary>
+    private async Task ShowNoClientDialogAsync()
     {
-        // Toggle download section — only visible when build data is available
-        if (_selectedBuildData == null) return;
+        var dialog = new DownloadGameDialog { XamlRoot = XamlRoot };
+        dialog.Initialize(_lastSettings);
 
-        bool visible = DownloadSection.Visibility == Visibility.Visible;
-        DownloadSection.Visibility = visible ? Visibility.Collapsed : Visibility.Visible;
+        // "已安装？定位游戏"回调：关闭弹窗并走定位流程
+        dialog.LocateGameRequested += (_, _) =>
+        {
+            dialog.Hide();
+            _ = DoLocateGameAsync();
+        };
 
-        if (!visible)
-            UpdateDownloadButtonStates();
+        // 版本变化：立即保存到配置并重新拉取容量
+        dialog.VersionChanged += (_, _) =>
+        {
+            _lastSettings = AppSettings.Update(settings => settings.GameVersion = dialog.GameVersion);
+            _ = RefreshDialogSizesAsync(dialog);
+        };
+        // 服区变化时切换 API 区域并重新拉取容量
+        dialog.RegionChanged += (_, _) =>
+        {
+            _apiService.SetRegion(dialog.Region);
+            _ = RefreshDialogSizesAsync(dialog);
+        };
+        dialog.Closed += (_, _) => CancelDialogSizeRefresh();
+
+        // 异步拉取构建信息填充容量（失败静默，不影响弹窗）
+        _ = RefreshDialogSizesAsync(dialog);
+        // 异步获取私服当前版本并推荐到弹窗（失败静默）
+        _ = RecommendServerVersionAsync(dialog);
+
+        await dialog.ShowAsync();
+        if (!dialog.Confirmed) return;
+
+    // 保存对话框选择到配置（优先保存输入框中的版本号，空版本回退到服务端解析的最新版）
+    string downloadTag = string.IsNullOrWhiteSpace(dialog.GameVersion)
+        ? dialog.ResolvedVersion
+        : dialog.GameVersion;
+    _lastSettings = AppSettings.Update(settings =>
+    {
+        settings.Region = dialog.Region;
+        settings.DownloadPath = dialog.InstallPath;
+        settings.GameVersion = downloadTag;
+        settings.VoiceLanguage = dialog.SelectedVoices;
+    });
+    _currentRegion = dialog.Region;
+    _apiService.SetRegion(_currentRegion);
+    _downloadPath = dialog.InstallPath;
+    _currentVoiceLanguage = dialog.SelectedVoices;
+
+        DownloadService.Instance.Initialize(_downloadPath);
+
+        // 下载游戏：空版本 = 最新；多语音按勾选下载
+        await DownloadClientAsync(downloadTag, dialog.SelectedVoices);
     }
 
-    private async void PauseResumeButton_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 从私服状态接口获取当前版本并推荐到下载弹窗（失败静默，不影响弹窗使用）
+    /// </summary>
+    private async Task RecommendServerVersionAsync(DownloadGameDialog dialog)
     {
         try
         {
+            string? version = await PrivateServerService.GetServerVersionAsync(_lastSettings);
+            if (!string.IsNullOrWhiteSpace(version))
+                dialog.SetRecommendedVersion(version);
+        }
+        catch (Exception ex)
+        {
+            LogService.Debug($"推荐私服版本失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 拉取构建信息并刷新弹窗容量显示
+    /// </summary>
+    private async Task RefreshDialogSizesAsync(DownloadGameDialog dialog)
+    {
+        var requestCts = new CancellationTokenSource();
+        var previousCts = Interlocked.Exchange(ref _dialogSizeRefreshCts, requestCts);
+        previousCts?.Cancel();
+
+        string requestedVersion = dialog.GameVersion;
+        dialog.BeginResourceCheck();
+        try
+        {
+            await Task.Delay(250, requestCts.Token);
+            var buildResponse = await _apiService.GetBuildInfoAsync(
+                string.IsNullOrEmpty(requestedVersion) ? null : requestedVersion, requestCts.Token);
+
+            if (requestCts.IsCancellationRequested ||
+                !string.Equals(dialog.GameVersion, requestedVersion, StringComparison.Ordinal))
+                return;
+            var builds = buildResponse.Data?.Manifests ?? new List<BuildData>();
+
+            var game = FindGameResource(builds);
+            if (!DownloadService.IsValidResource(game))
+            {
+                dialog.SetResourceError(Lang.DownloadPage_NoResourceInfo);
+                return;
+            }
+
+            long gameCompressed = game?.Stats?.CompressedSize ?? 0;
+            long gameUncompressed = game?.Stats?.UncompressedSize ?? 0;
+
+            var voiceSizes = new Dictionary<VoiceLanguageType, (long Compressed, long Uncompressed)>();
+            foreach (var lang in Enum.GetValues<VoiceLanguageType>())
+            {
+                if (lang == VoiceLanguageType.None) continue;
+                var voice = builds.FirstOrDefault(b => b.MatchingField == ServerConfig.VoicePackages.GetMatchingField(lang));
+                voiceSizes[lang] = (voice?.Stats?.CompressedSize ?? 0, voice?.Stats?.UncompressedSize ?? 0);
+            }
+
+            dialog.UpdateSizes(gameCompressed, gameUncompressed, voiceSizes,
+                buildResponse.Data?.Tag ?? requestedVersion);
+        }
+        catch (OperationCanceledException) when (requestCts.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            LogService.Warn($"刷新弹窗容量失败: {ex.Message}");
+            if (!requestCts.IsCancellationRequested)
+                dialog.SetResourceError(string.Format(Lang.DownloadPage_GetResourceFailed, ex.Message));
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref _dialogSizeRefreshCts, null, requestCts);
+            requestCts.Dispose();
+        }
+    }
+
+    private void CancelDialogSizeRefresh()
+    {
+        var cts = Interlocked.Exchange(ref _dialogSizeRefreshCts, null);
+        cts?.Cancel();
+    }
+
+    /// <summary>
+    /// 下载客户端：按版本拉取构建信息并开始安装下载（支持多语音）
+    /// </summary>
+    private async Task DownloadClientAsync(string tag, VoiceLanguageType voices = VoiceLanguageType.None)
+    {
+        _isPreparingDownload = true;
+        try
+        {
+            UpdateGameState(GameState.Downloading);
+
+            var buildResponse = await _apiService.GetBuildInfoAsync(
+                string.IsNullOrEmpty(tag) ? null : tag);
+            _buildDataList = buildResponse.Data?.Manifests ?? new List<BuildData>();
+            foreach (var bd in _buildDataList)
+                bd.Tag = buildResponse.Data?.Tag;
+
+            if (_buildDataList.Count == 0)
+            {
+                ShowMessageAsync(Lang.DownloadPage_NoResourceInfo);
+                RefreshGameStatus();
+                return;
+            }
+
+            _selectedBuildData = FindGameResource(_buildDataList);
+            if (!DownloadService.IsValidResource(_selectedBuildData))
+            {
+                ShowMessageAsync(Lang.DownloadPage_NoResourceInfo);
+                return;
+            }
+
+            _selectedVoiceBuildData = null;
+            UpdateVoicePackInfo();
+            UpdateDownloadButtonStates();
+
+            // 保存用户选择的游戏版本。
+            string resolvedVersion = string.IsNullOrWhiteSpace(tag)
+                ? (buildResponse.Data?.Tag ?? string.Empty)
+                : tag;
+            _lastSettings = AppSettings.Update(settings => settings.GameVersion = resolvedVersion);
+            _requestedVersion = _lastSettings.GameVersion;
+            ShowDownloadStartTip();
+
+            // 收集勾选语言的语音包
+            var voiceBuilds = new List<BuildData>();
+            foreach (var lang in Enum.GetValues<VoiceLanguageType>())
+            {
+                if (lang == VoiceLanguageType.None || !voices.HasFlag(lang)) continue;
+                var voice = _buildDataList.FirstOrDefault(b =>
+                    b.MatchingField == ServerConfig.VoicePackages.GetMatchingField(lang));
+                if (!DownloadService.IsValidResource(voice))
+                {
+                    ShowMessageAsync(string.Format(Lang.DownloadPage_GetResourceFailed,
+                        ServerConfig.VoicePackages.GetDisplayName(lang)));
+                    return;
+                }
+                voiceBuilds.Add(voice!);
+            }
+
             var ds = DownloadService.Instance;
+            ds.Initialize(_downloadPath);
 
-            if (!ds.IsDownloading)
+            _isPreparingDownload = false;
+            bool completed = await ds.StartDownloadAsync(_selectedBuildData, voiceBuilds, DispatcherQueue);
+            if (completed)
             {
-                if (_selectedBuildData == null) return;
-
-                ds.Initialize(_downloadPath);
-                var task = ds.StartDownloadAsync(_selectedBuildData, _selectedVoiceBuildData, DispatcherQueue);
-                UpdateDownloadButtonStates();
-                await task;
-                UpdateDownloadButtonStates();
-            }
-            else if (!ds.IsPaused)
-            {
-                ds.PauseDownload();
-                UpdateDownloadButtonStates();
-            }
-            else
-            {
-                ds.ResumeDownload();
-                UpdateDownloadButtonStates();
+                if (GameLauncherService.IsValidInstallPath(_downloadPath, _currentRegion))
+                {
+                    string installedPath = Path.GetFullPath(_downloadPath);
+                    _lastSettings = AppSettings.Update(settings => settings.GameInstallPath = installedPath);
+                    _foundGamePath = _lastSettings.GameInstallPath;
+                    GameInstallPathChangedMessage.Send();
+                }
+                else
+                {
+                    ShowMessageAsync(Lang.DownloadDialog_ClientMissingAfterDownload);
+                }
             }
         }
         catch (Exception ex)
         {
-            LogService.Error("下载操作失败", ex);
-            UpdateDownloadButtonStates();
+            LogService.Error("下载客户端失败", ex);
+            ShowMessageAsync(string.Format(Lang.DownloadPage_GetResourceFailed, ex.Message));
         }
+        finally
+        {
+            _isPreparingDownload = false;
+            RefreshGameStatus();
+        }
+    }
+
+    /// <summary>
+    /// 消息通知气泡（长方形，右上角 X 关闭，无需确认键）
+    /// </summary>
+    private void ShowMessageAsync(string message)
+    {
+        var tip = new TeachingTip
+        {
+            XamlRoot = XamlRoot,
+            Target = StartGameGrid,
+            Title = message,
+            PreferredPlacement = TeachingTipPlacementMode.Top,
+            IsLightDismissEnabled = true,
+        };
+        tip.IsOpen = true;
     }
 
     private async Task RefreshBuildDataAsync(string? Tag = null, bool silentMode = false)
@@ -597,7 +922,6 @@ public sealed partial class HomePage : Page
             {
                 _selectedBuildData = null;
                 _selectedVoiceBuildData = null;
-                DownloadProgressBar.Value = 0;
                 UpdateDownloadButtonStates();
             }
 
@@ -608,33 +932,26 @@ public sealed partial class HomePage : Page
             foreach (var bd in _buildDataList)
                 bd.Tag = buildResponse.Data?.Tag;
 
-            if (_buildDataList.Count > 0)
+            _selectedBuildData = FindGameResource(_buildDataList);
+            _selectedVoiceBuildData = null;
+            if (DownloadService.IsValidResource(_selectedBuildData))
             {
-                _selectedBuildData = _buildDataList.FirstOrDefault(b => b.MatchingField == "game")
-                                     ?? _buildDataList[0];
                 UpdateVoicePackInfo();
-                UpdateResourceInfo();
                 UpdateDownloadButtonStates();
-
-                // Notify version to settings
-                if (!string.IsNullOrEmpty(_selectedBuildData.Tag))
-                {
-                    var version = _selectedBuildData.Tag;
-                    _lastSettings.GameVersion = version;
-                    _lastSettings.Save();
-                }
+            }
+            else
+            {
+                _selectedBuildData = null;
+                UpdateDownloadButtonStates();
             }
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             LogService.Error("RefreshBuildData failed", ex);
-            if (!silentMode)
-            {
-                _selectedBuildData = null;
-                _selectedVoiceBuildData = null;
-                UpdateDownloadButtonStates();
-            }
+            _selectedBuildData = null;
+            _selectedVoiceBuildData = null;
+            UpdateDownloadButtonStates();
         }
     }
 
@@ -645,116 +962,152 @@ public sealed partial class HomePage : Page
             _selectedVoiceBuildData = null;
             return;
         }
-        string matchingField = ServerConfig.VoicePackages.GetMatchingField(_currentVoiceLanguage);
-        _selectedVoiceBuildData = _buildDataList.FirstOrDefault(b => b.MatchingField == matchingField);
-    }
-
-    private void UpdateResourceInfo()
-    {
-        if (_selectedBuildData == null) return;
-
-        long totalCompressedSize = _selectedBuildData.Stats?.CompressedSize ?? 0;
-
-        if (_selectedVoiceBuildData != null)
+        var selectedLanguage = Enum.GetValues<VoiceLanguageType>()
+            .FirstOrDefault(language => language != VoiceLanguageType.None
+                                        && _currentVoiceLanguage.HasFlag(language));
+        if (selectedLanguage == VoiceLanguageType.None)
         {
-            totalCompressedSize += _selectedVoiceBuildData.Stats?.CompressedSize ?? 0;
-        }
-
-        string voiceName = ServerConfig.VoicePackages.GetDisplayName(_currentVoiceLanguage);
-        string displayVersion = !string.IsNullOrEmpty(_requestedVersion)
-            ? _requestedVersion
-            : (_selectedBuildData.Tag ?? "?");
-
-        DownloadVersionText.Text = $"v{displayVersion} ({ServerConfig.GetRegionDisplayName(_currentRegion)})";
-        DownloadStatsText.Text = $"{Lang.DownloadPage_CompressedSize}: {FormatFileSize(totalCompressedSize)} ({voiceName})";
-    }
-
-    private static string FormatFileSize(long bytes)
-    {
-        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-        int idx = 0;
-        double size = bytes;
-        while (size >= 1024 && idx < suffixes.Length - 1)
-        {
-            size /= 1024;
-            idx++;
-        }
-        return $"{size:0.00} {suffixes[idx]}";
-    }
-
-    private void UpdateDownloadButtonStates()
-    {
-        var ds = DownloadService.Instance;
-        bool active = ds.IsDownloading;
-        bool panelVisible = DownloadSection.Visibility == Visibility.Visible;
-
-        // Show install button only when build data is available
-        InstallButton.Visibility = _selectedBuildData != null
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
-        if (_selectedBuildData != null)
-        {
-            if (_hasPartialDownload)
-                ToolTipService.SetToolTip(InstallButton, Lang.DownloadPage_ContinueDownload);
-            else
-                ToolTipService.SetToolTip(InstallButton, Lang.DownloadPage_StartDownload);
-        }
-
-        if (!active)
-        {
-            if (panelVisible)
-            {
-                // Panel open but not downloading yet — show start button
-                PauseResumeButtonText.Text = Lang.DownloadPage_StartDownload;
-                PauseResumeButton.IsEnabled = true;
-                DownloadProgressBar.Value = 0;
-                DownloadPercentText.Visibility = Visibility.Collapsed;
-            }
+            _selectedVoiceBuildData = null;
             return;
         }
 
-        if (ds.IsPaused)
+        string matchingField = ServerConfig.VoicePackages.GetMatchingField(selectedLanguage);
+        _selectedVoiceBuildData = _buildDataList.FirstOrDefault(b => b.MatchingField == matchingField);
+    }
+
+    private static BuildData? FindGameResource(IEnumerable<BuildData> builds)
+    {
+        return builds.FirstOrDefault(build =>
+                   string.Equals(build.MatchingField, ServerConfig.VoicePackages.Game,
+                       StringComparison.OrdinalIgnoreCase))
+               ?? builds.FirstOrDefault(build => string.IsNullOrWhiteSpace(build.MatchingField));
+    }
+
+    private bool HasPartialClientDownload()
+    {
+        return !string.IsNullOrWhiteSpace(_downloadPath)
+               && DownloadService.Instance.HasPartialDownload(_downloadPath);
+    }
+
+    private static string GetDownloadStageText(DownloadService downloadService)
+    {
+        if (downloadService.IsPaused) return Lang.DownloadPage_Paused;
+
+        return downloadService.CurrentStage switch
         {
-            PauseResumeButtonText.Text = Lang.DownloadPage_ContinueDownload;
+            DownloadStage.Preparing => Lang.DownloadPage_Preparing,
+            DownloadStage.CheckingFiles => Lang.DownloadPage_CheckingFiles,
+            _ => Lang.DownloadPage_Downloading,
+        };
+    }
+
+    // 鼠标是否悬停在胶囊上（悬停时不自动关闭气泡）
+    private bool _isPointerOverCapsule;
+    private bool _isActionButtonPointerOver;
+    private bool _isSettingButtonPointerOver;
+
+    /// <summary>
+    /// 下载开始时弹出气泡提示版本（无进度条）
+    /// </summary>
+    private void ShowDownloadStartTip()
+    {
+        if (_selectedBuildData == null) return;
+
+        DownloadPopupStateText.Text = Lang.DownloadPage_Downloading;
+        DownloadTipProgressText.Text = "0%";
+        DownloadPopupRemainTimeText.Text = "--:--:--";
+        DownloadPopupBytesText.Text = string.Empty;
+        DownloadPopupSpeedText.Text = string.Empty;
+        DownloadInfoTip.IsOpen = true;
+
+        // 几秒后自动关闭，避免遮挡
+        _ = HideTipAfterDelayAsync();
+    }
+
+    private async Task HideTipAfterDelayAsync()
+    {
+        await Task.Delay(3000);
+        // 鼠标仍悬停在胶囊上时不关闭（悬停显示由 PointerExited 管理）
+        if (!_isPointerOverCapsule)
+            DownloadInfoTip.IsOpen = false;
+    }
+
+    /// <summary>
+    /// 更新胶囊按钮状态：下载中显示进度圆环，暂停时文字提示
+    /// </summary>
+    private void UpdateDownloadButtonStates()
+    {
+        var ds = DownloadService.Instance;
+        bool active = ds.IsDownloading || _isPreparingDownload;
+        bool paused = ds.IsDownloading && ds.IsPaused;
+
+        // 下载中：显示圆环，文字随暂停状态变化
+        NormalActionGrid.Visibility = !active || paused ? Visibility.Visible : Visibility.Collapsed;
+        DownloadActionGrid.Visibility = active && !paused ? Visibility.Visible : Visibility.Collapsed;
+        SettingsButton.Visibility = Visibility.Visible;
+        if (active)
+        {
+            StartGameButton.IsEnabled = ds.IsDownloading;
+            Rect_AccentBackground.Visibility = paused ? Visibility.Visible : Visibility.Collapsed;
+            StartGameButtonText.Text = paused
+                ? Lang.DownloadPage_ContinueDownload
+                : string.Empty;
+            string stageText = _isPreparingDownload ? Lang.DownloadPage_Preparing : GetDownloadStageText(ds);
+            DownloadStateText.Text = stageText;
+            DownloadPopupStateText.Text = stageText;
+            UpdateDownloadHoverState(_isActionButtonPointerOver);
+            if (!paused && string.IsNullOrEmpty(DownloadEtaText.Text))
+                DownloadEtaText.Text = "--:--:--";
         }
         else
         {
-            PauseResumeButtonText.Text = Lang.DownloadPage_PauseDownload;
+            DownloadPercentText.Text = "0";
+            DownloadProgressRing.Value = 0;
+            DownloadEtaText.Text = "--:--:--";
+            DownloadStatePanel.Visibility = Visibility.Visible;
+            DownloadHoverActionText.Visibility = Visibility.Collapsed;
+            StartGameButton.IsEnabled = _gameState is not GameState.GameIsRunning;
         }
+
+        UpdateButtonForeground();
     }
 
     private void DownloadService_StatusChanged(object? sender, string status)
     {
-        // Panel visibility is user-controlled, no forced show
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            UpdateDownloadButtonStates();
+            var downloadService = DownloadService.Instance;
+            string stageText = GetDownloadStageText(downloadService);
+            DownloadStateText.Text = stageText;
+            DownloadPopupStateText.Text = stageText;
+        });
+        // 状态文本已并入悬停气泡，无需额外处理
     }
 
     private void DownloadService_ProgressChanged(object? sender, double progress)
     {
-        DispatcherQueue.TryEnqueue(() => DownloadProgressBar.Value = progress);
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            DownloadProgressRing.Value = progress;
+            DownloadPercentText.Text = $"{progress:F0}";
+            DownloadTipProgressText.Text = $"{progress:F1}%";
+        });
     }
 
     private void DownloadService_ProgressTextChanged(object? sender, string text)
     {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            DownloadPercentText.Text = text;
-            if (string.IsNullOrEmpty(text) || text == "0%")
-                DownloadPercentText.Visibility = Visibility.Collapsed;
-            else
-                DownloadPercentText.Visibility = Visibility.Visible;
-        });
+        DispatcherQueue.TryEnqueue(() => DownloadPopupBytesText.Text = ExtractDownloadBytesText(text));
+        // 进度数字已显示在圆环内，忽略面板文本
     }
 
     private void DownloadService_DownloadCompleted(object? sender, EventArgs e)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            DownloadSpeedText.Text = "--";
-            DownloadRemainingText.Text = "--";
-            _hasPartialDownload = false;
-            DownloadSection.Visibility = Visibility.Collapsed;
+            DownloadInfoTip.IsOpen = false;
             UpdateDownloadButtonStates();
+            RefreshGameStatus();
         });
     }
 
@@ -762,21 +1115,33 @@ public sealed partial class HomePage : Page
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _hasPartialDownload = DownloadService.Instance.HasPartialDownload(_downloadPath);
+            DownloadInfoTip.IsOpen = false;
             UpdateDownloadButtonStates();
+            RefreshGameStatus();
         });
     }
 
     private void DownloadService_SpeedUpdated(object? sender, (double speedMbps, double writeSpeedMbps, TimeSpan remaining) e)
     {
+        // 悬停气泡内显示速度与剩余时间（无进度条）
         DispatcherQueue.TryEnqueue(() =>
         {
-            DownloadSpeedText.Text = string.Format(Lang.DownloadPage_SpeedFormat, e.speedMbps, e.writeSpeedMbps);
-            if (e.remaining == TimeSpan.MaxValue)
-                DownloadRemainingText.Text = string.Format(Lang.DownloadPage_RemainingFormat, Lang.DownloadPage_Calculating);
-            else
-                DownloadRemainingText.Text = string.Format(Lang.DownloadPage_RemainingFormat, e.remaining.ToString(@"hh\:mm\:ss"));
+            string remaining = e.remaining == TimeSpan.MaxValue
+                ? "--:--:--"
+                : e.remaining.ToString(@"hh\:mm\:ss");
+            DownloadEtaText.Text = remaining;
+            DownloadPopupRemainTimeText.Text = remaining;
+            DownloadPopupSpeedText.Text = e.speedMbps >= 1
+                ? $"{e.speedMbps:F2} MB/s"
+                : $"{e.speedMbps * 1024:F2} KB/s";
         });
+    }
+
+    private static string ExtractDownloadBytesText(string text)
+    {
+        int start = text.IndexOf('(');
+        int end = text.LastIndexOf(')');
+        return start >= 0 && end > start ? text[(start + 1)..end] : text;
     }
 
     #endregion

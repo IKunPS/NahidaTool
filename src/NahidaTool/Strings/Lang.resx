@@ -66,7 +66,6 @@
   <data name="HomePage_ProxyUrlError" xml:space="preserve"><value>URL format error: must start with https:// or http://</value></data>
   <data name="HomePage_StartGame" xml:space="preserve"><value>Start Game</value></data>
   <data name="HomePage_GameRunning" xml:space="preserve"><value>Game Running</value></data>
-  <data name="HomePage_LocateGame" xml:space="preserve"><value>Locate Game</value></data>
   <data name="HomePage_Installed" xml:space="preserve"><value>Installed, </value></data>
   <data name="HomePage_LocateGameLink" xml:space="preserve"><value>Locate Game</value></data>
   <data name="HomePage_SelectGameDir" xml:space="preserve"><value>Select game installation directory</value></data>
@@ -86,21 +85,36 @@
   <data name="DownloadPage_UncompressedSize" xml:space="preserve"><value>Uncompressed</value></data>
   <data name="DownloadPage_DownloadProgress" xml:space="preserve"><value>Download Progress</value></data>
   <data name="DownloadPage_Progress" xml:space="preserve"><value>Progress:</value></data>
-  <data name="DownloadPage_Speed" xml:space="preserve"><value>Speed: -- MB/s</value></data>
-  <data name="DownloadPage_Remaining" xml:space="preserve"><value>Remaining: --</value></data>
   <data name="DownloadPage_StartDownload" xml:space="preserve"><value>Start Download</value></data>
-  <data name="DownloadPage_ContinueDownload" xml:space="preserve"><value>Continue Download</value></data>
+  <data name="DownloadPage_ContinueDownload" xml:space="preserve"><value>Resume Download</value></data>
   <data name="DownloadPage_PauseDownload" xml:space="preserve"><value>Pause Download</value></data>
+  <data name="DownloadPage_Downloading" xml:space="preserve"><value>Downloading</value></data>
+  <data name="DownloadPage_Preparing" xml:space="preserve"><value>Preparing download</value></data>
+  <data name="DownloadPage_CheckingFiles" xml:space="preserve"><value>Checking downloaded files</value></data>
+  <data name="DownloadPage_Paused" xml:space="preserve"><value>Download paused</value></data>
   <data name="DownloadPage_DownloadLog" xml:space="preserve"><value>Download Log</value></data>
   <data name="DownloadPage_GettingResourceInfo" xml:space="preserve"><value>Getting {0} resource info...</value></data>
-  <data name="DownloadPage_ResourceInfoSuccess" xml:space="preserve"><value>{0} resource info retrieved</value></data>
   <data name="DownloadPage_UnknownVersion" xml:space="preserve"><value>Unknown</value></data>
   <data name="DownloadPage_NoResourceInfo" xml:space="preserve"><value>Failed to get resource info</value></data>
   <data name="DownloadPage_GetResourceFailed" xml:space="preserve"><value>Failed to get resource: {0}</value></data>
   <data name="DownloadPage_Calculating" xml:space="preserve"><value>Calculating...</value></data>
-  <data name="DownloadPage_VoiceSuffix" xml:space="preserve"><value> Voice</value></data>
-  <data name="DownloadPage_SpeedFormat" xml:space="preserve"><value>Download: {0:F2} MB/s | Write: {1:F2} MB/s</value></data>
-  <data name="DownloadPage_RemainingFormat" xml:space="preserve"><value>Remaining: {0}</value></data>
+
+  <!-- DownloadGameDialog -->
+  <data name="DownloadDialog_Title" xml:space="preserve"><value>Select Install Path</value></data>
+  <data name="DownloadDialog_Change" xml:space="preserve"><value>Change</value></data>
+  <data name="DownloadDialog_Version" xml:space="preserve"><value>Game Version</value></data>
+  <data name="DownloadDialog_VersionHint" xml:space="preserve"><value>Leave empty for latest</value></data>
+  <data name="DownloadDialog_RecommendedVersion" xml:space="preserve"><value>Server version {0} - recommended to download</value></data>
+  <data name="DownloadDialog_GameResource" xml:space="preserve"><value>Game Resources</value></data>
+  <data name="DownloadDialog_VoiceResource" xml:space="preserve"><value>Voice Resources</value></data>
+  <data name="DownloadDialog_DownloadSize" xml:space="preserve"><value>Download: {0}</value></data>
+  <data name="DownloadDialog_RequiredSpace" xml:space="preserve"><value>Required Space: {0}</value></data>
+  <data name="DownloadDialog_AlreadyInstalled" xml:space="preserve"><value>Already installed?</value></data>
+  <data name="DownloadDialog_LocateGame" xml:space="preserve"><value>Locate Game</value></data>
+  <data name="DownloadDialog_StartInstall" xml:space="preserve"><value>Start Install</value></data>
+  <data name="DownloadDialog_InvalidPath" xml:space="preserve"><value>Select a valid install folder.</value></data>
+  <data name="DownloadDialog_InsufficientSpace" xml:space="preserve"><value>Not enough free space. Required {0}, available {1}.</value></data>
+  <data name="DownloadDialog_ClientMissingAfterDownload" xml:space="preserve"><value>The resources were downloaded, but the game executable was not found. Check the install path and resume the download.</value></data>
 
   <!-- ServerSwitchPage -->
   <data name="ServerSwitchPage_Description" xml:space="preserve"><value>Switch game client between CN and OS server</value></data>
@@ -183,11 +197,40 @@
   <data name="DocumentSettingPage_Error4308" xml:space="preserve"><value>Resource download failed. The server could not provide required game resources. Check your server's resource directory configuration.</value></data>
   <data name="DocumentSettingPage_TutorialVideos" xml:space="preserve"><value>Tutorial Videos</value></data>
   <data name="DocumentSettingPage_VideoConnect" xml:space="preserve"><value>How to Connect to a Private Server</value></data>
-  <data name="DocumentSettingPage_VideoProxy" xml:space="preserve"><value>Setting Up the Proxy</value></data>
-  <data name="DocumentSettingPage_VideoSwitch" xml:space="preserve"><value>Server Region Switching Tutorial</value></data>
   <data name="DocumentSettingPage_Back" xml:space="preserve"><value>Back</value></data>
   <data name="DocumentSettingPage_Subtitle" xml:space="preserve"><value>Tutorials, error codes, and video guides for playing on private servers.</value></data>
 
   <data name="DocumentSettingPage_StepRSA" xml:space="preserve"><value>Enable RSA</value></data>
   <data name="DocumentSettingPage_StepRSADetail" xml:space="preserve"><value>Go to Basic Info tab and turn on the RSA switch. This patches the game client to bypass official server verification.</value></data>
+  <data name="Ldiff_Button" xml:space="preserve"><value>LDiff Update</value></data>
+  <data name="Ldiff_Title" xml:space="preserve"><value>LDiff Update</value></data>
+  <data name="Ldiff_Checking" xml:space="preserve"><value>Checking the official patch manifest...</value></data>
+  <data name="Ldiff_CurrentVersion" xml:space="preserve"><value>Current version</value></data>
+  <data name="Ldiff_TargetVersion" xml:space="preserve"><value>Target version</value></data>
+  <data name="Ldiff_DownloadSize" xml:space="preserve"><value>LDiff size</value></data>
+  <data name="Ldiff_Start" xml:space="preserve"><value>Start Update</value></data>
+  <data name="Ldiff_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Ldiff_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Ldiff_Done" xml:space="preserve"><value>Done</value></data>
+  <data name="Ldiff_Ready" xml:space="preserve"><value>Official manifest loaded. {0} resource package(s) will be updated.</value></data>
+  <data name="Ldiff_NoUpdate" xml:space="preserve"><value>No compatible LDiff update is currently available.</value></data>
+  <data name="Ldiff_GameRunning" xml:space="preserve"><value>Close the game before applying the update.</value></data>
+  <data name="Ldiff_Success" xml:space="preserve"><value>Updated successfully to {0}.</value></data>
+  <data name="Ldiff_Failed" xml:space="preserve"><value>LDiff update failed: {0}</value></data>
+  <data name="Ldiff_Cancelled" xml:space="preserve"><value>LDiff update cancelled.</value></data>
+  <data name="Ldiff_Cancelling" xml:space="preserve"><value>Cancelling safely...</value></data>
+  <data name="AppUpdate_Title" xml:space="preserve"><value>Application Update</value></data>
+  <data name="AppUpdate_VersionLine" xml:space="preserve"><value>A new version is available: {0} to {1}</value></data>
+  <data name="AppUpdate_Published" xml:space="preserve"><value>Published: {0}</value></data>
+  <data name="AppUpdate_Source" xml:space="preserve"><value>Source: {0}</value></data>
+  <data name="AppUpdate_NoReleaseNotes" xml:space="preserve"><value>No release notes.</value></data>
+  <data name="AppUpdate_DownloadRestart" xml:space="preserve"><value>Update and Restart</value></data>
+  <data name="AppUpdate_Later" xml:space="preserve"><value>Later</value></data>
+  <data name="AppUpdate_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AppUpdate_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="AppUpdate_Downloading" xml:space="preserve"><value>Downloading {0:P1} ({1} / {2})</value></data>
+  <data name="AppUpdate_Restarting" xml:space="preserve"><value>Update ready. Restarting...</value></data>
+  <data name="AppUpdate_Cancelled" xml:space="preserve"><value>Update cancelled.</value></data>
+  <data name="AppUpdate_Cancelling" xml:space="preserve"><value>Cancelling safely...</value></data>
+  <data name="AppUpdate_Failed" xml:space="preserve"><value>Update failed: {0}</value></data>
 </root>

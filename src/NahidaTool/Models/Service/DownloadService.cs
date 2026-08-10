@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +17,15 @@ using Polly.Retry;
 
 namespace NahidaTool.Models.Service;
 
+public enum DownloadStage
+{
+    Idle,
+    Preparing,
+    CheckingFiles,
+    Downloading,
+    Paused,
+}
+
 public class DownloadService
 {
     #region Singleton & Fields
@@ -26,13 +35,18 @@ public class DownloadService
 
     private const int BUFFER_SIZE = 65536; // 64KB
     private const int MD5_BUFFER_SIZE = 1 << 19; // 512KB
+    private const string DOWNLOAD_MARKER_FILE = ".nahidatool.download";
 
     private ApiService _apiService;
-    private bool _isDownloading;
+    private volatile bool _isDownloading;
+    private readonly object _downloadStateLock = new();
     private bool _isCancelled;
     private volatile bool _isPaused;
+    private volatile DownloadStage _currentStage;
+    private DownloadStage _stageBeforePause = DownloadStage.Downloading;
     private volatile TaskCompletionSource _pauseTcs = new();
     private string _downloadPath = string.Empty;
+    private string _downloadRoot = string.Empty;
     private CancellationTokenSource? _globalCts;
     private DispatcherQueue? _uiDispatcher;
 
@@ -69,6 +83,7 @@ public class DownloadService
 
     public bool IsDownloading => _isDownloading;
     public bool IsPaused => _isPaused;
+    public DownloadStage CurrentStage => _currentStage;
 
     #endregion
 
@@ -151,51 +166,87 @@ public class DownloadService
         LogService.Debug($"DownloadService 初始化: 下载路径={downloadPath}");
     }
 
+    public static bool IsValidResource(BuildData? buildData)
+    {
+        return buildData != null
+               && !string.IsNullOrWhiteSpace(buildData.Manifest?.Id)
+               && !string.IsNullOrWhiteSpace(buildData.ManifestDownload?.UrlPrefix)
+               && !string.IsNullOrWhiteSpace(buildData.ChunkDownload?.UrlPrefix);
+    }
+
     /// <summary>
     /// 开始下载游戏本体和语音包
     /// </summary>
-    public async Task StartDownloadAsync(BuildData? gameBuildData, BuildData? voiceBuildData,
+    public async Task<bool> StartDownloadAsync(BuildData? gameBuildData, BuildData? voiceBuildData,
         DispatcherQueue dispatcherQueue)
     {
-        if (_isDownloading) return;
+        if (_isDownloading) return false;
 
         var buildDataList = new List<BuildData>();
         if (gameBuildData != null) buildDataList.Add(gameBuildData);
         if (voiceBuildData != null) buildDataList.Add(voiceBuildData);
 
-        if (buildDataList.Count == 0) return;
+        if (buildDataList.Count == 0 || buildDataList.Any(buildData => !IsValidResource(buildData)))
+            return false;
 
-        await StartDownloadMultipleAsync(buildDataList, dispatcherQueue);
+        return await StartDownloadMultipleAsync(buildDataList, dispatcherQueue);
     }
 
     /// <summary>
     /// 开始下载单个资源包（向后兼容）
     /// </summary>
-    public async Task StartDownloadAsync(BuildData? selectedBuildData, DispatcherQueue dispatcherQueue)
+    public async Task<bool> StartDownloadAsync(BuildData? selectedBuildData, DispatcherQueue dispatcherQueue)
     {
-        if (_isDownloading || selectedBuildData == null) return;
-        await StartDownloadMultipleAsync(new List<BuildData> { selectedBuildData }, dispatcherQueue);
+        if (_isDownloading || selectedBuildData == null) return false;
+        return await StartDownloadMultipleAsync(new List<BuildData> { selectedBuildData }, dispatcherQueue);
     }
 
     /// <summary>
-    /// 下载多个资源包
+    /// 下载游戏本体和多个语音包（弹窗多选语言）
     /// </summary>
-    private async Task StartDownloadMultipleAsync(List<BuildData> buildDataList, DispatcherQueue dispatcherQueue)
+    public async Task<bool> StartDownloadAsync(BuildData? gameBuildData, List<BuildData> voiceBuildDataList,
+        DispatcherQueue dispatcherQueue)
     {
-        if (_isDownloading || buildDataList.Count == 0) return;
+        if (_isDownloading) return false;
+
+        var buildDataList = new List<BuildData>();
+        if (gameBuildData != null) buildDataList.Add(gameBuildData);
+        if (voiceBuildDataList != null) buildDataList.AddRange(voiceBuildDataList);
+
+        if (buildDataList.Count == 0) return false;
+
+        return await StartDownloadMultipleAsync(buildDataList, dispatcherQueue);
+    }
+
+    private async Task<bool> StartDownloadMultipleAsync(
+        List<BuildData> buildDataList,
+        DispatcherQueue dispatcherQueue)
+    {
+        if (buildDataList.Count == 0 || buildDataList.Any(buildData => !IsValidResource(buildData)))
+            return false;
+
+        lock (_downloadStateLock)
+        {
+            if (_isDownloading) return false;
+            _isDownloading = true;
+        }
 
         _globalCts = new CancellationTokenSource();
         var ct = _globalCts.Token;
         _uiDispatcher = dispatcherQueue; // 保存 DispatcherQueue 供速度计时器安全更新 UI
 
+        _downloadRoot = _downloadPath;
+        bool completedSuccessfully = false;
+        bool downloadFailed = false;
+
         try
         {
-            _isDownloading = true;
             _isCancelled = false;
             _isPaused = false;
             _pauseTcs.TrySetResult();
+            _currentStage = DownloadStage.Preparing;
 
-            LogService.Info($"开始下载: 资源包数量={buildDataList.Count}, 下载路径={_downloadPath}");
+            LogService.Info($"开始下载: 资源包数量={buildDataList.Count}, 下载路径={_downloadRoot}");
             foreach (var bd in buildDataList)
             {
                 LogService.Debug($"  - 资源: {bd.MatchingField}, ManifestId={bd.Manifest?.Id}");
@@ -204,7 +255,8 @@ public class DownloadService
             NotifyStatusChanged("正在准备下载...", dispatcherQueue);
             NotifyDetailAdded($"开始下载流程，共 {buildDataList.Count} 个资源包", dispatcherQueue);
 
-            Directory.CreateDirectory(_downloadPath);
+            Directory.CreateDirectory(_downloadRoot);
+            File.WriteAllText(Path.Combine(_downloadRoot, DOWNLOAD_MARKER_FILE), DateTimeOffset.UtcNow.ToString("O"));
 
             // 1. 下载并解析所有 Manifest
             ManifestParser manifestParser = new ManifestParser();
@@ -215,11 +267,11 @@ public class DownloadService
                 if (_isCancelled || ct.IsCancellationRequested)
                 {
                     NotifyStatusChanged("下载已取消", dispatcherQueue);
-                    return;
+                    return false;
                 }
 
                 await _pauseTcs.Task;
-                if (_isCancelled || ct.IsCancellationRequested) return;
+                if (_isCancelled || ct.IsCancellationRequested) return false;
 
                 string packageName = buildData.CategoryName ?? buildData.MatchingField ?? "未知";
                 NotifyStatusChanged($"正在下载Manifest文件 ({packageName})...", dispatcherQueue);
@@ -229,7 +281,7 @@ public class DownloadService
                     buildData.ManifestDownload?.UrlPrefix ?? string.Empty,
                     buildData.Manifest?.Id ?? string.Empty);
 
-                if (_isCancelled || ct.IsCancellationRequested) return;
+                if (_isCancelled || ct.IsCancellationRequested) return false;
 
                 NotifyDetailAdded($"Manifest文件下载完成 ({packageName})，大小: {FormatFileSize(manifestData.Length)}",
                     dispatcherQueue);
@@ -247,24 +299,29 @@ public class DownloadService
                     allFileChunkInfos.Add((fileInfo, buildData));
                 }
 
-                NotifyDetailAdded($"Manifest解析完成 ({packageName})，共 {fileChunkInfos.Count} 个文件", dispatcherQueue);
+                NotifyDetailAdded($"Manifest解析完成 ({packageName})，共 {fileChunkInfos.Count} 个文件",
+                    dispatcherQueue);
             }
 
             if (_isCancelled || ct.IsCancellationRequested)
             {
                 NotifyStatusChanged("下载已取消", dispatcherQueue);
-                return;
+                return false;
             }
 
             int totalFiles = allFileChunkInfos.Count;
             int totalChunks = allFileChunkInfos.Sum(f => f.fileInfo.Chunks?.Count ?? 0);
             long totalSize = allFileChunkInfos.Sum(f => f.fileInfo.Chunks?.Sum(c => c.UncompressedSize) ?? 0);
 
+            if (totalFiles == 0)
+                throw new InvalidDataException("资源清单中没有可下载文件");
+
             NotifyDetailAdded(
                 $"所有Manifest解析完成，共 {totalFiles} 个文件，{totalChunks} 个Chunk，总大小: {FormatFileSize(totalSize)}",
                 dispatcherQueue);
 
             // 2. 校验已存在的文件 (Parallel.ForEachAsync 限制并发为4)
+            _currentStage = DownloadStage.CheckingFiles;
             NotifyStatusChanged("正在检查已下载的文件...", dispatcherQueue);
             NotifyDetailAdded($"开始校验本地文件，共 {totalFiles} 个文件需要检查", dispatcherQueue);
             NotifyProgressChanged(0, dispatcherQueue);
@@ -281,10 +338,10 @@ public class DownloadService
                 new ParallelOptions { MaxDegreeOfParallelism = 4, CancellationToken = ct },
                 async (item, innerCt) =>
                 {
-                    var (fileChunkInfo, _) = item;
-                    string outputPath = Path.Combine(_downloadPath, fileChunkInfo.FilePath ?? string.Empty);
+                    var (fileChunkInfo, buildData) = item;
+                    string outputPath = GetSafeOutputPath(_downloadRoot, fileChunkInfo.FilePath);
                     bool needDownload = true;
-
+                    // 检查已经完成的目标文件，支持断点续传和重复安装。
                     if (File.Exists(outputPath))
                     {
                         try
@@ -299,14 +356,14 @@ public class DownloadService
                         }
                         catch (Exception ex)
                         {
-                            // 校验失败，需要重新下载
-                            LogService.Debug($"文件MD5校验失败，将重新下载 ({item.fileInfo.FilePath}): {ex.Message}");
+                            LogService.Debug($"文件MD5校验失败，将重新处理 ({fileChunkInfo.FilePath}): {ex.Message}");
                         }
                     }
 
                     if (needDownload)
                     {
-                        lock (filesToDownload) filesToDownload.Add(item);
+                        lock (filesToDownload)
+                            filesToDownload.Add((fileChunkInfo, buildData));
                     }
                     else
                     {
@@ -328,7 +385,7 @@ public class DownloadService
                                 $"正在校验文件... {currentChecked}/{totalFiles} ({progress:F1}%)");
                             ProgressChanged?.Invoke(this, progress);
                             ProgressTextChanged?.Invoke(this,
-                                $"{progress:F1}% - 已验证: {currentValid}, 需下载: {currentChecked - currentValid}");
+                                $"{progress:F1}% - 已复用: {currentValid}, 需处理: {currentChecked - currentValid}");
                         });
                     }
                 });
@@ -340,7 +397,7 @@ public class DownloadService
             if (_isCancelled || ct.IsCancellationRequested)
             {
                 NotifyStatusChanged("下载已取消", dispatcherQueue);
-                return;
+                return false;
             }
 
             if (skippedFiles > 0)
@@ -357,22 +414,25 @@ public class DownloadService
                 NotifyProgressChanged(100, dispatcherQueue);
                 NotifyProgressTextChanged($"100% ({FormatFileSize(totalSize)}/{FormatFileSize(totalSize)})",
                     dispatcherQueue);
-                DownloadCompleted?.Invoke(this, EventArgs.Empty);
-                return;
+                completedSuccessfully = true;
+                return true;
             }
 
             // 3. 计算总下载/写入量并开始文件级并行下载
-            _totalDownloadBytes = filesToDownload.Sum(f => f.fileInfo.Chunks?.Sum(c => c.CompressedSize) ?? 0);
-            _totalWriteBytes = filesToDownload.Sum(f => f.fileInfo.Chunks?.Sum(c => c.UncompressedSize) ?? 0);
-            // 加上已跳过的（用于进度计算）
+            _totalDownloadBytes = filesToDownload.Sum(f =>
+                f.fileInfo.Chunks?.Sum(c => c.CompressedSize) ?? 0);
+            _totalWriteBytes = filesToDownload.Sum(f =>
+                f.fileInfo.Chunks?.Sum(c => c.UncompressedSize) ?? 0);
+
+            // 已验证文件计入总进度。
             _totalDownloadBytes += skippedDownloadBytes;
             _totalWriteBytes += skippedWriteBytes;
             _downloadedBytes = skippedDownloadBytes;
             _writtenBytes = skippedWriteBytes;
             _networkDownloadBytes = 0;
             _storageWriteBytes = 0;
-            _lastDownloadedBytes = skippedDownloadBytes;
-            _lastWrittenBytes = skippedWriteBytes;
+            _lastDownloadedBytes = _downloadedBytes;
+            _lastWrittenBytes = _writtenBytes;
             _lastSpeedTime = DateTime.Now;
             _lastProgressNotifyTime = DateTime.UtcNow;
 
@@ -381,13 +441,16 @@ public class DownloadService
             _speedTimer.Elapsed += OnSpeedTimerElapsed;
             _speedTimer.Start();
 
-            long remainingDownloadBytes = filesToDownload.Sum(f => f.fileInfo.Chunks?.Sum(c => c.CompressedSize) ?? 0);
-            long remainingWriteBytes = filesToDownload.Sum(f => f.fileInfo.Chunks?.Sum(c => c.UncompressedSize) ?? 0);
+            long remainingDownloadBytes =
+                filesToDownload.Sum(f => f.fileInfo.Chunks?.Sum(c => c.CompressedSize) ?? 0);
+            long remainingWriteBytes = filesToDownload.Sum(f =>
+                f.fileInfo.Chunks?.Sum(c => c.UncompressedSize) ?? 0);
 
             NotifyDetailAdded(
                 $"需要下载 {filesToDownload.Count} 个文件，下载量: {FormatFileSize(remainingDownloadBytes)}，写入量: {FormatFileSize(remainingWriteBytes)}",
                 dispatcherQueue);
 
+            _currentStage = DownloadStage.Downloading;
             NotifyStatusChanged("正在下载文件...", dispatcherQueue);
 
             // 4. 文件级并行下载 (参考 Starward ExecuteInstallTaskDownloadModeChunkAsync)
@@ -405,14 +468,17 @@ public class DownloadService
 
                     // Polly 重试包装
                     await _retryPipeline.ExecuteAsync(
-                        async token => await DownloadChunksToFileAsync(item.buildData, item.fileInfo, token),
+                        async token => await DownloadChunksToFileAsync(
+                            item.buildData,
+                            item.fileInfo,
+                            token),
                         fileCt);
                 });
 
             if (_isCancelled || ct.IsCancellationRequested)
             {
                 NotifyStatusChanged("下载已取消", dispatcherQueue);
-                return;
+                return false;
             }
 
             NotifyStatusChanged("所有文件下载完成！", dispatcherQueue);
@@ -420,7 +486,8 @@ public class DownloadService
                 dispatcherQueue);
 
             LogService.Info($"下载完成: 新下载={filesToDownload.Count}个文件, 跳过={skippedFiles}个文件");
-            DownloadCompleted?.Invoke(this, EventArgs.Empty);
+            completedSuccessfully = true;
+            return true;
         }
         catch (OperationCanceledException)
         {
@@ -429,6 +496,7 @@ public class DownloadService
                 LogService.Info("下载操作已取消");
                 NotifyStatusChanged("下载已取消", dispatcherQueue);
             }
+            return false;
         }
         catch (Exception ex)
         {
@@ -437,17 +505,21 @@ public class DownloadService
                 LogService.Error("下载失败", ex);
                 NotifyStatusChanged($"下载失败: {ex.Message}", dispatcherQueue);
                 NotifyDetailAdded($"错误: {ex.Message}", dispatcherQueue);
-                DownloadFailed?.Invoke(this, EventArgs.Empty);
+                downloadFailed = true;
             }
             else
             {
                 LogService.Info("下载已被用户取消");
                 NotifyStatusChanged("下载已取消", dispatcherQueue);
             }
+            return false;
         }
         finally
         {
-            _isDownloading = false;
+            lock (_downloadStateLock)
+            {
+                _isDownloading = false;
+            }
             _isCancelled = false;
             if (_speedTimer != null)
             {
@@ -459,6 +531,21 @@ public class DownloadService
 
             _globalCts?.Dispose();
             _globalCts = null;
+            _isPaused = false;
+            _currentStage = DownloadStage.Idle;
+
+            if (completedSuccessfully)
+            {
+                try { File.Delete(Path.Combine(_downloadRoot, DOWNLOAD_MARKER_FILE)); }
+                catch (Exception ex) { LogService.Debug($"清理下载标记失败: {ex.Message}"); }
+            }
+
+            _downloadRoot = _downloadPath;
+
+            if (completedSuccessfully)
+                DownloadCompleted?.Invoke(this, EventArgs.Empty);
+            else if (downloadFailed)
+                DownloadFailed?.Invoke(this, EventArgs.Empty);
         }
     }
 
@@ -469,22 +556,22 @@ public class DownloadService
     /// <summary>
     /// 下载一个文件的所有 Chunk 并边下边合并到目标文件 (参考 Starward DownloadChunksToFileAsync)
     /// </summary>
-    private async Task DownloadChunksToFileAsync(BuildData buildData, FileChunkInfo fileInfo,
+    private async Task DownloadChunksToFileAsync(
+        BuildData buildData,
+        FileChunkInfo fileInfo,
         CancellationToken cancellationToken)
     {
         string urlPrefix = buildData.ChunkDownload?.UrlPrefix ?? string.Empty;
-        string outputPath = Path.Combine(_downloadPath, fileInfo.FilePath ?? string.Empty);
+        string outputPath = GetSafeOutputPath(_downloadRoot, fileInfo.FilePath);
         string tmpPath = outputPath + "_tmp";
 
-        long downloadBytes = fileInfo.Chunks?.Sum(x => x.CompressedSize) ?? 0;
         long writeBytes = fileInfo.Chunks?.Sum(x => x.UncompressedSize) ?? 0;
 
-        // 检查文件是否已完整存在
+        // 检查文件是否已完整存在。规划阶段已经把它计为“跳过”，这里仅作并发安全兜底，
+        // 不再把整文件大小伪装成网络下载量。
         if (File.Exists(outputPath)
             && await CheckFileMD5Async(outputPath, writeBytes, fileInfo.CheckSum ?? "", cancellationToken))
         {
-            Interlocked.Add(ref _downloadedBytes, downloadBytes);
-            Interlocked.Add(ref _writtenBytes, writeBytes);
             return;
         }
 
@@ -520,14 +607,6 @@ public class DownloadService
                 long offset = chunk.Offset;
                 long uncompressedSize = chunk.UncompressedSize;
                 long compressedSize = chunk.CompressedSize;
-
-                // 跳过已完成的 chunk
-                if (fs.Length >= offset + uncompressedSize)
-                {
-                    downloadDelta += compressedSize;
-                    writeDelta += uncompressedSize;
-                    continue;
-                }
 
                 fs.Position = offset;
 
@@ -631,6 +710,21 @@ public class DownloadService
     #endregion
 
     #region MD5 / Checksum
+
+    private static string GetSafeOutputPath(string root, string? relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath) || Path.IsPathRooted(relativePath))
+            throw new InvalidDataException($"资源清单包含无效路径: {relativePath}");
+
+        string fullRoot = Path.GetFullPath(root)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        string fullPath = Path.GetFullPath(Path.Combine(fullRoot, relativePath));
+        if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"资源清单路径越界: {relativePath}");
+
+        return fullPath;
+    }
 
     /// <summary>
     /// 检查文件 MD5 (参考 Starward CheckFileMD5Async)
@@ -754,15 +848,26 @@ public class DownloadService
 
     public void PauseDownload()
     {
+        if (!_isDownloading || _isPaused) return;
+
+        _stageBeforePause = _currentStage;
         _isPaused = true;
+        _currentStage = DownloadStage.Paused;
         _pauseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SpeedUpdated?.Invoke(this, (0, 0, TimeSpan.MaxValue));
+        StatusChanged?.Invoke(this, Lang.DownloadPage_Paused);
     }
 
     public void ResumeDownload()
     {
+        if (!_isPaused) return;
+
         _isPaused = false;
+        _currentStage = _stageBeforePause is DownloadStage.Idle or DownloadStage.Paused
+            ? DownloadStage.Downloading
+            : _stageBeforePause;
         _pauseTcs.TrySetResult();
+        StatusChanged?.Invoke(this, Lang.DownloadPage_Downloading);
     }
 
     /// <summary>
@@ -780,15 +885,21 @@ public class DownloadService
     /// </summary>
     public bool HasPartialDownload(string downloadPath)
     {
-        // 检查是否有 _tmp 文件（未完成的下载）
-        if (Directory.Exists(downloadPath))
-        {
-            var tmpFiles = Directory.GetFiles(downloadPath, "*_tmp", SearchOption.AllDirectories);
-            if (tmpFiles.Length > 0)
-                return true;
-        }
+        if (!Directory.Exists(downloadPath)) return false;
 
-        return false;
+        try
+        {
+            if (File.Exists(Path.Combine(downloadPath, DOWNLOAD_MARKER_FILE)))
+                return true;
+
+            // 兼容引入下载标记前已经产生的断点文件。
+            return Directory.EnumerateFiles(downloadPath, "*_tmp", SearchOption.AllDirectories).Any();
+        }
+        catch (Exception ex)
+        {
+            LogService.Debug($"检查断点下载失败: {ex.Message}");
+            return false;
+        }
     }
 
     #endregion

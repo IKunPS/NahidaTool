@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ public class ServerSwitchService
 
     private readonly ApiService _apiService;
     private readonly ManifestParser _manifestParser;
-    private volatile int _isSwitching; // 优化: int + Interlocked 保证线程安全
+    private int _isSwitching; // Interlocked + Volatile 保证线程安全
 
     // 游戏文件夹名称
     private const string CN_DATA_FOLDER = "YuanShen_Data";
@@ -74,22 +74,6 @@ public class ServerSwitchService
     public event EventHandler<string>? SwitchFailed;
 
     public bool IsSwitching => Volatile.Read(ref _isSwitching) == 1;
-
-    // P/Invoke: Windows 硬链接 API
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern bool CreateHardLink(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
-
-    /// <summary>
-    /// 创建硬链接的跨版本封装
-    /// </summary>
-    private static void CreateFileHardLink(string destPath, string sourcePath)
-    {
-        if (!CreateHardLink(destPath, sourcePath, IntPtr.Zero))
-        {
-            int error = Marshal.GetLastWin32Error();
-            throw new IOException($"CreateHardLink failed with error {error} for '{destPath}' -> '{sourcePath}'");
-        }
-    }
 
     private ServerSwitchService()
     {
@@ -184,17 +168,24 @@ public class ServerSwitchService
             string json = await File.ReadAllTextAsync(cacheInfoPath);
             var cacheInfo = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.ServerSwitchCacheInfo);
 
-            if (cacheInfo == null || cacheInfo.Version != version)
+            string expectedRegion = region == ServerRegionType.CN ? "CN" : "OS";
+            if (cacheInfo == null || cacheInfo.Version != version || cacheInfo.Region != expectedRegion ||
+                cacheInfo.Files == null || cacheInfo.FileChecksums == null)
                 return false;
 
-            // 检查所有文件是否存在
-            if (cacheInfo.Files != null)
+            // 缓存元数据和文件内容都必须匹配，避免复用损坏或被改写的缓存。
+            foreach (var file in cacheInfo.Files)
             {
-                foreach (var file in cacheInfo.Files)
-                {
-                    if (!File.Exists(Path.Combine(cacheDir, file)))
-                        return false;
-                }
+                if (!cacheInfo.FileChecksums.TryGetValue(file, out string? expectedChecksum))
+                    return false;
+
+                string filePath = Path.Combine(cacheDir, file);
+                if (!IsPathInsideDirectory(cacheDir, filePath) || !File.Exists(filePath))
+                    return false;
+
+                string actualChecksum = await CalculateFileChecksumAsync(filePath);
+                if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.OrdinalIgnoreCase))
+                    return false;
             }
 
             return true;
@@ -204,6 +195,29 @@ public class ServerSwitchService
             LogService.Debug($"检查缓存有效性失败: {ex.Message}");
             return false;
         }
+    }
+
+    private static bool IsPathInsideDirectory(string directory, string path)
+    {
+        string fullDirectory = Path.GetFullPath(directory)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        string fullPath = Path.GetFullPath(path);
+        return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<string> CalculateFileChecksumAsync(string path)
+    {
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+            bufferSize: 81920, useAsync: true);
+        using var md5 = MD5.Create();
+        byte[] hash = await md5.ComputeHashAsync(stream);
+        return Convert.ToHexString(hash);
+    }
+
+    private static void ClearInvalidCache(string cacheDir)
+    {
+        if (Directory.Exists(cacheDir))
+            Directory.Delete(cacheDir, recursive: true);
     }
 
     #endregion
@@ -220,6 +234,7 @@ public class ServerSwitchService
         if (Interlocked.CompareExchange(ref _isSwitching, 1, 0) != 0)
             return;
 
+        ServerSwitchTransaction? transaction = null;
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -250,6 +265,7 @@ public class ServerSwitchService
             if (!cacheValid)
             {
                 NotifyDetail("缓存无效或不存在，需要下载资源", dispatcherQueue);
+                ClearInvalidCache(cacheDir);
                 await DownloadServerFilesAsync(targetRegion, currentVersion, cacheDir, dispatcherQueue);
             }
             else
@@ -259,15 +275,18 @@ public class ServerSwitchService
 
             // 3. 备份并替换文件
             NotifyStatus("正在替换文件...", dispatcherQueue);
-            await ReplaceFilesAsync(gamePath, currentRegion, targetRegion, cacheDir, dispatcherQueue);
+            transaction = new ServerSwitchTransaction(gamePath);
+            await ReplaceFilesAsync(gamePath, currentRegion, targetRegion, cacheDir, dispatcherQueue, transaction);
 
             // 4. 重命名文件夹
             NotifyStatus("正在重命名文件夹...", dispatcherQueue);
-            await RenameFoldersAsync(gamePath, currentRegion, targetRegion, dispatcherQueue);
+            await RenameFoldersAsync(gamePath, currentRegion, targetRegion, dispatcherQueue, transaction);
 
             // 5. 删除旧exe
             NotifyStatus("正在清理旧文件...", dispatcherQueue);
-            await DeleteOldExeAsync(gamePath, currentRegion, dispatcherQueue);
+            await DeleteOldExeAsync(gamePath, currentRegion, dispatcherQueue, transaction);
+
+            transaction.Commit();
 
             NotifyStatus("转服完成!", dispatcherQueue);
             NotifyProgress(100, dispatcherQueue);
@@ -275,17 +294,20 @@ public class ServerSwitchService
         }
         catch (OperationCanceledException)
         {
+            transaction?.Rollback();
             NotifyStatus("转服已取消", dispatcherQueue);
             dispatcherQueue.TryEnqueue(() => SwitchFailed?.Invoke(this, "操作被取消"));
         }
         catch (Exception ex)
         {
+            transaction?.Rollback();
             NotifyStatus($"转服失败: {ex.Message}", dispatcherQueue);
             NotifyDetail($"错误详情: {ex.Message}", dispatcherQueue);
             dispatcherQueue.TryEnqueue(() => SwitchFailed?.Invoke(this, ex.Message));
         }
         finally
         {
+            transaction?.Dispose();
             Volatile.Write(ref _isSwitching, 0);
         }
     }
@@ -353,6 +375,7 @@ public class ServerSwitchService
         int totalChunks = filesToDownload.Sum(f => f.Chunks?.Count ?? 0);
         int downloadedChunks = 0;
         var downloadedFiles = new List<string>();
+        var fileChecksums = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         using var semaphore = new SemaphoreSlim(8);
 
@@ -383,7 +406,20 @@ public class ServerSwitchService
             }
 
             await MergeFileAsync(fileInfo, chunksDir, outputPath);
-            downloadedFiles.Add(fileInfo.FilePath ?? string.Empty);
+            string? expectedChecksum = fileInfo.CheckSum;
+            if (string.IsNullOrWhiteSpace(expectedChecksum))
+                throw new InvalidDataException($"转服资源缺少校验值: {fileInfo.FilePath}");
+
+            string actualChecksum = await CalculateFileChecksumAsync(outputPath);
+            if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Delete(outputPath);
+                throw new InvalidDataException($"转服资源校验失败: {fileInfo.FilePath}");
+            }
+
+            string relativePath = fileInfo.FilePath ?? string.Empty;
+            downloadedFiles.Add(relativePath);
+            fileChecksums[relativePath] = actualChecksum;
         }
 
         // 保存缓存信息
@@ -392,7 +428,8 @@ public class ServerSwitchService
             Version = version,
             Region = targetRegion == ServerRegionType.CN ? "CN" : "OS",
             CachedTime = DateTime.Now,
-            Files = downloadedFiles
+            Files = downloadedFiles,
+            FileChecksums = fileChecksums
         };
 
         string cacheInfoPath = Path.Combine(cacheDir, "cache_info.json");
@@ -492,7 +529,7 @@ public class ServerSwitchService
     /// 替换文件
     /// </summary>
     private async Task ReplaceFilesAsync(string gamePath, ServerRegionType currentRegion, ServerRegionType targetRegion,
-        string cacheDir, DispatcherQueue dispatcherQueue)
+        string cacheDir, DispatcherQueue dispatcherQueue, ServerSwitchTransaction transaction)
     {
         string currentDataFolder = currentRegion == ServerRegionType.CN ? CN_DATA_FOLDER : OS_DATA_FOLDER;
         string targetDataFolder = targetRegion == ServerRegionType.CN ? CN_DATA_FOLDER : OS_DATA_FOLDER;
@@ -508,7 +545,7 @@ public class ServerSwitchService
 
             if (File.Exists(sourcePath))
             {
-                await CopyFileAsync(sourcePath, destPath);
+                await CopyFileAtomicallyAsync(sourcePath, destPath, transaction);
                 NotifyDetail($"已替换: {rootFile}", dispatcherQueue);
             }
 
@@ -524,7 +561,7 @@ public class ServerSwitchService
 
             if (File.Exists(sourcePath))
             {
-                await CopyFileAsync(sourcePath, destPath);
+                await CopyFileAtomicallyAsync(sourcePath, destPath, transaction);
                 NotifyDetail($"已替换: {dataFile}", dispatcherQueue);
             }
 
@@ -539,16 +576,18 @@ public class ServerSwitchService
 
         if (File.Exists(exeSourcePath))
         {
-            await CopyFileAsync(exeSourcePath, exeDestPath);
+            await CopyFileAtomicallyAsync(exeSourcePath, exeDestPath, transaction);
             NotifyDetail($"已添加: {targetExe}", dispatcherQueue);
         }
     }
 
     /// <summary>
-    /// 优先使用硬链接实现秒级"复制"，失败时回退到流式复制
+    /// 使用临时文件和原子替换复制缓存文件
     /// </summary>
-    private async Task CopyFileAsync(string sourcePath, string destPath)
+    private static async Task CopyFileAtomicallyAsync(string sourcePath, string destPath,
+        ServerSwitchTransaction transaction)
     {
+        transaction.BackupFile(destPath);
         string? destDir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
         {
@@ -557,57 +596,50 @@ public class ServerSwitchService
 
         int maxRetries = 5;
         int retryDelayMs = 1000;
+        Exception? lastException = null;
 
         for (int i = 0; i < maxRetries; i++)
         {
+            string tempPath = destPath + $".nahidatool-{Guid.NewGuid():N}.tmp";
             try
             {
                 if (File.Exists(destPath))
-                {
                     File.SetAttributes(destPath, FileAttributes.Normal);
-                    File.Delete(destPath);
-                }
 
-                // 优化: 优先尝试硬链接（同卷元数据操作，微秒级完成，不占额外空间）
-                try
-                {
-                    CreateFileHardLink(destPath, sourcePath);
-                    return;
-                }
-                catch (IOException)
-                {
-                    // 跨卷或其他原因失败 → 回退到复制
-                }
-
-                // 回退: 异步流式复制
-                using var sourceStream = new FileStream(sourcePath,
+                await using (var sourceStream = new FileStream(sourcePath,
                     FileMode.Open, FileAccess.Read, FileShare.Read,
-                    bufferSize: 65536, useAsync: true);
-                using var destStream = new FileStream(destPath,
+                    bufferSize: 65536, useAsync: true))
+                await using (var destStream = new FileStream(tempPath,
                     FileMode.Create, FileAccess.Write, FileShare.None,
-                    bufferSize: 65536, useAsync: true);
-                await sourceStream.CopyToAsync(destStream);
+                    bufferSize: 65536, useAsync: true))
+                {
+                    await sourceStream.CopyToAsync(destStream);
+                    await destStream.FlushAsync();
+                }
+
+                File.Move(tempPath, destPath, overwrite: true);
                 return;
             }
-            catch (IOException) when (i < maxRetries - 1)
+            catch (IOException ex) when (i < maxRetries - 1)
             {
+                lastException = ex;
                 await Task.Delay(retryDelayMs);
                 retryDelayMs *= 2;
             }
-            catch (UnauthorizedAccessException) when (i < maxRetries - 1)
+            catch (UnauthorizedAccessException ex) when (i < maxRetries - 1)
             {
+                lastException = ex;
                 await Task.Delay(retryDelayMs);
                 retryDelayMs *= 2;
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
             }
         }
 
-        // 最后一次尝试
-        if (File.Exists(destPath))
-        {
-            File.SetAttributes(destPath, FileAttributes.Normal);
-            File.Delete(destPath);
-        }
-        CreateFileHardLink(destPath, sourcePath);
+        throw new IOException($"无法安全替换文件: {destPath}", lastException);
     }
 
     #endregion
@@ -618,7 +650,7 @@ public class ServerSwitchService
     /// 重命名文件夹
     /// </summary>
     private async Task RenameFoldersAsync(string gamePath, ServerRegionType currentRegion, ServerRegionType targetRegion,
-        DispatcherQueue dispatcherQueue)
+        DispatcherQueue dispatcherQueue, ServerSwitchTransaction transaction)
     {
         string currentDataFolder = currentRegion == ServerRegionType.CN ? CN_DATA_FOLDER : OS_DATA_FOLDER;
         string targetDataFolder = targetRegion == ServerRegionType.CN ? CN_DATA_FOLDER : OS_DATA_FOLDER;
@@ -661,15 +693,13 @@ public class ServerSwitchService
                     }
 
                     // 目标文件夹已存在，使用临时名称备份
-                    string backupPath = $"{targetDataPath}_backup_{DateTime.Now:yyyyMMddHHmmss}";
-                    NotifyDetail($"目标文件夹 {targetDataFolder} 已存在，正在备份为 {Path.GetFileName(backupPath)}...",
-                        dispatcherQueue);
-                    Directory.Move(targetDataPath, backupPath);
-                    NotifyDetail($"已备份现有文件夹到 {Path.GetFileName(backupPath)}", dispatcherQueue);
+                    transaction.BackupDirectory(targetDataPath);
+                    NotifyDetail($"已备份现有文件夹 {targetDataFolder}", dispatcherQueue);
                 }
 
                 // 现在执行重命名
                 Directory.Move(currentDataPath, targetDataPath);
+                transaction.RecordDirectoryMove(currentDataPath, targetDataPath);
                 NotifyDetail($"成功将 {currentDataFolder} 重命名为 {targetDataFolder}", dispatcherQueue);
                 return; // 成功则返回
             }
@@ -794,9 +824,10 @@ public class ServerSwitchService
     #region Cleanup
 
     /// <summary>
-    /// 删除旧的exe（带重试，失败不影响转服成功）
+    /// 删除旧的 exe；失败时由外层事务回滚
     /// </summary>
-    private async Task DeleteOldExeAsync(string gamePath, ServerRegionType currentRegion, DispatcherQueue dispatcherQueue)
+    private async Task DeleteOldExeAsync(string gamePath, ServerRegionType currentRegion, DispatcherQueue dispatcherQueue,
+        ServerSwitchTransaction transaction)
     {
         string oldExe = currentRegion == ServerRegionType.CN ? CN_EXE : OS_EXE;
         string oldExePath = Path.Combine(gamePath, oldExe);
@@ -805,6 +836,8 @@ public class ServerSwitchService
         {
             return;
         }
+
+        transaction.BackupFile(oldExePath);
 
         int maxRetries = 5;
         int retryDelayMs = 500;
@@ -832,16 +865,166 @@ public class ServerSwitchService
             }
             catch (Exception ex)
             {
-                NotifyDetail($"警告: 无法删除旧文件 {oldExe}: {ex.Message}", dispatcherQueue);
-                NotifyDetail("转服已完成，但旧的exe文件未能删除，可手动删除", dispatcherQueue);
-                return;
+                throw new IOException($"无法删除旧文件 {oldExe}", ex);
             }
         }
 
-        NotifyDetail($"警告: 无法删除旧文件 {oldExe}，可手动删除", dispatcherQueue);
+        throw new IOException($"无法删除旧文件 {oldExe}");
     }
 
     #endregion
+
+    private sealed class ServerSwitchTransaction : IDisposable
+    {
+        private sealed record FileBackup(string Path, string BackupPath, bool Existed, FileAttributes Attributes);
+        private sealed record DirectoryBackup(string Path, string BackupPath);
+        private sealed record DirectoryMove(string SourcePath, string DestinationPath);
+
+        private readonly string _gamePath;
+        private readonly string _backupRoot;
+        private readonly List<FileBackup> _fileBackups = new();
+        private readonly List<DirectoryBackup> _directoryBackups = new();
+        private readonly List<DirectoryMove> _directoryMoves = new();
+        private readonly HashSet<string> _backedUpFiles = new(StringComparer.OrdinalIgnoreCase);
+        private bool _committed;
+        private bool _rolledBack;
+
+        public ServerSwitchTransaction(string gamePath)
+        {
+            _gamePath = Path.GetFullPath(gamePath);
+            _backupRoot = Path.Combine(_gamePath, $".nahidatool-switch-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(_backupRoot);
+        }
+
+        public void BackupFile(string path)
+        {
+            string fullPath = Path.GetFullPath(path);
+            string relativePath = GetRelativePath(fullPath);
+            if (!_backedUpFiles.Add(fullPath))
+                return;
+
+            bool existed = File.Exists(fullPath);
+            string backupPath = Path.Combine(_backupRoot, "files", relativePath);
+            FileAttributes attributes = existed ? File.GetAttributes(fullPath) : FileAttributes.Normal;
+
+            if (existed)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
+                File.Copy(fullPath, backupPath, overwrite: true);
+            }
+
+            _fileBackups.Add(new FileBackup(fullPath, backupPath, existed, attributes));
+        }
+
+        public void BackupDirectory(string path)
+        {
+            string fullPath = Path.GetFullPath(path);
+            if (!Directory.Exists(fullPath))
+                return;
+
+            string backupPath = Path.Combine(_backupRoot, "directories", GetRelativePath(fullPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
+            Directory.Move(fullPath, backupPath);
+            _directoryBackups.Add(new DirectoryBackup(fullPath, backupPath));
+        }
+
+        public void RecordDirectoryMove(string sourcePath, string destinationPath)
+        {
+            _directoryMoves.Add(new DirectoryMove(Path.GetFullPath(sourcePath), Path.GetFullPath(destinationPath)));
+        }
+
+        public void Commit()
+        {
+            _committed = true;
+            CleanupBackups();
+        }
+
+        public void Rollback()
+        {
+            if (_committed || _rolledBack)
+                return;
+
+            _rolledBack = true;
+
+            foreach (DirectoryMove move in _directoryMoves.AsEnumerable().Reverse())
+            {
+                try
+                {
+                    if (Directory.Exists(move.DestinationPath) && !Directory.Exists(move.SourcePath))
+                        Directory.Move(move.DestinationPath, move.SourcePath);
+                }
+                catch (Exception ex)
+                {
+                    LogService.Error($"还原目录重命名失败: {move.DestinationPath}", ex);
+                }
+            }
+
+            foreach (FileBackup backup in _fileBackups.AsEnumerable().Reverse())
+            {
+                try
+                {
+                    if (File.Exists(backup.Path))
+                    {
+                        File.SetAttributes(backup.Path, FileAttributes.Normal);
+                        File.Delete(backup.Path);
+                    }
+
+                    if (backup.Existed)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(backup.Path)!);
+                        File.Copy(backup.BackupPath, backup.Path, overwrite: true);
+                        File.SetAttributes(backup.Path, backup.Attributes);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogService.Error($"还原文件失败: {backup.Path}", ex);
+                }
+            }
+
+            foreach (DirectoryBackup backup in _directoryBackups.AsEnumerable().Reverse())
+            {
+                try
+                {
+                    if (!Directory.Exists(backup.Path) && Directory.Exists(backup.BackupPath))
+                        Directory.Move(backup.BackupPath, backup.Path);
+                }
+                catch (Exception ex)
+                {
+                    LogService.Error($"还原备份目录失败: {backup.Path}", ex);
+                }
+            }
+
+            CleanupBackups();
+        }
+
+        public void Dispose()
+        {
+            if (_committed || _rolledBack)
+                CleanupBackups();
+        }
+
+        private string GetRelativePath(string path)
+        {
+            if (!IsPathInsideDirectory(_gamePath, path))
+                throw new InvalidOperationException($"转服文件不在游戏目录内: {path}");
+
+            return Path.GetRelativePath(_gamePath, path);
+        }
+
+        private void CleanupBackups()
+        {
+            try
+            {
+                if (Directory.Exists(_backupRoot))
+                    Directory.Delete(_backupRoot, recursive: true);
+            }
+            catch (Exception ex)
+            {
+                LogService.Warn($"清理转服备份失败: {ex.Message}");
+            }
+        }
+    }
 
     #region Helpers
 

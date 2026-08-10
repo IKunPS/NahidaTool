@@ -46,15 +46,46 @@ void Log(std::wstring output)
 
 int wmain(int argc, wchar_t* argv[])
 {
-    for (int i = 0; i < argc; i++)
+    DWORD wait_pid = 0;
+    std::wstring forwarded_args;
+    for (int i = 1; i < argc; i++)
     {
+        if (!wcscmp(argv[i], L"--wait-pid") && i + 1 < argc)
+        {
+            wait_pid = wcstoul(argv[++i], nullptr, 10);
+            continue;
+        }
+
         if (!wcscmp(argv[i], L"--trace"))
         {
             AllocConsole();
+            continue;
         }
+
+        if (!forwarded_args.empty())
+            forwarded_args += L" ";
+        forwarded_args += L"\"";
+        for (wchar_t ch : std::wstring(argv[i]))
+        {
+            if (ch == L'"')
+                forwarded_args += L'\\';
+            forwarded_args += ch;
+        }
+        forwarded_args += L"\"";
     }
 
     stdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if (wait_pid != 0)
+    {
+        HANDLE wait_process = OpenProcess(SYNCHRONIZE, FALSE, wait_pid);
+        if (wait_process)
+        {
+            WaitForSingleObject(wait_process, 120000);
+            CloseHandle(wait_process);
+        }
+    }
+
 
     std::wstring run_exe;
 
@@ -87,7 +118,7 @@ int wmain(int argc, wchar_t* argv[])
 
     if (run_exe.length())
     {
-        std::wstring arg = std::wstring(GetCommandLine()).substr(std::wstring(argv[0]).length() + 2);
+        std::wstring arg = forwarded_args;
         Log(L"arg: " + arg);
         STARTUPINFO si;
         PROCESS_INFORMATION pi;
@@ -95,7 +126,7 @@ int wmain(int argc, wchar_t* argv[])
         si.cb = sizeof(si);
         ZeroMemory(&pi, sizeof(pi));
         Log(L"Starting process");
-        if (!CreateProcess(run_exe.c_str(), arg.data(), NULL, NULL, false, 0, NULL, NULL, &si, &pi))
+        if (!CreateProcess(run_exe.c_str(), arg.empty() ? nullptr : arg.data(), NULL, NULL, false, 0, NULL, NULL, &si, &pi))
         {
             Log(L"CreateProcess failed: " + ToStr(GetLastError()));
             return 1;

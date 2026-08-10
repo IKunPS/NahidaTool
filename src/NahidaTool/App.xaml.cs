@@ -63,6 +63,26 @@ public partial class App : Application
         return false;
     }
 
+    public static void ReleaseSingleInstanceForUpdate()
+    {
+        try
+        {
+            _singleInstanceMutex?.ReleaseMutex();
+        }
+        catch (ApplicationException)
+        {
+        }
+
+        _singleInstanceMutex?.Dispose();
+        _singleInstanceMutex = null;
+    }
+
+    public static void RestoreSingleInstanceAfterUpdateFailure()
+    {
+        if (_singleInstanceMutex == null)
+            TryAcquireSingleInstance();
+    }
+
     /// <summary>
     /// 查找并激活已有实例的主窗口
     /// </summary>
@@ -209,7 +229,7 @@ public partial class App : Application
             sb.AppendLine("========================================");
             sb.AppendLine($"NahidaTool 崩溃报告");
             sb.AppendLine($"时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            sb.AppendLine($"版本: 1.2.0");
+            sb.AppendLine($"版本: {AppVersion.Current}");
             sb.AppendLine($"操作系统: {Environment.OSVersion}");
             sb.AppendLine($".NET版本: {Environment.Version}");
             sb.AppendLine("========================================");

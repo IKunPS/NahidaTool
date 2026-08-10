@@ -293,8 +293,7 @@ public sealed partial class MainWindow : WindowEx
             if (color is not null)
             {
                 AccentColorHelper.ChangeAppAccentColor(color);
-                _settings.AccentColor = color.Value.ToHex();
-                _settings.Save();
+                _settings = AppSettings.Update(settings => settings.AccentColor = color.Value.ToHex());
             }
         }
         catch (Exception ex)
@@ -332,14 +331,32 @@ public sealed partial class MainWindow : WindowEx
 
         _changelogShown = true;
 
+        await Task.Delay(500);
+        try
+        {
+            var updateService = new AppUpdateService(_settings);
+            AppUpdateInfo? update = await updateService.CheckForUpdateAsync(AppVersion.Current);
+            if (update != null && Content?.XamlRoot != null)
+            {
+                await new AppUpdateDialog(update, updateService)
+                {
+                    XamlRoot = Content.XamlRoot
+                }.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            LogService.Debug($"Application update check failed: {ex.Message}");
+        }
+
+
         if (_settings.LastShownChangelogVersion != AppVersion.Current)
         {
-            await Task.Delay(500);
             try
             {
                 await ShowChangelogDialogAsync();
-                _settings.LastShownChangelogVersion = AppVersion.Current;
-                _settings.Save();
+                _settings = AppSettings.Update(settings =>
+                    settings.LastShownChangelogVersion = AppVersion.Current);
             }
             catch (Exception ex) { LogService.Error("显示更新日志弹窗失败", ex); }
         }
@@ -348,12 +365,22 @@ public sealed partial class MainWindow : WindowEx
     private async Task ShowChangelogDialogAsync()
     {
         if (Content?.XamlRoot == null) return;
+        var changelog = string.Join("\n", new[]
+        {
+            "v0.1.3",
+            "· 新增程序自更新：从代理推荐服务器检查更新，校验更新包并自动重启",
+            "· 新增国服/国际服 LDiff 差分更新，支持断点续传、本地文件复用与完整性校验",
+            "· 重做游戏下载弹窗：支持区服切换、多语音包、容量与所需空间显示",
+            "· 新增私服版本推荐，并优化下载暂停、续传、进度和安装路径识别",
+            "· 转服优化：资源缓存 MD5 校验、事务化替换与失败回滚",
+            "· 下载设置移至首页，补充 7.x RSA 资源及发行包 SHA-256 生成脚本"
+        });
         await new ContentDialog
         {
             Title = $"NahidaTool v{AppVersion.Current} 更新日志",
             Content = new ScrollViewer
             {
-                Content = new TextBlock { Text = "", TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22 },
+                Content = new TextBlock { Text = changelog, TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22 },
                 MaxHeight = 400
             },
             CloseButtonText = "我知道了",
@@ -402,41 +429,8 @@ public sealed partial class MainWindow : WindowEx
 
         if (e.SourcePageType == typeof(SettingsPage) && e.Content is SettingsPage settingsPage)
         {
-            settingsPage.SettingsChanged -= OnSettingsChanged;
-            settingsPage.RegionChanged -= OnRegionChanged;
-            settingsPage.VoiceLanguageChanged -= OnVoiceLanguageChanged;
-
-            settingsPage.SettingsChanged += OnSettingsChanged;
-            settingsPage.RegionChanged += OnRegionChanged;
-            settingsPage.VoiceLanguageChanged += OnVoiceLanguageChanged;
+            // 下载设置已移至主页下载游戏对话框，此处无需订阅
         }
-    }
-
-    private void OnSettingsChanged(object? sender, EventArgs e)
-    {
-        if (sender is SettingsPage sp)
-        {
-            _settings = AppSettings.Load();
-            _settings.DownloadPath = sp.DownloadPath;
-            _settings.Region = sp.Region;
-            _settings.VoiceLanguage = sp.VoiceLanguage;
-            _settings.GameVersion = sp.GameVersion;
-            _settings.Save();
-        }
-    }
-
-    private void OnRegionChanged(object? sender, ServerRegionType region)
-    {
-        _settings = AppSettings.Load();
-        _settings.Region = region;
-        _settings.Save();
-    }
-
-    private void OnVoiceLanguageChanged(object? sender, VoiceLanguageType language)
-    {
-        _settings = AppSettings.Load();
-        _settings.VoiceLanguage = language;
-        _settings.Save();
     }
 
     private async Task FetchAndSaveLatestVersionAsync()
@@ -448,8 +442,7 @@ public sealed partial class MainWindow : WindowEx
             var latestVersion = buildResponse.Data?.Tag ?? "";
             if (!string.IsNullOrEmpty(latestVersion))
             {
-                _settings.GameVersion = latestVersion;
-                _settings.Save();
+                _settings = AppSettings.Update(settings => settings.GameVersion = latestVersion);
                 LogService.Debug($"获取到最新版本: {latestVersion}");
             }
         }

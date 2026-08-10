@@ -7,14 +7,103 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:NahidaTool.Models"
+    xmlns:muxca="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d"
     Background="Transparent">
 
+    <!-- Adapted from Starward StartGameButton (MIT, copyright 2023 Scighost). -->
+    <Page.Resources>
+        <Style x:Key="GameButtonStyle"
+               BasedOn="{StaticResource DefaultButtonStyle}"
+               TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter x:Name="ContentPresenter"
+                                          Padding="{TemplateBinding Padding}"
+                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          AnimatedIcon.State="Normal"
+                                          AutomationProperties.AccessibilityView="Raw"
+                                          Background="{TemplateBinding Background}"
+                                          BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          CornerRadius="{TemplateBinding CornerRadius}"
+                                          Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter.BackgroundTransition>
+                                <BrushTransition Duration="0:0:0.083"/>
+                            </ContentPresenter.BackgroundTransition>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBackgroundPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBorderBrushPointerOver}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="PointerOver"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBackgroundPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBorderBrushPressed}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Pressed"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBackgroundDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter"
+                                                                           Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0"
+                                                                        Value="{ThemeResource ButtonBorderBrushDisabled}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Normal"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </ContentPresenter>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
     <Grid x:Name="RootGrid"
           Background="Transparent">
 
-        <!-- 代理卡片 -->
         <Border x:Name="ProxyCard"
                 Width="360"
                 Margin="60,0,0,40"
@@ -31,7 +120,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Row 0: Header -->
                 <Grid Padding="16,12,16,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -56,7 +144,6 @@
                                Text="{x:Bind models:Lang.HomePage_ProxyNotStarted}"/>
                 </Grid>
 
-                <!-- Row 1: Proxy Settings -->
                 <StackPanel Grid.Row="1"
                             Padding="16,0,16,12"
                             Spacing="6">
@@ -87,104 +174,16 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Row 0: Download Section -->
-            <Border x:Name="DownloadSection"
-                    Grid.Row="0"
-                    Width="340"
-                    Margin="0,0,0,8"
-                    Padding="16"
-                    Background="{ThemeResource CustomAcrylicBrush}"
-                    CornerRadius="8"
-                    Shadow="{ThemeResource ThemeShadow}"
-                    Visibility="Collapsed">
-                <StackPanel Spacing="8">
-                    <TextBlock x:Name="DownloadVersionText"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                               Text="--"/>
-                    <TextBlock x:Name="DownloadStatsText"
-                               FontSize="11"
-                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                               Text="--"/>
-                    <TextBlock x:Name="DownloadPercentText"
-                               FontSize="13"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource GenshinPrimaryBrush}"
-                               Text="0%"
-                               Visibility="Collapsed"/>
-                    <ProgressBar x:Name="DownloadProgressBar"
-                                 Height="6"
-                                 CornerRadius="3"
-                                 Background="#25FFFFFF"
-                                 Foreground="{StaticResource GenshinPrimaryBrush}"
-                                 Minimum="0"
-                                 Maximum="100"
-                                 Value="0"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="DownloadSpeedText"
-                                   Grid.Column="0"
-                                   FontSize="11"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   Text="--"/>
-                        <TextBlock x:Name="DownloadRemainingText"
-                                   Grid.Column="1"
-                                   FontSize="11"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   Text="--"/>
-                    </Grid>
-                    <Button x:Name="PauseResumeButton"
-                            Height="32"
-                            HorizontalAlignment="Stretch"
-                            Click="PauseResumeButton_Click"
-                            CornerRadius="6"
-                            FontSize="13"
-                            Style="{StaticResource DateTimePickerFlyoutButtonStyle}">
-                        <TextBlock x:Name="PauseResumeButtonText" Text="--"/>
-                    </Button>
-                </StackPanel>
-            </Border>
-
-            <!-- Row 1: Button Row -->
-            <Grid Grid.Row="1" ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Download / Install Button -->
-                <Button x:Name="InstallButton"
-                        Grid.Column="0"
-                        Width="44"
-                        Height="44"
-                        Padding="0"
-                        Background="{ThemeResource CustomAcrylicBrush}"
-                        BorderThickness="0"
-                        CornerRadius="22"
-                        Shadow="{ThemeResource ThemeShadow}"
-                        Translation="0,0,16"
-                        Click="InstallButton_Click"
-                        Visibility="Collapsed"
-                        ToolTipService.ToolTip="{x:Bind models:Lang.DownloadPage_StartDownload}">
-                    <FontIcon Glyph="&#xE896;" FontSize="18"/>
-                </Button>
-
-                <!-- Start Game Grid -->
+            <Grid Grid.Row="1">
                 <Grid x:Name="StartGameGrid"
-                      Grid.Column="1"
                       Height="44"
                       MinWidth="180"
                       Background="{ThemeResource CustomAcrylicBrush}"
                       CornerRadius="22"
-                      Shadow="{ThemeResource ThemeShadow}"
-                      Translation="0,0,16"
                       PointerEntered="StartGameGrid_PointerEntered"
-                      PointerExited="StartGameGrid_PointerExited">
-
+                      PointerExited="StartGameGrid_PointerExited"
+                      Shadow="{ThemeResource ThemeShadow}"
+                      Translation="0,0,16">
                     <Rectangle x:Name="Rect_AccentBackground"
                                Fill="{ThemeResource AccentFillColorDefaultBrush}"
                                IsHitTestVisible="False"
@@ -194,18 +193,106 @@
                             Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"
                             Background="Transparent"
                             BorderThickness="0"
-                            CornerRadius="22"
                             Click="StartGameButton_Click"
-                            FontSize="15">
-                        <TextBlock x:Name="StartGameButtonText"
-                                   Margin="41,5,53,6"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="{x:Bind models:Lang.HomePage_StartGame}"/>
+                            CornerRadius="22"
+                            PointerEntered="StartGameButton_PointerEntered"
+                            PointerExited="StartGameButton_PointerExited"
+                            Style="{ThemeResource GameButtonStyle}">
+                        <Grid>
+                            <Grid x:Name="NormalActionGrid" Visibility="Visible">
+                                <ProgressRing x:Name="GameActionProgressRing"
+                                              Width="20"
+                                              Height="20"
+                                              Margin="14,0,0,0"
+                                              HorizontalAlignment="Left"
+                                              IsHitTestVisible="False"
+                                              Visibility="Collapsed"/>
+                                <TextBlock x:Name="StartGameButtonText"
+                                           Margin="41,5,53,6"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Text=""/>
+                            </Grid>
+
+                            <Grid x:Name="DownloadActionGrid"
+                                  Margin="0,0,48,0"
+                                  ColumnSpacing="10"
+                                  IsHitTestVisible="False"
+                                  Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Margin="10,0,0,0" HorizontalAlignment="Left">
+                                    <ProgressRing x:Name="DownloadProgressRing"
+                                                  Width="28"
+                                                  Height="28"
+                                                  Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
+                                                  IsIndeterminate="False"
+                                                  Minimum="0"
+                                                  Maximum="100"
+                                                  Value="0"/>
+                                    <TextBlock x:Name="DownloadPercentText"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               IsTextScaleFactorEnabled="False"
+                                               Text="0"/>
+                                </Grid>
+
+                                <Grid x:Name="DownloadStatePanel"
+                                      Grid.Column="1"
+                                      VerticalAlignment="Center"
+                                      ColumnSpacing="4"
+                                      Visibility="Visible">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <FontIcon Grid.Row="0"
+                                              Grid.Column="0"
+                                              FontSize="12"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              Glyph="&#xE896;"
+                                              IsTextScaleFactorEnabled="False"/>
+                                    <TextBlock x:Name="DownloadStateText"
+                                               Grid.Row="0"
+                                               Grid.Column="1"
+                                               FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               IsTextScaleFactorEnabled="False"
+                                               Text=""/>
+                                    <FontIcon Grid.Row="1"
+                                              Grid.Column="0"
+                                              FontSize="12"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              Glyph="&#xE917;"
+                                              IsTextScaleFactorEnabled="False"/>
+                                    <TextBlock x:Name="DownloadEtaText"
+                                               Grid.Row="1"
+                                               Grid.Column="1"
+                                               FontSize="12"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               IsTextScaleFactorEnabled="False"
+                                               Text="--:--:--"/>
+                                </Grid>
+
+                                <TextBlock x:Name="DownloadHoverActionText"
+                                           Grid.Column="1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Grid>
+                        </Grid>
                     </Button>
 
                     <Button x:Name="SettingsButton"
@@ -216,15 +303,88 @@
                             VerticalAlignment="Stretch"
                             Background="Transparent"
                             BorderThickness="0"
+                            Click="SettingsButton_Click"
                             CornerRadius="22"
-                            Click="SettingsButton_Click">
-                        <FontIcon Glyph="&#xE713;"
-                                  FontSize="18"/>
+                            PointerEntered="SettingsButton_PointerEntered"
+                            PointerExited="SettingsButton_PointerExited"
+                            Style="{ThemeResource GameButtonStyle}">
+                        <AnimatedIcon x:Name="AnimatedIcon_Setting">
+                            <AnimatedIcon.Source>
+                                <muxca:AnimatedSettingsVisualSource/>
+                            </AnimatedIcon.Source>
+                            <AnimatedIcon.FallbackIconSource>
+                                <FontIconSource Glyph="&#xE713;"/>
+                            </AnimatedIcon.FallbackIconSource>
+                        </AnimatedIcon>
                     </Button>
                 </Grid>
             </Grid>
 
-            <!-- Game Info Popup -->
+            <Popup x:Name="DownloadInfoTip"
+                   DesiredPlacement="Top"
+                   PlacementTarget="{Binding ElementName=StartGameGrid}"
+                   VerticalOffset="-4">
+                <Grid MinWidth="200"
+                      MaxWidth="260"
+                      Padding="20,12"
+                      Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
+                      CornerRadius="8">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="DownloadPopupStateText"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text=""/>
+                            <TextBlock x:Name="DownloadTipProgressText"
+                                       Margin="8,0,0,0"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text="0%"/>
+                            <FontIcon Margin="8,0,0,0"
+                                      VerticalAlignment="Bottom"
+                                      FontSize="14"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      Glyph="&#xE917;"
+                                      IsTextScaleFactorEnabled="False"/>
+                            <TextBlock x:Name="DownloadPopupRemainTimeText"
+                                       Margin="4,0,0,0"
+                                       VerticalAlignment="Bottom"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text="--:--:--"/>
+                        </StackPanel>
+                        <MenuFlyoutSeparator Margin="0,8,0,0"/>
+                        <StackPanel Margin="0,8,0,0" Orientation="Horizontal" Spacing="4">
+                            <FontIcon FontSize="12"
+                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                      Glyph="&#xE896;"
+                                      IsTextScaleFactorEnabled="False"/>
+                            <TextBlock FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text="{x:Bind models:Lang.SettingsPage_Download}"/>
+                        </StackPanel>
+                        <Grid Width="200" Margin="0,2,0,0">
+                            <TextBlock x:Name="DownloadPopupBytesText"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text=""/>
+                            <TextBlock x:Name="DownloadPopupSpeedText"
+                                       HorizontalAlignment="Right"
+                                       FontSize="12"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                       IsTextScaleFactorEnabled="False"
+                                       Text=""/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Popup>
+
             <Popup x:Name="Popup_GameInfo"
                    DesiredPlacement="Top"
                    PlacementTarget="{Binding ElementName=StartGameGrid}"

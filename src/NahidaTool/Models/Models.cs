@@ -112,6 +112,57 @@ public class BuildResponseData
     }
 }
 
+public class PatchBuildResponse
+{
+    [JsonPropertyName("retcode")]
+    public int RetCode { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
+    [JsonPropertyName("data")]
+    public PatchBuildResponseData? Data { get; set; }
+}
+
+public class PatchBuildResponseData
+{
+    [JsonPropertyName("build_id")]
+    public string? BuildId { get; set; }
+
+    [JsonPropertyName("patch_id")]
+    public string? PatchId { get; set; }
+
+    [JsonPropertyName("tag")]
+    public string? Tag { get; set; }
+
+    [JsonPropertyName("manifests")]
+    public List<PatchBuildData>? Manifests { get; set; } = new();
+}
+
+public class PatchBuildData
+{
+    [JsonPropertyName("category_id")]
+    public string? CategoryId { get; set; }
+
+    [JsonPropertyName("category_name")]
+    public string? CategoryName { get; set; }
+
+    [JsonPropertyName("manifest")]
+    public Manifest? Manifest { get; set; }
+
+    [JsonPropertyName("diff_download")]
+    public ChunkDownload? DiffDownload { get; set; }
+
+    [JsonPropertyName("manifest_download")]
+    public ManifestDownload? ManifestDownload { get; set; }
+
+    [JsonPropertyName("matching_field")]
+    public string? MatchingField { get; set; }
+
+    [JsonPropertyName("stats")]
+    public Dictionary<string, Stats>? Stats { get; set; }
+}
+
 public class ChunkInfo
 {
     [JsonPropertyName("ChunkId")]
@@ -170,6 +221,7 @@ public class GameBranch
 
     [JsonPropertyName("pre_download")]
     public BranchInfo? PreDownload { get; set; }
+
 }
 
 /// <summary>
@@ -272,6 +324,38 @@ public class ServerSwitchCacheInfo
 
     [JsonPropertyName("files")]
     public List<string>? Files { get; set; }
+
+    [JsonPropertyName("file_checksums")]
+    public Dictionary<string, string>? FileChecksums { get; set; }
+}
+
+// ============ 私服状态模型 ============
+
+/// <summary>
+/// 私服 /status/server 接口响应
+/// </summary>
+public class ServerStatusResponse
+{
+    [JsonPropertyName("retcode")]
+    public int RetCode { get; set; }
+
+    [JsonPropertyName("status")]
+    public ServerStatus? Status { get; set; }
+}
+
+/// <summary>
+/// 私服状态信息
+/// </summary>
+public class ServerStatus
+{
+    [JsonPropertyName("playerCount")]
+    public int PlayerCount { get; set; }
+
+    [JsonPropertyName("maxPlayer")]
+    public int MaxPlayer { get; set; }
+
+    [JsonPropertyName("version")]
+    public string? Version { get; set; }
 }
 
 // JSON Source Generator - 解决 PublishTrimmed 导致的反序列化问题
@@ -287,6 +371,11 @@ public class ServerSwitchCacheInfo
 [JsonSerializable(typeof(ManifestDownload))]
 [JsonSerializable(typeof(Stats))]
 [JsonSerializable(typeof(DeduplicatedStats))]
+[JsonSerializable(typeof(PatchBuildResponse))]
+[JsonSerializable(typeof(PatchBuildResponseData))]
+[JsonSerializable(typeof(PatchBuildData))]
+[JsonSerializable(typeof(List<PatchBuildData>))]
+[JsonSerializable(typeof(Dictionary<string, Stats>))]
 [JsonSerializable(typeof(ChunkInfo))]
 [JsonSerializable(typeof(FileChunkInfo))]
 [JsonSerializable(typeof(AppSettings))]
@@ -302,6 +391,9 @@ public class ServerSwitchCacheInfo
 // 转服功能相关类型
 [JsonSerializable(typeof(APMConfig))]
 [JsonSerializable(typeof(ServerSwitchCacheInfo))]
+// 私服状态相关类型
+[JsonSerializable(typeof(ServerStatusResponse))]
+[JsonSerializable(typeof(ServerStatus))]
 [JsonSerializable(typeof(List<string>))]
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {
