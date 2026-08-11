@@ -199,6 +199,8 @@
   <data name="DocumentSettingPage_VideoConnect" xml:space="preserve"><value>How to Connect to a Private Server</value></data>
   <data name="DocumentSettingPage_Back" xml:space="preserve"><value>Back</value></data>
   <data name="DocumentSettingPage_Subtitle" xml:space="preserve"><value>Tutorials, error codes, and video guides for playing on private servers.</value></data>
+  <data name="DocumentSettingPage_VideoHintTitle" xml:space="preserve"><value>Video tutorials are available below</value></data>
+  <data name="DocumentSettingPage_VideoHintMessage" xml:space="preserve"><value>Scroll to the bottom of this page for the complete video walkthrough.</value></data>
 
   <data name="DocumentSettingPage_StepRSA" xml:space="preserve"><value>Enable RSA</value></data>
   <data name="DocumentSettingPage_StepRSADetail" xml:space="preserve"><value>Go to Basic Info tab and turn on the RSA switch. This patches the game client to bypass official server verification.</value></data>
@@ -215,12 +217,16 @@
   <data name="Ldiff_Ready" xml:space="preserve"><value>Official manifest loaded. {0} resource package(s) will be updated.</value></data>
   <data name="Ldiff_NoUpdate" xml:space="preserve"><value>No compatible LDiff update is currently available.</value></data>
   <data name="Ldiff_GameRunning" xml:space="preserve"><value>Close the game before applying the update.</value></data>
+  <data name="Ldiff_OfficialPackageRequired" xml:space="preserve"><value>The official incremental package is missing or incomplete. Finish pre-download or repair the game in the official launcher, then try again.</value></data>
   <data name="Ldiff_Success" xml:space="preserve"><value>Updated successfully to {0}.</value></data>
   <data name="Ldiff_Failed" xml:space="preserve"><value>LDiff update failed: {0}</value></data>
   <data name="Ldiff_Cancelled" xml:space="preserve"><value>LDiff update cancelled.</value></data>
   <data name="Ldiff_Cancelling" xml:space="preserve"><value>Cancelling safely...</value></data>
   <data name="AppUpdate_Title" xml:space="preserve"><value>Application Update</value></data>
   <data name="AppUpdate_VersionLine" xml:space="preserve"><value>A new version is available: {0} to {1}</value></data>
+  <data name="AppUpdate_CurrentVersion" xml:space="preserve"><value>Current version</value></data>
+  <data name="AppUpdate_LatestVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="AppUpdate_ReleaseNotes" xml:space="preserve"><value>What's new</value></data>
   <data name="AppUpdate_Published" xml:space="preserve"><value>Published: {0}</value></data>
   <data name="AppUpdate_Source" xml:space="preserve"><value>Source: {0}</value></data>
   <data name="AppUpdate_NoReleaseNotes" xml:space="preserve"><value>No release notes.</value></data>

@@ -21,6 +21,8 @@ public class AppSettings
 
     public string LastShownChangelogVersion { get; set; } = string.Empty;
 
+    public string LastShownTutorialVersion { get; set; } = string.Empty;
+
     public CloseWindowOption CloseWindowOption { get; set; } = CloseWindowOption.Exit;
 
     public string Language { get; set; } = string.Empty;

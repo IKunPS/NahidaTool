@@ -46,9 +46,17 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
 
             TargetVersionText.Text = _update.TargetVersion;
             DownloadSizeText.Text = FormatSize(_update.DownloadSize);
-            StatusText.Text = string.Format(Lang.Ldiff_Ready, _update.Resources.Count);
+            StatusText.Text = LdiffPatchService.HasOfficialIncrementalPackage(_settings.GameInstallPath)
+                ? string.Format(Lang.Ldiff_Ready, _update.Resources.Count)
+                : Lang.Ldiff_OfficialPackageRequired;
             IsPrimaryButtonEnabled = true;
             UpdateProgressBar.IsIndeterminate = false;
+        }
+        catch (LdiffPrerequisiteException ex)
+        {
+            StatusText.Text = Lang.Ldiff_OfficialPackageRequired;
+            UpdateProgressBar.IsIndeterminate = false;
+            LogService.Warn($"LDiff 前置条件未满足: {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -75,6 +83,12 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
             return;
         }
 
+        if (!LdiffPatchService.HasOfficialIncrementalPackage(_settings.GameInstallPath))
+        {
+            StatusText.Text = Lang.Ldiff_OfficialPackageRequired;
+            return;
+        }
+
         ContentDialogButtonClickDeferral deferral = args.GetDeferral();
         _running = true;
         IsPrimaryButtonEnabled = false;
@@ -96,7 +110,8 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
         {
             string localLdiff = Path.Combine(_settings.GameInstallPath, "ldiff");
             await service.ApplyUpdateAsync(_update, _settings.GameInstallPath,
-                Directory.Exists(localLdiff) ? localLdiff : null, _cts.Token);
+                Directory.Exists(localLdiff) ? localLdiff : null, _cts.Token,
+                requireOfficialPackage: true);
 
             AppSettings.Update(settings => settings.GameVersion = _update.TargetVersion);
             _settings.GameVersion = _update.TargetVersion;
@@ -115,6 +130,12 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
             StatusText.Text = Lang.Ldiff_Cancelled;
             if (_closeAfterCancellation)
                 Hide();
+        }
+        catch (LdiffPrerequisiteException ex)
+        {
+            StatusText.Text = Lang.Ldiff_OfficialPackageRequired;
+            IsPrimaryButtonEnabled = true;
+            LogService.Warn($"LDiff 前置条件未满足: {ex.Message}");
         }
         catch (Exception ex)
         {

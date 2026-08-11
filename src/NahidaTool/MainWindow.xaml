@@ -120,7 +120,8 @@
                 </NavigationViewItem>
 
                 <!-- 文档 -->
-                <NavigationViewItem Tag="Document"
+                <NavigationViewItem x:Name="NavigationViewItem_Document"
+                                    Tag="Document"
                                     ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
                         <ToolTip HorizontalOffset="12">

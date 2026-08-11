@@ -6,6 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using NahidaTool.Models.Config;
@@ -21,6 +23,33 @@ public sealed class LdiffUpdateInfo
     public required string PatchId { get; init; }
     public required IReadOnlyList<PatchBuildData> Resources { get; init; }
     public long DownloadSize { get; init; }
+}
+
+public sealed class LdiffPrerequisiteException : InvalidOperationException
+{
+    public LdiffPrerequisiteException(string message) : base(message)
+    {
+    }
+
+    public LdiffPrerequisiteException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
+internal sealed class LdiffPatchJournal
+{
+    public int SchemaVersion { get; set; } = 1;
+    public string SourceVersion { get; set; } = string.Empty;
+    public string TargetVersion { get; set; } = string.Empty;
+    public string? CurrentAsset { get; set; }
+    public HashSet<string> CompletedAssets { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(LdiffPatchJournal))]
+internal partial class LdiffPatchJournalJsonContext : JsonSerializerContext
+{
 }
 
 public sealed class LdiffPatchService
@@ -68,7 +97,8 @@ public sealed class LdiffPatchService
 
         if (!resources.Any(resource => string.Equals(resource.MatchingField,
                 ServerConfig.VoicePackages.Game, StringComparison.OrdinalIgnoreCase)))
-            return null;
+            throw new LdiffPrerequisiteException(
+                $"当前版本 {sourceVersion} 没有可用的官方增量补丁，请先通过官方启动器更新或修复游戏。");
 
         long downloadSize = resources.Sum(resource => resource.Stats![sourceVersion].CompressedSize);
         return new LdiffUpdateInfo
@@ -85,11 +115,20 @@ public sealed class LdiffPatchService
         LdiffUpdateInfo update,
         string gameRoot,
         string? existingLdiffFolder = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool requireOfficialPackage = false)
     {
         string normalizedGameRoot = NormalizeRoot(gameRoot);
         string workRoot = Path.Combine(normalizedGameRoot, ".nahida", "ldiff", SafeFileName(update.PatchId));
+        string backupRoot = Path.Combine(workRoot, "backup");
         Directory.CreateDirectory(workRoot);
+        Directory.CreateDirectory(backupRoot);
+
+        if (requireOfficialPackage && !ContainsAnyFile(existingLdiffFolder))
+            throw new LdiffPrerequisiteException(
+                "未找到官方启动器下载的增量包，请先在官方启动器中完成预下载。");
+
+        LdiffPatchJournal journal = LoadJournal(workRoot, update);
 
         long completedBytes = 0;
         long totalBytes = Math.Max(1, update.DownloadSize);
@@ -112,6 +151,9 @@ public sealed class LdiffPatchService
 
                 SophonLdiffManifest manifest = SophonLdiffManifest.ParseFrom(manifestBytes);
                 var selectedDiffs = SelectDiffs(manifest, update.SourceVersion).ToList();
+                if (selectedDiffs.Count == 0)
+                    throw new LdiffPrerequisiteException(
+                        $"官方增量包不包含从 {update.SourceVersion} 更新所需的 {name} 补丁，请先在官方启动器中完成预下载。");
                 string chunkRoot = Path.Combine(workRoot, SafeFileName(name));
                 Directory.CreateDirectory(chunkRoot);
                 var chunkPaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -127,7 +169,7 @@ public sealed class LdiffPatchService
                         {
                             long current = Interlocked.Add(ref completedBytes, delta);
                             ReportProgress(current, totalBytes);
-                        }, ct);
+                        }, ct, requireOfficialPackage);
                     chunkPaths[diff.ChunkName] = chunkPath;
                 }
 
@@ -147,8 +189,22 @@ public sealed class LdiffPatchService
 
                     if (!workspace.ChunkPaths.TryGetValue(selected.Diff.ChunkName, out string? chunkPath))
                         throw new FileNotFoundException($"缺少 LDiff 文件: {selected.Diff.ChunkName}");
-                    await ApplyAssetAsync(normalizedGameRoot, workspace.ChunkRoot,
-                        selected.Asset, selected.Diff, chunkPath, ct);
+
+                    bool isRecovery = journal.CompletedAssets.Contains(selected.Asset.AssetName) ||
+                                      string.Equals(journal.CurrentAsset, selected.Asset.AssetName,
+                                          StringComparison.OrdinalIgnoreCase) ||
+                                      HasAssetBackup(backupRoot, selected.Asset, selected.Diff);
+                    journal.CurrentAsset = selected.Asset.AssetName;
+                    SaveJournal(workRoot, journal);
+
+                    bool repaired = await ApplyAssetAsync(normalizedGameRoot, workspace.ChunkRoot,
+                        backupRoot, selected.Asset, selected.Diff, chunkPath, isRecovery, ct);
+                    if (repaired && isRecovery)
+                        SetStatus($"已清理异常文件并重新修补: {selected.Asset.AssetName}");
+
+                    journal.CompletedAssets.Add(selected.Asset.AssetName);
+                    journal.CurrentAsset = null;
+                    SaveJournal(workRoot, journal);
 
                     double patchProgress = totalAssets == 0 ? 1 : (double)currentAsset / totalAssets;
                     ProgressChanged?.Invoke(patchProgress, 0, 0);
@@ -187,9 +243,25 @@ public sealed class LdiffPatchService
         string chunkRoot,
         string? existingLdiffFolder,
         Action<long> progress,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool requireOfficialPackage)
     {
         ValidateChunkName(diff.ChunkName);
+
+        if (requireOfficialPackage)
+        {
+            string? officialChunk = string.IsNullOrWhiteSpace(existingLdiffFolder)
+                ? null
+                : Path.Combine(existingLdiffFolder, diff.ChunkName);
+            if (officialChunk == null ||
+                !await IsFileValidAsync(officialChunk, diff.ChunkSize, diff.ChunkHashMd5, ct))
+                throw new LdiffPrerequisiteException(
+                    $"官方增量包缺少或损坏: {diff.ChunkName}。请先在官方启动器中完成预下载。");
+
+            progress(diff.ChunkSize);
+            return officialChunk;
+        }
+
         string? existing = FindExistingChunk(diff, chunkRoot, existingLdiffFolder);
         if (existing != null && await IsFileValidAsync(existing, diff.ChunkSize, diff.ChunkHashMd5, ct))
         {
@@ -267,16 +339,22 @@ public sealed class LdiffPatchService
         }
     }
 
-    private static async Task ApplyAssetAsync(
+    private async Task<bool> ApplyAssetAsync(
         string gameRoot,
         string workRoot,
+        string backupRoot,
         LdiffAssetProperty asset,
         LdiffAssetData diff,
         string chunkPath,
+        bool isRecovery,
         CancellationToken ct)
     {
         string targetPath = ResolveUnderRoot(gameRoot, asset.AssetName);
+        if (await IsFileValidAsync(targetPath, asset.AssetSize, asset.AssetHashMd5, ct))
+            return false;
+
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+        string targetBackupPath = ResolveUnderRoot(backupRoot, asset.AssetName);
         string temporaryOutput = targetPath + $".nahida-{Guid.NewGuid():N}.tmp";
         string? temporaryHdiff = null;
 
@@ -291,7 +369,20 @@ public sealed class LdiffPatchService
             else
             {
                 string sourcePath = ResolveUnderRoot(gameRoot, diff.SourcePath);
-                await VerifyFileAsync(sourcePath, diff.SourceSize, diff.SourceHashMd5, ct);
+                string sourceBackupPath = ResolveUnderRoot(backupRoot, diff.SourcePath);
+                bool sourceIsTarget = string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase);
+                string patchSource;
+
+                if (sourceIsTarget)
+                {
+                    patchSource = await PrepareInPlaceSourceAsync(targetPath, sourceBackupPath,
+                        diff.SourceSize, diff.SourceHashMd5, asset.AssetName, ct);
+                }
+                else
+                {
+                    patchSource = await FindValidPatchSourceAsync(sourcePath, sourceBackupPath,
+                        diff.SourceSize, diff.SourceHashMd5, diff.SourcePath, ct);
+                }
 
                 temporaryHdiff = Path.Combine(workRoot, $"{Guid.NewGuid():N}.hdiff");
                 await CopySliceAsync(chunkPath, temporaryHdiff, diff.HdiffInChunkOffset, diff.HdiffSize, ct);
@@ -299,12 +390,14 @@ public sealed class LdiffPatchService
 
                 var patcher = new HDiffPatch();
                 patcher.Initialize(temporaryHdiff);
-                patcher.Patch(sourcePath, temporaryOutput, true, ct, false, true);
+                patcher.Patch(patchSource, temporaryOutput, true, ct, false, true);
             }
 
             await VerifyFileAsync(temporaryOutput, asset.AssetSize, asset.AssetHashMd5, ct);
             ct.ThrowIfCancellationRequested();
-            File.Move(temporaryOutput, targetPath, true);
+            CommitPatchedFile(temporaryOutput, targetPath, targetBackupPath,
+                asset.AssetName, isRecovery);
+            return true;
         }
         finally
         {
@@ -312,6 +405,87 @@ public sealed class LdiffPatchService
             if (temporaryHdiff != null)
                 TryDeleteFile(temporaryHdiff);
         }
+    }
+
+    private async Task<string> PrepareInPlaceSourceAsync(
+        string targetPath,
+        string backupPath,
+        long expectedSize,
+        string? expectedMd5,
+        string assetName,
+        CancellationToken ct)
+    {
+        if (File.Exists(backupPath))
+        {
+            if (await IsFileValidAsync(backupPath, expectedSize, expectedMd5, ct))
+                return backupPath;
+
+            if (await IsFileValidAsync(targetPath, expectedSize, expectedMd5, ct))
+            {
+                SetStatus($"正在使用官方启动器修复后的原文件: {assetName}");
+                File.Delete(backupPath);
+                return targetPath;
+            }
+
+            throw new LdiffPrerequisiteException(
+                $"原始文件及其修补备份均已损坏: {assetName}。请先使用官方启动器修复游戏并重新下载增量包。");
+        }
+
+        try
+        {
+            await VerifyFileAsync(targetPath, expectedSize, expectedMd5, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or InvalidDataException)
+        {
+            throw new LdiffPrerequisiteException(
+                $"待修补的原始文件缺失或损坏: {assetName}。请先使用官方启动器修复游戏并重新下载增量包。", ex);
+        }
+
+        return targetPath;
+    }
+
+    private static async Task<string> FindValidPatchSourceAsync(
+        string sourcePath,
+        string sourceBackupPath,
+        long expectedSize,
+        string? expectedMd5,
+        string sourceName,
+        CancellationToken ct)
+    {
+        if (await IsFileValidAsync(sourceBackupPath, expectedSize, expectedMd5, ct))
+            return sourceBackupPath;
+        if (await IsFileValidAsync(sourcePath, expectedSize, expectedMd5, ct))
+            return sourcePath;
+
+        throw new LdiffPrerequisiteException(
+            $"待修补的原始文件缺失或损坏: {sourceName}。请先使用官方启动器修复游戏并重新下载增量包。");
+    }
+
+    private void CommitPatchedFile(
+        string patchedFile,
+        string targetPath,
+        string backupPath,
+        string assetName,
+        bool isRecovery)
+    {
+        if (File.Exists(targetPath) && !File.Exists(backupPath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
+            File.Replace(patchedFile, targetPath, backupPath, true);
+            return;
+        }
+
+        if (File.Exists(targetPath))
+        {
+            if (isRecovery)
+                SetStatus($"检测到上次修补文件异常，正在清理: {assetName}");
+            File.Delete(targetPath);
+        }
+        File.Move(patchedFile, targetPath);
     }
 
     private static async Task CopySliceAsync(
@@ -416,6 +590,82 @@ public sealed class LdiffPatchService
         string actual = Convert.ToHexString(MD5.HashData(data)).ToLowerInvariant();
         if (!string.Equals(actual, expectedMd5, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"{name} MD5 不匹配");
+    }
+
+    public static bool HasOfficialIncrementalPackage(string gameRoot)
+    {
+        if (string.IsNullOrWhiteSpace(gameRoot))
+            return false;
+        return ContainsAnyFile(Path.Combine(gameRoot, "ldiff"));
+    }
+
+    private static bool ContainsAnyFile(string? folder)
+    {
+        try
+        {
+            return !string.IsNullOrWhiteSpace(folder) &&
+                   Directory.Exists(folder) &&
+                   Directory.EnumerateFiles(folder, "*", SearchOption.TopDirectoryOnly).Any();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool HasAssetBackup(
+        string backupRoot,
+        LdiffAssetProperty asset,
+        LdiffAssetData diff)
+    {
+        if (File.Exists(ResolveUnderRoot(backupRoot, asset.AssetName)))
+            return true;
+        return !string.IsNullOrWhiteSpace(diff.SourcePath) &&
+               File.Exists(ResolveUnderRoot(backupRoot, diff.SourcePath));
+    }
+
+    private static LdiffPatchJournal LoadJournal(string workRoot, LdiffUpdateInfo update)
+    {
+        string path = Path.Combine(workRoot, "patch-state.json");
+        try
+        {
+            if (File.Exists(path))
+            {
+                LdiffPatchJournal? existing = JsonSerializer.Deserialize(
+                    File.ReadAllText(path), LdiffPatchJournalJsonContext.Default.LdiffPatchJournal);
+                if (existing?.SchemaVersion == 1 &&
+                    string.Equals(existing.SourceVersion, update.SourceVersion,
+                        StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(existing.TargetVersion, update.TargetVersion,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    existing.CompletedAssets = new HashSet<string>(
+                        existing.CompletedAssets ?? Enumerable.Empty<string>(),
+                        StringComparer.OrdinalIgnoreCase);
+                    return existing;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LogService.Warn($"读取 LDiff 修补记录失败，将根据备份恢复: {ex.Message}");
+        }
+
+        return new LdiffPatchJournal
+        {
+            SourceVersion = update.SourceVersion,
+            TargetVersion = update.TargetVersion,
+        };
+    }
+
+    private static void SaveJournal(string workRoot, LdiffPatchJournal journal)
+    {
+        string path = Path.Combine(workRoot, "patch-state.json");
+        string temporaryPath = path + ".tmp";
+        string json = JsonSerializer.Serialize(
+            journal, LdiffPatchJournalJsonContext.Default.LdiffPatchJournal);
+        File.WriteAllText(temporaryPath, json);
+        File.Move(temporaryPath, path, true);
     }
 
     private static string NormalizeRoot(string root)

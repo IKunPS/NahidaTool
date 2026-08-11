@@ -28,6 +28,12 @@
                                TextWrapping="Wrap"/>
                 </StackPanel>
 
+                <InfoBar IsOpen="True"
+                         IsClosable="False"
+                         Severity="Informational"
+                         Title="{x:Bind models:Lang.DocumentSettingPage_VideoHintTitle}"
+                         Message="{x:Bind models:Lang.DocumentSettingPage_VideoHintMessage}"/>
+
                 <!-- 服务器游玩教程 -->
                 <StackPanel Spacing="12">
                     <TextBlock FontSize="20"

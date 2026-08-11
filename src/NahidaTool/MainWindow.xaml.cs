@@ -63,7 +63,7 @@ public sealed partial class MainWindow : WindowEx
             _ = FetchAndSaveLatestVersionAsync();
 
         ContentFrame.Navigated += ContentFrame_Navigated;
-        ContentFrame.Navigate(typeof(HomePage), _settings);
+        NavigateToInitialPage();
         Activated += MainWindow_Activated;
 
         BackgroundChangedMessage.BackgroundChanged -= OnBackgroundChanged;
@@ -82,6 +82,24 @@ public sealed partial class MainWindow : WindowEx
 
         AppWindow.Closing += MainWindow_AppWindow_Closing;
         Closed += MainWindow_Closed;
+    }
+
+    private void NavigateToInitialPage()
+    {
+        bool shouldShowTutorial = !string.Equals(
+            _settings.LastShownTutorialVersion,
+            AppVersion.Current,
+            StringComparison.OrdinalIgnoreCase);
+
+        if (shouldShowTutorial &&
+            ContentFrame.Navigate(typeof(Pages.SettingPages.DocumentSettingPage)))
+        {
+            MainNavView.SelectedItem = NavigationViewItem_Document;
+            return;
+        }
+
+        MainNavView.SelectedItem = NavigationViewItem_Home;
+        ContentFrame.Navigate(typeof(HomePage), _settings);
     }
 
     private void MainWindow_AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
@@ -367,13 +385,13 @@ public sealed partial class MainWindow : WindowEx
         if (Content?.XamlRoot == null) return;
         var changelog = string.Join("\n", new[]
         {
-            "v0.1.3",
-            "· 新增程序自更新：从代理推荐服务器检查更新，校验更新包并自动重启",
-            "· 新增国服/国际服 LDiff 差分更新，支持断点续传、本地文件复用与完整性校验",
-            "· 重做游戏下载弹窗：支持区服切换、多语音包、容量与所需空间显示",
-            "· 新增私服版本推荐，并优化下载暂停、续传、进度和安装路径识别",
-            "· 转服优化：资源缓存 MD5 校验、事务化替换与失败回滚",
-            "· 下载设置移至首页，补充 7.x RSA 资源及发行包 SHA-256 生成脚本"
+            "v0.1.4",
+            "· 重做程序更新弹窗，统一主题样式，优化版本信息、更新说明与下载进度展示",
+            "· 每个程序版本首次启动时自动打开教程页，并在文档页增加视频教程提示",
+            "· 优化预下载版本资源获取，正式分支不可用时可安全回退到对应预下载分支",
+            "· 强化 LDiff 更新前置检查，缺少或损坏官方增量包时提示先通过官方启动器预下载或修复",
+            "· LDiff 新增修补记录、原文件备份与异常恢复，问题文件可清理后重新修补",
+            "· 程序更新时自动暂存转服资源，删除旧版 app 后恢复，并支持更新中断后的再次恢复"
         });
         await new ContentDialog
         {
@@ -425,6 +443,17 @@ public sealed partial class MainWindow : WindowEx
         else
         {
             Border_OverlayMask.Opacity = 1;
+        }
+
+        if (e.SourcePageType == typeof(Pages.SettingPages.DocumentSettingPage) &&
+            !string.Equals(
+                _settings.LastShownTutorialVersion,
+                AppVersion.Current,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            _settings = AppSettings.Update(settings =>
+                settings.LastShownTutorialVersion = AppVersion.Current);
+            LogService.Debug($"Tutorial page shown for app version {AppVersion.Current}");
         }
 
         if (e.SourcePageType == typeof(SettingsPage) && e.Content is SettingsPage settingsPage)

@@ -93,6 +93,12 @@ public class BuildData
 
 public class BuildResponse
 {
+    [JsonPropertyName("retcode")]
+    public int RetCode { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
     [JsonPropertyName("data")]
     public BuildResponseData? Data { get; set; }
 }

@@ -49,3 +49,5 @@ finally {
         Remove-Item -LiteralPath $stagingRoot -Recurse -Force
     }
 }
+
+(Get-Item ..\bin\release\NahidaTool-x64.zip).Length > has.txt

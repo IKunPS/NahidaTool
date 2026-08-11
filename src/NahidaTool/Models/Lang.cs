@@ -188,6 +188,7 @@ public static class Lang
     public static string Ldiff_Ready => _resourceManager.GetString("Ldiff_Ready") ?? "Official manifest loaded. {0} resource package(s) will be updated.";
     public static string Ldiff_NoUpdate => _resourceManager.GetString("Ldiff_NoUpdate") ?? "No compatible LDiff update is currently available.";
     public static string Ldiff_GameRunning => _resourceManager.GetString("Ldiff_GameRunning") ?? "Close the game before applying the update.";
+    public static string Ldiff_OfficialPackageRequired => _resourceManager.GetString("Ldiff_OfficialPackageRequired") ?? "The official incremental package is missing or incomplete. Finish pre-download or repair the game in the official launcher, then try again.";
     public static string Ldiff_Success => _resourceManager.GetString("Ldiff_Success") ?? "Updated successfully to {0}.";
     public static string Ldiff_Failed => _resourceManager.GetString("Ldiff_Failed") ?? "LDiff update failed: {0}";
     public static string Ldiff_Cancelled => _resourceManager.GetString("Ldiff_Cancelled") ?? "LDiff update cancelled.";
@@ -195,6 +196,9 @@ public static class Lang
 
     public static string AppUpdate_Title => _resourceManager.GetString("AppUpdate_Title") ?? "Application Update";
     public static string AppUpdate_VersionLine => _resourceManager.GetString("AppUpdate_VersionLine") ?? "A new version is available: {0} to {1}";
+    public static string AppUpdate_CurrentVersion => _resourceManager.GetString("AppUpdate_CurrentVersion") ?? "Current version";
+    public static string AppUpdate_LatestVersion => _resourceManager.GetString("AppUpdate_LatestVersion") ?? "New version";
+    public static string AppUpdate_ReleaseNotes => _resourceManager.GetString("AppUpdate_ReleaseNotes") ?? "What's new";
     public static string AppUpdate_Published => _resourceManager.GetString("AppUpdate_Published") ?? "Published: {0}";
     public static string AppUpdate_Source => _resourceManager.GetString("AppUpdate_Source") ?? "Source: {0}";
     public static string AppUpdate_NoReleaseNotes => _resourceManager.GetString("AppUpdate_NoReleaseNotes") ?? "No release notes.";
@@ -210,6 +214,8 @@ public static class Lang
 
     // DocumentSettingPage
     public static string DocumentSettingPage_Subtitle => _resourceManager.GetString("DocumentSettingPage_Subtitle") ?? "";
+    public static string DocumentSettingPage_VideoHintTitle => _resourceManager.GetString("DocumentSettingPage_VideoHintTitle") ?? "Video tutorials are available below";
+    public static string DocumentSettingPage_VideoHintMessage => _resourceManager.GetString("DocumentSettingPage_VideoHintMessage") ?? "Scroll to the bottom of this page for the complete video walkthrough.";
     public static string DocumentSettingPage_HowToPlay => _resourceManager.GetString("DocumentSettingPage_HowToPlay") ?? "How to Play";
     public static string DocumentSettingPage_Step1 => _resourceManager.GetString("DocumentSettingPage_Step1") ?? "1. Enable Proxy";
     public static string DocumentSettingPage_Step1Detail => _resourceManager.GetString("DocumentSettingPage_Step1Detail") ?? "";

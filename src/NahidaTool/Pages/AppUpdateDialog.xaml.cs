@@ -20,11 +20,18 @@ public sealed partial class AppUpdateDialog : ContentDialog
         InitializeComponent();
         _update = update;
         _service = service;
-        VersionText.Text = string.Format(Lang.AppUpdate_VersionLine, AppVersion.Current, update.Version);
-        string sourceText = string.Format(Lang.AppUpdate_Source, update.SourceServer);
-        PublishedText.Text = update.PublishedAt == DateTimeOffset.MinValue
-            ? sourceText
-            : $"{string.Format(Lang.AppUpdate_Published, update.PublishedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm"))} · {sourceText}";
+        CurrentVersionText.Text = AppVersion.Current;
+        TargetVersionText.Text = update.Version;
+        SourceText.Text = string.Format(Lang.AppUpdate_Source, update.SourceServer);
+        if (update.PublishedAt == DateTimeOffset.MinValue)
+        {
+            PublishedInfo.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            PublishedText.Text = string.Format(Lang.AppUpdate_Published,
+                update.PublishedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm"));
+        }
         ReleaseNotesText.Text = string.IsNullOrWhiteSpace(update.ReleaseNotes)
             ? Lang.AppUpdate_NoReleaseNotes
             : update.ReleaseNotes;
@@ -43,13 +50,14 @@ public sealed partial class AppUpdateDialog : ContentDialog
         _running = true;
         IsPrimaryButtonEnabled = false;
         CloseButtonText = Lang.AppUpdate_Cancel;
-        UpdateProgressBar.Visibility = Visibility.Visible;
+        ProgressPanel.Visibility = Visibility.Visible;
         _cts = new CancellationTokenSource();
 
         var progress = new Progress<AppUpdateProgress>(value =>
         {
             double ratio = value.Total > 0 ? Math.Clamp((double)value.Current / value.Total, 0, 1) : 0;
             UpdateProgressBar.Value = ratio * 100;
+            ProgressPercentText.Text = $"{ratio:P0}";
             StatusText.Text = string.Format(Lang.AppUpdate_Downloading,
                 ratio, FormatSize(value.Current), FormatSize(value.Total));
         });

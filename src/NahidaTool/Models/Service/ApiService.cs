@@ -147,23 +147,64 @@ public class ApiService
     /// </summary>
     public async Task<BuildResponse> GetBuildInfoAsync(string? tag = null, CancellationToken ct = default)
     {
-        LogService.Debug($"开始获取构建信息: 区域={_currentRegion}, 版本={tag ?? "最新"}");
+        string? requestedTag = string.IsNullOrWhiteSpace(tag) ? null : tag.Trim();
+        LogService.Debug($"开始获取构建信息: 区域={_currentRegion}, 版本={requestedTag ?? "最新"}");
 
-        // 首先获取分支信息
+        // 正式分支仍然是首选，这也保留了按 tag 下载历史版本的能力。
         var (packageId, password) = await GetBranchInfoAsync(ct);
+        BuildResponse mainResult = await RequestBuildInfoAsync(
+            "main", packageId, password, requestedTag, ct);
 
-        string sophonApiUrl = ServerConfig.GetSophonApiUrl(_currentRegion);
-        string platApp = ServerConfig.GetPlatApp(_currentRegion);
+        if (requestedTag == null || IsMatchingBuild(mainResult, requestedTag))
+            return mainResult;
 
-        // 直接拼接URL
-        string url = $"{sophonApiUrl}?branch=main&package_id={packageId}&password={password}&plat_app={platApp}";
-
-        if (!string.IsNullOrEmpty(tag))
+        // getBuild 对尚未正式发布的 tag 返回 not found。只有该 tag 确实是当前
+        // pre_download 版本时才回退，避免无效或过旧版本误拿到最新预下载资源。
+        GameBranch? gameBranch = await GetGameBranchAsync(ct);
+        BranchInfo? preDownload = gameBranch?.PreDownload;
+        if (preDownload == null ||
+            !string.Equals(preDownload.Tag, requestedTag, StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(preDownload.PackageId) ||
+            string.IsNullOrWhiteSpace(preDownload.Password))
         {
-            url += $"&tag={tag}";
+            return mainResult;
         }
 
-        LogService.Debug($"请求构建信息: {url}");
+        LogService.Info($"版本 {requestedTag} 尚未在正式分支发布，尝试使用预下载分支资源");
+
+        // Sophon 的预下载 getBuild 只提供当前预下载版本，携带 tag 会返回 not found。
+        BuildResponse preDownloadResult = await RequestBuildInfoAsync(
+            "predownload", preDownload.PackageId, preDownload.Password, null, ct);
+        if (IsMatchingBuild(preDownloadResult, requestedTag))
+        {
+            LogService.Info($"已从预下载分支获取版本 {requestedTag} 的资源");
+            return preDownloadResult;
+        }
+
+        LogService.Warn(
+            $"预下载分支返回的版本与请求不符: 请求={requestedTag}, 返回={preDownloadResult.Data?.Tag ?? "空"}");
+        return mainResult;
+    }
+
+    private async Task<BuildResponse> RequestBuildInfoAsync(
+        string branch,
+        string packageId,
+        string password,
+        string? tag,
+        CancellationToken ct)
+    {
+        string sophonApiUrl = ServerConfig.GetSophonApiUrl(_currentRegion);
+        string platApp = ServerConfig.GetPlatApp(_currentRegion);
+        string url = $"{sophonApiUrl}?branch={Uri.EscapeDataString(branch)}" +
+                     $"&package_id={Uri.EscapeDataString(packageId)}" +
+                     $"&password={Uri.EscapeDataString(password)}" +
+                     $"&plat_app={Uri.EscapeDataString(platApp)}";
+
+        if (!string.IsNullOrWhiteSpace(tag))
+            url += $"&tag={Uri.EscapeDataString(tag)}";
+
+        // package password 不应写入日志。
+        LogService.Debug($"请求构建信息: 区域={_currentRegion}, 分支={branch}, 版本={tag ?? "最新"}");
 
         using HttpResponseMessage response = await _httpClient.GetAsync(url, ct);
         LogService.Debug($"构建API响应状态: {(int)response.StatusCode} {response.StatusCode}");
@@ -174,9 +215,17 @@ public class ApiService
 
         var result = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.BuildResponse) ??
                      new BuildResponse();
-        LogService.Info($"构建信息解析成功: Tag={result.Data?.Tag}, Manifests数量={result.Data?.Manifests?.Count ?? 0}");
+        LogService.Info(
+            $"构建信息解析完成: 分支={branch}, RetCode={result.RetCode}, Tag={result.Data?.Tag}, Manifests数量={result.Data?.Manifests?.Count ?? 0}");
 
         return result;
+    }
+
+    private static bool IsMatchingBuild(BuildResponse response, string requestedTag)
+    {
+        return response.RetCode == 0 &&
+               string.Equals(response.Data?.Tag, requestedTag, StringComparison.OrdinalIgnoreCase) &&
+               response.Data?.Manifests is { Count: > 0 };
     }
 
     public async Task<PatchBuildResponse> GetPatchBuildInfoAsync(CancellationToken ct = default)

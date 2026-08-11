@@ -1,8 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
+#include <algorithm>
 #include <filesystem>
 #include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 #include <Windows.h>
 
 #pragma comment(linker, "/subsystem:windows /entry:wmainCRTStartup")
@@ -42,6 +46,126 @@ void Log(std::wstring output)
         WriteConsole(stdOut, output.c_str(), static_cast<DWORD>(output.length()), NULL, NULL);
         WriteConsole(stdOut, L"\r\n", 2, NULL, NULL);
     }
+}
+
+void MoveTreeReplacing(const path& source, const path& destination)
+{
+    if (!exists(source))
+        return;
+
+    create_directories(destination.parent_path());
+    if (!exists(destination))
+    {
+        rename(source, destination);
+        return;
+    }
+
+    if (!is_directory(source) || !is_directory(destination))
+    {
+        remove_all(destination);
+        rename(source, destination);
+        return;
+    }
+
+    std::vector<path> entries;
+    for (const auto& entry : directory_iterator(source))
+        entries.push_back(entry.path());
+
+    for (const auto& source_entry : entries)
+    {
+        path destination_entry = destination / source_entry.filename();
+        if (is_directory(source_entry) && exists(destination_entry) && is_directory(destination_entry))
+        {
+            MoveTreeReplacing(source_entry, destination_entry);
+            continue;
+        }
+
+        if (exists(destination_entry))
+            remove_all(destination_entry);
+        rename(source_entry, destination_entry);
+    }
+
+    remove(source);
+}
+
+bool MigrateServerSwitchResources(
+    const path& base_folder,
+    const path& target_folder,
+    const std::vector<path>& old_app_folders)
+{
+    const path preservation_root = base_folder / L".update" / L"ServerSwitchCache";
+    const path target_cache = target_folder / L"Assets" / L"ServerSwitchCache";
+
+    try
+    {
+        // Recover data left by an interrupted previous update before collecting the current cache.
+        if (exists(preservation_root))
+        {
+            Log(L"Recovering previously preserved server-switch resources");
+            MoveTreeReplacing(preservation_root, target_cache);
+        }
+
+        // Merge older caches first so the most recent app version wins on duplicate files.
+        for (const path& old_folder : old_app_folders)
+        {
+            path old_cache = old_folder / L"Assets" / L"ServerSwitchCache";
+            if (!exists(old_cache))
+                continue;
+
+            Log(L"Preserving server-switch resources from: " + old_folder.filename().wstring());
+            MoveTreeReplacing(old_cache, preservation_root);
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        Log(L"Preserve server-switch resources failed: " + ToStr(ex.what()));
+        MessageBox(
+            NULL,
+            L"Failed to preserve the server-switch resources.\r\n"
+            L"To prevent data loss, old app files were not deleted. Please restart NahidaTool and try again.",
+            L"NahidaTool Update",
+            MB_ICONERROR | MB_OK);
+        return false;
+    }
+
+    for (const path& old_folder : old_app_folders)
+    {
+        Log(L"Removing old version: " + old_folder.filename().wstring());
+        try
+        {
+            remove_all(old_folder);
+        }
+        catch (const std::exception& ex)
+        {
+            // The cache is already outside the old app folder, so a cleanup failure is safe to ignore.
+            Log(L"Remove old version failed: " + ToStr(ex.what()));
+        }
+    }
+
+    try
+    {
+        if (exists(preservation_root))
+        {
+            Log(L"Restoring server-switch resources into: " + target_folder.filename().wstring());
+            MoveTreeReplacing(preservation_root, target_cache);
+        }
+
+        path update_root = preservation_root.parent_path();
+        if (exists(update_root) && is_empty(update_root))
+            remove(update_root);
+    }
+    catch (const std::exception& ex)
+    {
+        Log(L"Restore server-switch resources failed: " + ToStr(ex.what()));
+        std::wstring message =
+            L"Failed to restore the server-switch resources after updating.\r\n"
+            L"Your data is still preserved at:\r\n" + preservation_root.wstring() +
+            L"\r\n\r\nRestart NahidaTool to retry recovery.";
+        MessageBox(NULL, message.c_str(), L"NahidaTool Update", MB_ICONERROR | MB_OK);
+        return false;
+    }
+
+    return true;
 }
 
 int wmain(int argc, wchar_t* argv[])
@@ -118,6 +242,31 @@ int wmain(int argc, wchar_t* argv[])
 
     if (run_exe.length())
     {
+        path target_folder = path(run_exe).parent_path();
+        std::vector<std::pair<file_time_type, path>> old_app_candidates;
+        for (const auto& folder : directory_iterator(base_folder))
+        {
+            std::wstring folder_name = folder.path().filename().wstring();
+            // Portable packages start in "app"; staged self-updates use "app-<version>".
+            bool is_app_folder = folder_name == L"app" || folder_name.starts_with(L"app-");
+            if (!folder.is_directory() || !is_app_folder || folder.path() == target_folder)
+                continue;
+
+            path old_exe = folder.path() / L"NahidaTool.exe";
+            file_time_type timestamp = exists(old_exe) ? last_write_time(old_exe) : file_time_type::min();
+            old_app_candidates.emplace_back(timestamp, folder.path());
+        }
+        std::sort(old_app_candidates.begin(), old_app_candidates.end(),
+            [](const auto& left, const auto& right) { return left.first < right.first; });
+
+        std::vector<path> old_app_folders;
+        old_app_folders.reserve(old_app_candidates.size());
+        for (const auto& candidate : old_app_candidates)
+            old_app_folders.push_back(candidate.second);
+
+        if (!MigrateServerSwitchResources(base_folder, target_folder, old_app_folders))
+            return 2;
+
         std::wstring arg = forwarded_args;
         Log(L"arg: " + arg);
         STARTUPINFO si;
@@ -134,24 +283,6 @@ int wmain(int argc, wchar_t* argv[])
         Log(L"Process started (" + ToStr(GetProcessId(pi.hProcess)) + L")");
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-
-        auto base_name = path(run_exe).parent_path().filename().wstring();
-        for (auto folder : directory_iterator(base_folder))
-        {
-            auto folder_name = folder.path().filename().wstring();
-            if (folder.is_directory() && folder_name.starts_with(L"app-") && folder_name != base_name)
-            {
-                Log(L"Removing old version: " + folder_name);
-                try
-                {
-                    remove_all(folder);
-                }
-                catch (const std::exception& ex)
-                {
-                    Log(L"Remove old version failed: " + ToStr(ex.what()));
-                }
-            }
-        }
     }
     else
     {
