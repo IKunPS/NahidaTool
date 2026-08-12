@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="NahidaTool.Pages.ServerSwitchCompleteDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:NahidaTool.Models"
+    x:DefaultBindMode="OneWay"
+    Background="{ThemeResource CustomAcrylicBrush}"
+    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+    BorderThickness="1"
+    CornerRadius="12"
+    DefaultButton="Primary"
+    PrimaryButtonText="{x:Bind models:Lang.ServerSwitchPage_OK}"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    Title="{x:Bind models:Lang.ServerSwitchPage_SwitchComplete}">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">500</x:Double>
+    </ContentDialog.Resources>
+
+    <Grid Width="420"
+          Padding="0,8,0,2"
+          RowSpacing="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Width="72" Height="72" HorizontalAlignment="Center">
+            <Border Background="{ThemeResource SystemFillColorSuccessBrush}"
+                    CornerRadius="36"
+                    Opacity="0.14"/>
+            <FontIcon FontSize="30"
+                      Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                      Glyph="&#xE73E;"
+                      IsTextScaleFactorEnabled="False"/>
+        </Grid>
+
+        <TextBlock Grid.Row="1"
+                   HorizontalAlignment="Center"
+                   FontSize="15"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                   LineHeight="23"
+                   Text="{x:Bind models:Lang.ServerSwitchPage_SwitchCompleteMessage}"
+                   TextAlignment="Center"
+                   TextWrapping="Wrap"/>
+
+        <Border Grid.Row="2"
+                Padding="14,12"
+                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <FontIcon VerticalAlignment="Center"
+                          FontSize="17"
+                          Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                          Glyph="&#xE774;"
+                          IsTextScaleFactorEnabled="False"/>
+
+                <StackPanel Grid.Column="1" Spacing="3">
+                    <TextBlock FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="{x:Bind models:Lang.ServerSwitchPage_CurrentServer}"/>
+                    <TextBlock x:Name="RegionText"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <TextBlock x:Name="VersionText"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentDialog>

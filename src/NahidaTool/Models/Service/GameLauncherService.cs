@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using NahidaTool.Models;
 using NahidaTool.Models.Config;
 using NahidaTool.Models.Enum;
 
@@ -151,10 +152,26 @@ public static class GameLauncherService
                 throw new FileNotFoundException($"找不到游戏文件 ({CNExeName} 或 {OSExeName})", path);
         }
 
-        if (settings.EnableRSA && !settings.EnableHookRSA)
+        bool useRsa = settings.EnableRSA;
+        bool useHookRsa = useRsa && settings.EnableHookRSA;
+        if (useRsa && RsaService.FindMatchingRsaDll(settings.GameVersion) == null)
+        {
+            throw new InvalidOperationException(string.Format(
+                Lang.HomePage_RsaPatchUnavailable,
+                string.IsNullOrWhiteSpace(settings.GameVersion)
+                    ? Lang.DownloadPage_UnknownVersion
+                    : settings.GameVersion));
+        }
+
+        if (useRsa && !useHookRsa)
         {
             LogService.Info("RSA: 正在部署 RSA DLL 到游戏目录...");
-            RsaService.CopyRsaToGameDirectory(settings.GameVersion, path);
+            if (!RsaService.CopyRsaToGameDirectory(settings.GameVersion, path))
+            {
+                throw new InvalidOperationException(string.Format(
+                    Lang.HomePage_RsaPatchUnavailable,
+                    settings.GameVersion));
+            }
         }
 
         return await Task.Run(() =>
@@ -208,7 +225,7 @@ public static class GameLauncherService
                     }
                 }
 
-                if (process != null && settings.EnableHookRSA)
+                if (process != null && useHookRsa)
                 {
                     _ = Task.Run(async () =>
                     {

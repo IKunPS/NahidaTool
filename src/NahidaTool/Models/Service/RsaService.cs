@@ -91,59 +91,139 @@ public static class RsaService
 
     #region DLL Discovery
 
+    private sealed record RsaPatchCandidate(
+        string Path,
+        int Priority,
+        int Major,
+        int? MinorStart,
+        int? MinorEnd)
+    {
+        public int RangeWidth => MinorStart.HasValue && MinorEnd.HasValue
+            ? MinorEnd.Value - MinorStart.Value
+            : int.MaxValue;
+
+        public bool Matches(int major, int minor) =>
+            Major == major &&
+            (!MinorStart.HasValue ||
+             (minor >= MinorStart.Value && minor <= MinorEnd!.Value));
+    }
+
     private static (int major, int minor)? ParseGameVersion(string? gameVersion)
     {
-        if (string.IsNullOrEmpty(gameVersion))
+        if (string.IsNullOrWhiteSpace(gameVersion))
             return null;
 
-        var match = Regex.Match(gameVersion, @"(\d+)\.(\d+)");
-        if (!match.Success)
+        var match = Regex.Match(gameVersion, @"(?<!\d)(\d+)\.(\d+)");
+        if (!match.Success ||
+            !int.TryParse(match.Groups[1].Value, out int major) ||
+            !int.TryParse(match.Groups[2].Value, out int minor))
+        {
             return null;
-
-        if (!int.TryParse(match.Groups[1].Value, out int major))
-            return null;
-        if (!int.TryParse(match.Groups[2].Value, out int minor))
-            return null;
+        }
 
         return (major, minor);
     }
 
-    private static List<(string path, int priority, int major, int? minorStart, int? minorEnd)> FindCandidateDlls()
+    private static bool IsUsablePatchDll(string path)
     {
-        var candidates = new List<(string, int, int, int?, int?)>();
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return stream.Length >= 2 && stream.ReadByte() == 'M' && stream.ReadByte() == 'Z';
+        }
+        catch (Exception ex)
+        {
+            LogService.Warn($"RSA: 无法读取补丁 {Path.GetFileName(path)}: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static RsaPatchCandidate? ParsePatchCandidate(string path)
+    {
+        string fileName = Path.GetFileName(path);
+
+        // 推荐的无歧义命名：7.0version.dll / 6.4-8version.dll。
+        var rangeMatch = Regex.Match(fileName,
+            @"^(?<major>\d+)\.(?<start>\d+)-(?<end>\d+)version\.dll$",
+            RegexOptions.IgnoreCase);
+        if (rangeMatch.Success &&
+            int.TryParse(rangeMatch.Groups["major"].Value, out int rangeMajor) &&
+            int.TryParse(rangeMatch.Groups["start"].Value, out int rangeStart) &&
+            int.TryParse(rangeMatch.Groups["end"].Value, out int rangeEnd) &&
+            rangeStart <= rangeEnd)
+        {
+            return new RsaPatchCandidate(path, 2, rangeMajor, rangeStart, rangeEnd);
+        }
+
+        var exactMatch = Regex.Match(fileName,
+            @"^(?<major>\d+)\.(?<minor>\d+)version\.dll$",
+            RegexOptions.IgnoreCase);
+        if (exactMatch.Success &&
+            int.TryParse(exactMatch.Groups["major"].Value, out int exactMajor) &&
+            int.TryParse(exactMatch.Groups["minor"].Value, out int exactMinor))
+        {
+            return new RsaPatchCandidate(path, 3, exactMajor, exactMinor, exactMinor);
+        }
+
+        // 兼容历史紧凑命名：6（主版本兜底）、46/70（精确）、648（范围）。
+        var compactMatch = Regex.Match(fileName, @"^(?<digits>\d+)version\.dll$", RegexOptions.IgnoreCase);
+        if (!compactMatch.Success)
+            return null;
+
+        string digits = compactMatch.Groups["digits"].Value;
+        if (digits.Length == 1 && int.TryParse(digits, out int fallbackMajor))
+            return new RsaPatchCandidate(path, 1, fallbackMajor, null, null);
+
+        if (digits.Length == 2 &&
+            int.TryParse(digits[..1], out int compactExactMajor) &&
+            int.TryParse(digits[1..], out int compactExactMinor))
+        {
+            return new RsaPatchCandidate(path, 3, compactExactMajor, compactExactMinor, compactExactMinor);
+        }
+
+        if (digits.Length >= 3 &&
+            int.TryParse(digits[..1], out int compactRangeMajor) &&
+            int.TryParse(digits.Substring(1, 1), out int compactRangeStart) &&
+            int.TryParse(digits[2..], out int compactRangeEnd) &&
+            compactRangeStart <= compactRangeEnd)
+        {
+            return new RsaPatchCandidate(path, 2, compactRangeMajor, compactRangeStart, compactRangeEnd);
+        }
+
+        return null;
+    }
+
+    private static List<RsaPatchCandidate> FindCandidateDlls()
+    {
+        var candidates = new List<RsaPatchCandidate>();
 
         if (!Directory.Exists(RsaDirectory))
             return candidates;
 
-        foreach (var file in Directory.GetFiles(RsaDirectory, "*version.dll", SearchOption.TopDirectoryOnly))
+        string[] files;
+        try
         {
-            var fileName = Path.GetFileName(file);
-            var match = Regex.Match(fileName, @"^(\d+)version\.dll$", RegexOptions.IgnoreCase);
-            if (!match.Success)
+            files = Directory.GetFiles(RsaDirectory, "*version.dll", SearchOption.TopDirectoryOnly);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("RSA: 无法枚举补丁目录", ex);
+            return candidates;
+        }
+
+        foreach (var file in files)
+        {
+            var candidate = ParsePatchCandidate(file);
+            if (candidate == null)
                 continue;
 
-            var digits = match.Groups[1].Value;
-            int major, digitCount = digits.Length;
+            if (!IsUsablePatchDll(file))
+            {
+                LogService.Warn($"RSA: 已忽略无效补丁 {Path.GetFileName(file)}");
+                continue;
+            }
 
-            if (digitCount == 1)
-            {
-                if (!int.TryParse(digits, out major))
-                    continue;
-                candidates.Add((file, 1, major, null, null));
-            }
-            else if (digitCount == 2)
-            {
-                major = int.Parse(digits[0].ToString());
-                int minor = int.Parse(digits[1].ToString());
-                candidates.Add((file, 3, major, minor, minor));
-            }
-            else if (digitCount >= 3)
-            {
-                major = int.Parse(digits[0].ToString());
-                int minorStart = int.Parse(digits[1].ToString());
-                int minorEnd = int.Parse(digits.Substring(2));
-                candidates.Add((file, 2, major, minorStart, minorEnd));
-            }
+            candidates.Add(candidate);
         }
 
         return candidates;
@@ -153,21 +233,34 @@ public static class RsaService
     {
         var version = ParseGameVersion(gameVersion);
         if (version == null)
+        {
+            LogService.Warn($"RSA: 无法识别游戏版本 {gameVersion ?? "未知"}");
             return null;
+        }
 
         var (major, minor) = version.Value;
-        var candidates = FindCandidateDlls();
-
-        var match = candidates
-            .Where(c => c.major == major &&
-                        (c.minorStart == null ||
-                         (minor >= c.minorStart.Value && minor <= c.minorEnd!.Value)))
-            .OrderByDescending(c => c.priority)
+        var match = FindCandidateDlls()
+            .Where(candidate => candidate.Matches(major, minor))
+            .OrderByDescending(candidate => candidate.Priority)
+            .ThenBy(candidate => candidate.RangeWidth)
+            .ThenBy(candidate => Path.GetFileName(candidate.Path), StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
 
-        return match.path;
-    }
+        if (match == null)
+        {
+            LogService.Warn($"RSA: 没有适用于 {major}.{minor} 的补丁");
+            return null;
+        }
 
+        string matchType = match.Priority switch
+        {
+            3 => "精确版本",
+            2 => "版本范围",
+            _ => "主版本兜底"
+        };
+        LogService.Info($"RSA: {major}.{minor} 匹配 {Path.GetFileName(match.Path)} ({matchType})");
+        return match.Path;
+    }
     public static bool CopyRsaToGameDirectory(string? gameVersion, string gameInstallPath)
     {
         try

@@ -143,6 +143,7 @@
   <data name="ServerSwitchPage_SwitchFailedMessage" xml:space="preserve"><value>Error during server switch:&#xA;&#xA;{0}</value></data>
   <data name="ServerSwitchPage_OK" xml:space="preserve"><value>OK</value></data>
   <data name="ServerSwitchPage_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="HomePage_RsaPatchUnavailable" xml:space="preserve"><value>No compatible or usable RSA patch was found for game version {0}. Game launch was cancelled.</value></data>
 
   <!-- HomeSettingDialog -->
   <data name="HomeSettingDialog_Title" xml:space="preserve"><value>Game Settings</value></data>

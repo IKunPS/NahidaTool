@@ -348,6 +348,7 @@ public sealed partial class HomePage : Page
             LogService.Warn($"启动游戏失败(操作异常): {ex.Message}");
             ProxyService.Stop();
             ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
+            ShowMessageAsync(ex.Message);
             RefreshGameStatus();
         }
         catch (FileNotFoundException ex)

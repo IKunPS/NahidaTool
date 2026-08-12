@@ -140,6 +140,8 @@ public static class Lang
     public static string ServerSwitchPage_OK => _resourceManager.GetString("ServerSwitchPage_OK") ?? "OK";
     public static string ServerSwitchPage_Cancel => _resourceManager.GetString("ServerSwitchPage_Cancel") ?? "Cancel";
 
+    public static string HomePage_RsaPatchUnavailable => _resourceManager.GetString("HomePage_RsaPatchUnavailable") ?? "No compatible RSA patch was found for game version {0}. Game launch was cancelled.";
+
     // HomeSettingDialog
     public static string HomeSettingDialog_Title => _resourceManager.GetString("HomeSettingDialog_Title") ?? "Game Settings";
     public static string HomeSettingDialog_BasicInfo => _resourceManager.GetString("HomeSettingDialog_BasicInfo") ?? "Basic Info";

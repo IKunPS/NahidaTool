@@ -18,6 +18,7 @@ public sealed partial class ServerSwitchPage : Page
     private string _gamePath = string.Empty;
     private ServerRegionType _currentRegion = ServerRegionType.CN;
     private string _currentVersion = string.Empty;
+    private ServerRegionType? _switchTargetRegion;
     private readonly ServerSwitchService _switchService;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly StringBuilder _detailLog = new();
@@ -188,6 +189,7 @@ public sealed partial class ServerSwitchPage : Page
 
     private async void StartSwitch(ServerRegionType targetRegion)
     {
+        _switchTargetRegion = targetRegion;
         // 显示进度卡片
         ProgressCard.Visibility = Visibility.Visible;
         ChinaServerButton.IsEnabled = false;
@@ -256,9 +258,20 @@ public sealed partial class ServerSwitchPage : Page
             DetectButton.IsEnabled = true;
 
             // 重新检测
+            ServerRegionType completedRegion = _switchTargetRegion ?? _currentRegion;
+            _switchTargetRegion = null;
+            _currentRegion = completedRegion;
+            RefreshServerDisplay();
             DetectCurrentServer();
 
-            await ShowMessageAsync(Lang.ServerSwitchPage_SwitchComplete, Lang.ServerSwitchPage_SwitchCompleteMessage);
+            if (this.XamlRoot != null)
+            {
+                var dialog = new ServerSwitchCompleteDialog(completedRegion, _currentVersion)
+                {
+                    XamlRoot = this.XamlRoot
+                };
+                await dialog.ShowAsync();
+            }
         }
         catch
         {
@@ -274,6 +287,8 @@ public sealed partial class ServerSwitchPage : Page
             ChinaServerButton.IsEnabled = true;
             GlobalServerButton.IsEnabled = true;
             DetectButton.IsEnabled = true;
+
+            _switchTargetRegion = null;
 
             await ShowMessageAsync(Lang.ServerSwitchPage_SwitchFailed, string.Format(Lang.ServerSwitchPage_SwitchFailedMessage, error));
         }

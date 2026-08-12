@@ -143,6 +143,7 @@
   <data name="ServerSwitchPage_SwitchFailedMessage" xml:space="preserve"><value>转服过程中出现错误:&#xA;&#xA;{0}</value></data>
   <data name="ServerSwitchPage_OK" xml:space="preserve"><value>确定</value></data>
   <data name="ServerSwitchPage_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="HomePage_RsaPatchUnavailable" xml:space="preserve"><value>未找到适用于游戏版本 {0} 的可用 RSA 补丁，或补丁文件已损坏。已取消启动游戏。</value></data>
 
   <!-- HomeSettingDialog -->
   <data name="HomeSettingDialog_Title" xml:space="preserve"><value>游戏设置</value></data>
