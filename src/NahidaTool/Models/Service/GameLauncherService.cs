@@ -116,6 +116,34 @@ public static class GameLauncherService
         return null;
     }
 
+    private static bool IsGameProcess(Process process)
+    {
+        try
+        {
+            return string.Equals(process.ProcessName, Path.GetFileNameWithoutExtension(CNExeName), StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(process.ProcessName, Path.GetFileNameWithoutExtension(OSExeName), StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<Process?> WaitForGameProcessAsync(ServerRegionType region, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            var process = GetRunningProcess(region);
+            if (process != null)
+                return process;
+
+            await Task.Delay(250);
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// 启动游戏（参考 Starward 实现）
     /// </summary>
@@ -174,7 +202,7 @@ public static class GameLauncherService
             }
         }
 
-        return await Task.Run(() =>
+        return await Task.Run(async () =>
         {
             try
             {
@@ -204,18 +232,37 @@ public static class GameLauncherService
                     WorkingDirectory = Path.GetDirectoryName(exePath) ?? path,
                 };
 
-                var process = Process.Start(info);
+                var startedProcess = Process.Start(info);
 
-                if (process != null)
+                if (startedProcess != null)
                 {
-                    LogService.Info($"游戏已启动: {Path.GetFileName(exePath)} (PID: {process.Id})");
+                    LogService.Info($"启动命令已执行: {Path.GetFileName(exePath)} (PID: {startedProcess.Id})");
+                }
 
+                Process? gameProcess = startedProcess;
+                bool launchedThroughWrapper = thirdPartyTool || settings.StartGameWithCMD;
+                if (startedProcess != null && (useHookRsa || launchedThroughWrapper) && !IsGameProcess(startedProcess))
+                {
+                    LogService.Info("正在等待实际游戏进程启动...");
+                    gameProcess = await WaitForGameProcessAsync(region, TimeSpan.FromSeconds(60));
+                    if (gameProcess != null)
+                    {
+                        LogService.Info($"已找到实际游戏进程: {gameProcess.ProcessName}.exe (PID: {gameProcess.Id})");
+                    }
+                    else
+                    {
+                        LogService.Error("等待实际游戏进程超时，已跳过 Hook RSA 注入");
+                    }
+                }
+
+                if (gameProcess != null && IsGameProcess(gameProcess))
+                {
                     // 优化: 可选的 CPU 亲和性设置，减少跨核心上下文切换
                     if (settings.EnableCpuAffinity && settings.ProcessorAffinityMask != 0)
                     {
                         try
                         {
-                            process.ProcessorAffinity = (IntPtr)settings.ProcessorAffinityMask;
+                            gameProcess.ProcessorAffinity = (IntPtr)settings.ProcessorAffinityMask;
                             LogService.Info($"CPU 亲和性已设置: 0x{settings.ProcessorAffinityMask:X}");
                         }
                         catch (Exception ex)
@@ -225,13 +272,14 @@ public static class GameLauncherService
                     }
                 }
 
-                if (process != null && useHookRsa)
+                if (gameProcess != null && IsGameProcess(gameProcess) && useHookRsa)
                 {
+                    var hookTarget = gameProcess;
                     _ = Task.Run(async () =>
                     {
                         try
                         {
-                            await RsaService.InjectHookRsaAsync(process, settings.GameVersion);
+                            await RsaService.InjectHookRsaAsync(hookTarget, settings.GameVersion);
                         }
                         catch (Exception ex)
                         {
@@ -240,7 +288,7 @@ public static class GameLauncherService
                     });
                 }
 
-                return process;
+                return gameProcess;
             }
             catch (Exception ex) when (ex is not InvalidOperationException && ex is not FileNotFoundException)
             {

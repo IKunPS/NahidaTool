@@ -28,6 +28,9 @@ public static class RsaService
     private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool VirtualFreeEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint dwFreeType);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten);
 
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -41,6 +44,9 @@ public static class RsaService
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool GetExitCodeThread(IntPtr hThread, out uint lpExitCode);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(IntPtr hObject);
@@ -81,8 +87,10 @@ public static class RsaService
     private const int PROCESS_QUERY_INFORMATION = 0x0400;
     private const uint MEM_COMMIT = 0x1000;
     private const uint MEM_RESERVE = 0x2000;
+    private const uint MEM_RELEASE = 0x8000;
     private const uint PAGE_READWRITE = 0x04;
-    private const uint INFINITE = 0xFFFFFFFF;
+    private const uint WAIT_OBJECT_0 = 0;
+    private const uint WAIT_TIMEOUT = 258;
     private const uint SE_PRIVILEGE_ENABLED = 0x2;
     private const uint TOKEN_QUERY = 0x0008;
     private const uint TOKEN_ADJUST_PRIVILEGES = 0x0020;
@@ -370,8 +378,8 @@ public static class RsaService
     /// </summary>
     private static bool TryInjectDll(IntPtr hProcess, string fullDllPath)
     {
-        // LoadLibraryA 需要 ANSI 编码，不是 UTF-8
-        var dllPathBytes = Encoding.Default.GetBytes(fullDllPath + '\0');
+        // 使用 Unicode 路径，避免启动器或补丁目录含非 ASCII 字符时加载失败。
+        var dllPathBytes = Encoding.Unicode.GetBytes(fullDllPath + '\0');
         var allocSize = (uint)dllPathBytes.Length;
 
         var remoteMemory = VirtualAllocEx(hProcess, IntPtr.Zero, allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -383,30 +391,70 @@ public static class RsaService
             return false;
         }
 
-        if (!WriteProcessMemory(hProcess, remoteMemory, dllPathBytes, allocSize, out _))
+        IntPtr remoteThread = IntPtr.Zero;
+        bool remoteThreadCompleted = false;
+        try
         {
-            LogService.Error($"无法写入 DLL 路径, 错误: {GetLastError()}");
-            return false;
-        }
+            if (!WriteProcessMemory(hProcess, remoteMemory, dllPathBytes, allocSize, out var bytesWritten) ||
+                bytesWritten.ToUInt64() != allocSize)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                LogService.Error($"Hook RSA: 无法完整写入 DLL 路径 (Windows 错误 {errorCode}: {new Win32Exception(errorCode).Message})");
+                return false;
+            }
 
-        var hKernel32 = GetModuleHandle("kernel32.dll");
-        var loadLibraryAddr = GetProcAddress(hKernel32, "LoadLibraryA");
-        if (loadLibraryAddr == IntPtr.Zero)
+            var hKernel32 = GetModuleHandle("kernel32.dll");
+            var loadLibraryAddr = GetProcAddress(hKernel32, "LoadLibraryW");
+            if (loadLibraryAddr == IntPtr.Zero)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                LogService.Error($"Hook RSA: 无法获取 LoadLibraryW 地址 (Windows 错误 {errorCode}: {new Win32Exception(errorCode).Message})");
+                return false;
+            }
+
+            remoteThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, loadLibraryAddr, remoteMemory, 0, out _);
+            if (remoteThread == IntPtr.Zero)
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                LogService.Error($"Hook RSA: 无法创建远程线程 (Windows 错误 {errorCode}: {new Win32Exception(errorCode).Message})");
+                return false;
+            }
+
+            uint waitResult = WaitForSingleObject(remoteThread, 10000);
+            if (waitResult != WAIT_OBJECT_0)
+            {
+                string reason = waitResult == WAIT_TIMEOUT
+                    ? "等待 DLL 加载超时"
+                    : $"等待远程线程失败 (返回值 {waitResult})";
+                LogService.Error($"Hook RSA: {reason}");
+                return false;
+            }
+
+            remoteThreadCompleted = true;
+            if (!GetExitCodeThread(remoteThread, out uint moduleHandle))
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                LogService.Error($"Hook RSA: 无法读取 DLL 加载结果 (Windows 错误 {errorCode}: {new Win32Exception(errorCode).Message})");
+                return false;
+            }
+
+            if (moduleHandle == 0)
+            {
+                LogService.Error("Hook RSA: LoadLibraryW 返回空句柄，补丁 DLL 可能不兼容、缺少依赖或被安全软件拦截");
+                return false;
+            }
+
+            return true;
+        }
+        finally
         {
-            LogService.Error($"无法获取 LoadLibraryA 地址, 错误: {GetLastError()}");
-            return false;
-        }
+            if (remoteThread != IntPtr.Zero)
+                CloseHandle(remoteThread);
 
-        var hRemoteThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, loadLibraryAddr, remoteMemory, 0, out _);
-        if (hRemoteThread == IntPtr.Zero)
-        {
-            LogService.Error($"无法创建远程线程, 错误: {GetLastError()}");
-            return false;
+            // 远程线程仍在运行时不能释放其参数；其余路径均及时回收远程内存。
+            if (remoteThread == IntPtr.Zero || remoteThreadCompleted)
+                VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
         }
-
-        WaitForSingleObject(hRemoteThread, 5000);
-        CloseHandle(hRemoteThread);
-        return true;
     }
 
     public static async Task<bool> InjectHookRsaAsync(Process gameProcess, string? gameVersion)
