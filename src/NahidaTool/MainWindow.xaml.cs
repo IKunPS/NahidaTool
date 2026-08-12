@@ -385,7 +385,7 @@ public sealed partial class MainWindow : WindowEx
         if (Content?.XamlRoot == null) return;
         var changelog = string.Join("\n", new[]
         {
-            "v0.1.4",
+            "v0.1.5",
             "· 重做程序更新弹窗，统一主题样式，优化版本信息、更新说明与下载进度展示",
             "· 每个程序版本首次启动时自动打开教程页，并在文档页增加视频教程提示",
             "· 优化预下载版本资源获取，正式分支不可用时可安全回退到对应预下载分支",
