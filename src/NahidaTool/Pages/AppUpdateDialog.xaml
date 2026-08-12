@@ -8,6 +8,7 @@
     Background="{ThemeResource CustomAcrylicBrush}"
     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
     BorderThickness="1"
+    CloseButtonClick="ContentDialog_CloseButtonClick"
     CloseButtonText="{x:Bind models:Lang.AppUpdate_Later}"
     Closing="ContentDialog_Closing"
     CornerRadius="12"

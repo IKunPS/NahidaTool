@@ -46,7 +46,6 @@ public sealed partial class AppUpdateDialog : ContentDialog
         if (_running)
             return;
 
-        ContentDialogButtonClickDeferral deferral = args.GetDeferral();
         _running = true;
         IsPrimaryButtonEnabled = false;
         CloseButtonText = Lang.AppUpdate_Cancel;
@@ -84,8 +83,18 @@ public sealed partial class AppUpdateDialog : ContentDialog
             _cts = null;
             IsPrimaryButtonEnabled = true;
             CloseButtonText = Lang.AppUpdate_Close;
-            deferral.Complete();
         }
+    }
+
+    private void ContentDialog_CloseButtonClick(
+        ContentDialog sender,
+        ContentDialogButtonClickEventArgs args)
+    {
+        if (!_running)
+            return;
+
+        args.Cancel = true;
+        RequestCancellation();
     }
 
     private void ContentDialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
@@ -94,8 +103,16 @@ public sealed partial class AppUpdateDialog : ContentDialog
             return;
 
         args.Cancel = true;
+        RequestCancellation();
+    }
+
+    private void RequestCancellation()
+    {
+        if (_cts == null || _cts.IsCancellationRequested)
+            return;
+
         StatusText.Text = Lang.AppUpdate_Cancelling;
-        _cts?.Cancel();
+        _cts.Cancel();
     }
 
     private static string FormatSize(long bytes)
