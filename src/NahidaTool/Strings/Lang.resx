@@ -191,6 +191,7 @@
   <data name="DocumentSettingPage_Step4Detail" xml:space="preserve"><value>If you encounter connection errors, check the error codes section below and verify your proxy server is running.</value></data>
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>Error Codes</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>Common error codes you may encounter and their solutions:</value></data>
+  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA decryption failed. Enable Hook RSA in Basic Info, then close and restart the game.</value></data>
   <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>Failed to connect to the server. Check your proxy settings and ensure the proxy server is running and accessible.</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. The server is not responding. Check that the proxy service is running and the target server is online.</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>Client patch error. Make sure the correct server patch is applied and copied to the game directory.</value></data>
@@ -202,6 +203,8 @@
   <data name="DocumentSettingPage_Subtitle" xml:space="preserve"><value>Tutorials, error codes, and video guides for playing on private servers.</value></data>
   <data name="DocumentSettingPage_VideoHintTitle" xml:space="preserve"><value>Video tutorials are available below</value></data>
   <data name="DocumentSettingPage_VideoHintMessage" xml:space="preserve"><value>Scroll to the bottom of this page for the complete video walkthrough.</value></data>
+  <data name="DocumentSettingPage_PathWarningTitle" xml:space="preserve"><value>The game path must not contain Chinese characters</value></data>
+  <data name="DocumentSettingPage_PathWarningMessage" xml:space="preserve"><value>Install or move the game to a path containing only English letters, numbers, and common symbols. Chinese characters may cause patch failures and a decryption failure when logging in.</value></data>
 
   <data name="DocumentSettingPage_StepRSA" xml:space="preserve"><value>Enable RSA</value></data>
   <data name="DocumentSettingPage_StepRSADetail" xml:space="preserve"><value>Go to Basic Info tab and turn on the RSA switch. This patches the game client to bypass official server verification.</value></data>

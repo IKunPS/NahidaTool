@@ -218,6 +218,8 @@ public static class Lang
     public static string DocumentSettingPage_Subtitle => _resourceManager.GetString("DocumentSettingPage_Subtitle") ?? "";
     public static string DocumentSettingPage_VideoHintTitle => _resourceManager.GetString("DocumentSettingPage_VideoHintTitle") ?? "Video tutorials are available below";
     public static string DocumentSettingPage_VideoHintMessage => _resourceManager.GetString("DocumentSettingPage_VideoHintMessage") ?? "Scroll to the bottom of this page for the complete video walkthrough.";
+    public static string DocumentSettingPage_PathWarningTitle => _resourceManager.GetString("DocumentSettingPage_PathWarningTitle") ?? "The game path must not contain Chinese characters";
+    public static string DocumentSettingPage_PathWarningMessage => _resourceManager.GetString("DocumentSettingPage_PathWarningMessage") ?? "Install or move the game to a path containing only English letters, numbers, and common symbols. Chinese characters may cause patch failures and a decryption failure when logging in.";
     public static string DocumentSettingPage_HowToPlay => _resourceManager.GetString("DocumentSettingPage_HowToPlay") ?? "How to Play";
     public static string DocumentSettingPage_Step1 => _resourceManager.GetString("DocumentSettingPage_Step1") ?? "1. Enable Proxy";
     public static string DocumentSettingPage_Step1Detail => _resourceManager.GetString("DocumentSettingPage_Step1Detail") ?? "";
@@ -231,6 +233,7 @@ public static class Lang
     public static string DocumentSettingPage_Step4Detail => _resourceManager.GetString("DocumentSettingPage_Step4Detail") ?? "";
     public static string DocumentSettingPage_ErrorCodes => _resourceManager.GetString("DocumentSettingPage_ErrorCodes") ?? "Error Codes";
     public static string DocumentSettingPage_ErrorCodeHint => _resourceManager.GetString("DocumentSettingPage_ErrorCodeHint") ?? "";
+    public static string DocumentSettingPage_Error204 => _resourceManager.GetString("DocumentSettingPage_Error204") ?? "";
     public static string DocumentSettingPage_Error4201 => _resourceManager.GetString("DocumentSettingPage_Error4201") ?? "";
     public static string DocumentSettingPage_Error4206 => _resourceManager.GetString("DocumentSettingPage_Error4206") ?? "";
     public static string DocumentSettingPage_Error4214 => _resourceManager.GetString("DocumentSettingPage_Error4214") ?? "";

@@ -190,6 +190,7 @@
   <data name="DocumentSettingPage_Step4Detail" xml:space="preserve"><value>如果遇到连接错误，请查看下方的错误码说明，并确认代理服务器正在运行。</value></data>
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>错误码说明</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>可能遇到的常见错误码及其解决方案：</value></data>
+  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA 解密失败。请前往“基本信息”开启 Hook RSA，然后完全关闭并重新启动游戏。</value></data>
   <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>连接服务器失败。请检查代理设置，确保代理服务器正在运行且可以访问。</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>连接超时。服务器无响应。请检查代理服务是否运行正常，目标服务器是否在线。</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>客户端补丁错误。请使用正确的服务器补丁，并确认补丁文件已复制到游戏目录。</value></data>
@@ -201,6 +202,8 @@
   <data name="DocumentSettingPage_Subtitle" xml:space="preserve"><value>私服游玩教程、错误码说明与视频指南。</value></data>
   <data name="DocumentSettingPage_VideoHintTitle" xml:space="preserve"><value>下方还有视频教程</value></data>
   <data name="DocumentSettingPage_VideoHintMessage" xml:space="preserve"><value>文字步骤看不明白时，请继续向下滚动，在页面底部观看完整视频教程。</value></data>
+  <data name="DocumentSettingPage_PathWarningTitle" xml:space="preserve"><value>游戏路径不能包含中文</value></data>
+  <data name="DocumentSettingPage_PathWarningMessage" xml:space="preserve"><value>请将游戏安装或移动到仅包含英文字母、数字及常用符号的路径。中文路径会导致补丁工作异常，并可能在游戏内登录时出现解密失败。</value></data>
 
   <data name="DocumentSettingPage_StepRSA" xml:space="preserve"><value>开启 RSA</value></data>
   <data name="DocumentSettingPage_StepRSADetail" xml:space="preserve"><value>前往基本信息标签页，打开 RSA 开关。这会修补游戏客户端以绕过官方服务器验证。</value></data>

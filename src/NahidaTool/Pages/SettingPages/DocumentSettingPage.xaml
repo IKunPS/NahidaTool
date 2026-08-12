@@ -34,6 +34,12 @@
                          Title="{x:Bind models:Lang.DocumentSettingPage_VideoHintTitle}"
                          Message="{x:Bind models:Lang.DocumentSettingPage_VideoHintMessage}"/>
 
+                <InfoBar IsOpen="True"
+                         IsClosable="False"
+                         Severity="Warning"
+                         Title="{x:Bind models:Lang.DocumentSettingPage_PathWarningTitle}"
+                         Message="{x:Bind models:Lang.DocumentSettingPage_PathWarningMessage}"/>
+
                 <!-- 服务器游玩教程 -->
                 <StackPanel Spacing="12">
                     <TextBlock FontSize="20"
@@ -126,6 +132,21 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Text="{x:Bind models:Lang.DocumentSettingPage_ErrorCodeHint}"
                                TextWrapping="Wrap"/>
+
+                    <!-- 2, 0, 4 -->
+                    <Border Padding="16,12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Text="2, 0, 4"/>
+                            <TextBlock FontSize="13"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       Text="{x:Bind models:Lang.DocumentSettingPage_Error204}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
 
                     <!-- 4201 -->
                     <Border Padding="16,12"
