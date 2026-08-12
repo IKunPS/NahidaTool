@@ -192,6 +192,8 @@
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>Error Codes</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>Common error codes you may encounter and their solutions:</value></data>
   <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA decryption failed. Enable Hook RSA in Basic Info, then close and restart the game.</value></data>
+  <data name="DocumentSettingPage_HookRsaMemoryTitle" xml:space="preserve"><value>Hook RSA: Unable to allocate memory in the game process</value></data>
+  <data name="DocumentSettingPage_HookRsaMemoryMessage" xml:space="preserve"><value>Close the game and launcher completely, including any remaining game processes in Task Manager. Restart NahidaTool and approve the administrator prompt. Add NahidaTool, the game executable, and the RSA patch DLLs to the allowlist in Windows Security or your third-party security software, then try again. If the error persists, restart Windows and retry.</value></data>
   <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>Failed to connect to the server. Check your proxy settings and ensure the proxy server is running and accessible.</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. The server is not responding. Check that the proxy service is running and the target server is online.</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>Client patch error. Make sure the correct server patch is applied and copied to the game directory.</value></data>

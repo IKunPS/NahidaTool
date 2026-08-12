@@ -148,6 +148,22 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Hook RSA memory allocation failure -->
+                    <Border Padding="16,12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8">
+                        <StackPanel Spacing="4">
+                            <TextBlock FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Text="{x:Bind models:Lang.DocumentSettingPage_HookRsaMemoryTitle}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock FontSize="13"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       Text="{x:Bind models:Lang.DocumentSettingPage_HookRsaMemoryMessage}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 4201 -->
                     <Border Padding="16,12"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"

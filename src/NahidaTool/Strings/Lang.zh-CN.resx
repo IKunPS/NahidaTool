@@ -191,6 +191,8 @@
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>错误码说明</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>可能遇到的常见错误码及其解决方案：</value></data>
   <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA 解密失败。请前往“基本信息”开启 Hook RSA，然后完全关闭并重新启动游戏。</value></data>
+  <data name="DocumentSettingPage_HookRsaMemoryTitle" xml:space="preserve"><value>Hook RSA：无法在游戏进程中分配内存</value></data>
+  <data name="DocumentSettingPage_HookRsaMemoryMessage" xml:space="preserve"><value>请完全退出游戏和启动器（任务管理器中也不能残留游戏进程），重新打开 NahidaTool 并允许管理员权限。将 NahidaTool、游戏主程序和 RSA 补丁 DLL 加入 Windows 安全中心或第三方安全软件的允许列表后再试；仍然失败时请重启电脑后重试。</value></data>
   <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>连接服务器失败。请检查代理设置，确保代理服务器正在运行且可以访问。</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>连接超时。服务器无响应。请检查代理服务是否运行正常，目标服务器是否在线。</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>客户端补丁错误。请使用正确的服务器补丁，并确认补丁文件已复制到游戏目录。</value></data>

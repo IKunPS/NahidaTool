@@ -377,7 +377,9 @@ public static class RsaService
         var remoteMemory = VirtualAllocEx(hProcess, IntPtr.Zero, allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
         if (remoteMemory == IntPtr.Zero)
         {
-            LogService.Error($"无法在游戏进程中分配内存, 错误: {GetLastError()}");
+            int errorCode = Marshal.GetLastWin32Error();
+            string errorMessage = new Win32Exception(errorCode).Message;
+            LogService.Error($"Hook RSA: 无法在游戏进程中分配内存 (Windows 错误 {errorCode}: {errorMessage})。请完全退出游戏后重试，并检查安全软件是否拦截进程内存操作。");
             return false;
         }
 

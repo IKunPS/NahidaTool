@@ -395,7 +395,7 @@ public sealed partial class MainWindow : WindowEx
             "· 重做转服完成弹窗，统一主题样式并展示目标服务器与游戏版本",
             "· 优化 RSA 补丁版本匹配与文件校验，无适配补丁时中止启动并给出提示",
             "· 修复程序更新下载过程中取消按钮无响应的问题",
-            "· 教程页新增中文游戏路径风险说明及 2, 0, 4 错误的 Hook RSA 处理提示"
+            "· 教程页新增中文游戏路径风险说明、2, 0, 4 错误及 Hook RSA 内存分配失败的处理提示"
         });
         await new ContentDialog
         {
