@@ -148,22 +148,6 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Hook RSA memory allocation failure -->
-                    <Border Padding="16,12"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            CornerRadius="8">
-                        <StackPanel Spacing="4">
-                            <TextBlock FontSize="14"
-                                       FontWeight="SemiBold"
-                                       Text="{x:Bind models:Lang.DocumentSettingPage_HookRsaMemoryTitle}"
-                                       TextWrapping="Wrap"/>
-                            <TextBlock FontSize="13"
-                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                       Text="{x:Bind models:Lang.DocumentSettingPage_HookRsaMemoryMessage}"
-                                       TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
                     <!-- 4201 -->
                     <Border Padding="16,12"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -176,6 +160,38 @@
                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                        Text="{x:Bind models:Lang.DocumentSettingPage_Error4201}"
                                        TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Login screen network error -->
+                    <Border Padding="16,12"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            CornerRadius="8">
+                        <StackPanel Spacing="8">
+                            <TextBlock FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Text="{x:Bind models:Lang.DocumentSettingPage_LoginNetworkErrorTitle}"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock FontSize="13"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       Text="{x:Bind models:Lang.DocumentSettingPage_LoginNetworkErrorMessage}"
+                                       TextWrapping="Wrap"/>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox IsReadOnly="True"
+                                         Text="{x:Bind models:Lang.DocumentSettingPage_LoginNetworkRegistryPath}"
+                                         TextWrapping="NoWrap"/>
+                                <Button x:Name="CopyRegistryPathButton"
+                                        Grid.Column="1"
+                                        MinWidth="72"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Stretch"
+                                        Click="CopyRegistryPath_Click"
+                                        Content="{x:Bind models:Lang.DocumentSettingPage_CopyRegistryPath}"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
 

@@ -195,6 +195,7 @@ public static class Lang
     public static string Ldiff_Failed => _resourceManager.GetString("Ldiff_Failed") ?? "LDiff update failed: {0}";
     public static string Ldiff_Cancelled => _resourceManager.GetString("Ldiff_Cancelled") ?? "LDiff update cancelled.";
     public static string Ldiff_Cancelling => _resourceManager.GetString("Ldiff_Cancelling") ?? "Cancelling safely...";
+    public static string Ldiff_PendingLaunchBlocked => _resourceManager.GetString("Ldiff_PendingLaunchBlocked") ?? "An LDiff update is incomplete. Resume the update before starting the game.";
 
     public static string AppUpdate_Title => _resourceManager.GetString("AppUpdate_Title") ?? "Application Update";
     public static string AppUpdate_VersionLine => _resourceManager.GetString("AppUpdate_VersionLine") ?? "A new version is available: {0} to {1}";
@@ -234,9 +235,12 @@ public static class Lang
     public static string DocumentSettingPage_ErrorCodes => _resourceManager.GetString("DocumentSettingPage_ErrorCodes") ?? "Error Codes";
     public static string DocumentSettingPage_ErrorCodeHint => _resourceManager.GetString("DocumentSettingPage_ErrorCodeHint") ?? "";
     public static string DocumentSettingPage_Error204 => _resourceManager.GetString("DocumentSettingPage_Error204") ?? "";
-    public static string DocumentSettingPage_HookRsaMemoryTitle => _resourceManager.GetString("DocumentSettingPage_HookRsaMemoryTitle") ?? "Hook RSA: Unable to allocate memory in the game process";
-    public static string DocumentSettingPage_HookRsaMemoryMessage => _resourceManager.GetString("DocumentSettingPage_HookRsaMemoryMessage") ?? "Close the game and launcher completely, restart NahidaTool and approve the administrator prompt. Add NahidaTool, the game executable, and the RSA patch DLLs to your security software's allowlist, then try again. If the error persists, restart Windows and retry.";
     public static string DocumentSettingPage_Error4201 => _resourceManager.GetString("DocumentSettingPage_Error4201") ?? "";
+    public static string DocumentSettingPage_LoginNetworkErrorTitle => _resourceManager.GetString("DocumentSettingPage_LoginNetworkErrorTitle") ?? "Login screen network error";
+    public static string DocumentSettingPage_LoginNetworkErrorMessage => _resourceManager.GetString("DocumentSettingPage_LoginNetworkErrorMessage") ?? "";
+    public static string DocumentSettingPage_LoginNetworkRegistryPath => _resourceManager.GetString("DocumentSettingPage_LoginNetworkRegistryPath") ?? @"Computer\HKEY_CURRENT_USER\Software\miHoYo\Genshin Impact";
+    public static string DocumentSettingPage_CopyRegistryPath => _resourceManager.GetString("DocumentSettingPage_CopyRegistryPath") ?? "Copy";
+    public static string DocumentSettingPage_RegistryPathCopied => _resourceManager.GetString("DocumentSettingPage_RegistryPathCopied") ?? "Copied";
     public static string DocumentSettingPage_Error4206 => _resourceManager.GetString("DocumentSettingPage_Error4206") ?? "";
     public static string DocumentSettingPage_Error4214 => _resourceManager.GetString("DocumentSettingPage_Error4214") ?? "";
     public static string DocumentSettingPage_Error4301 => _resourceManager.GetString("DocumentSettingPage_Error4301") ?? "";

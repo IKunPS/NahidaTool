@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using NahidaTool.Models;
 using NahidaTool.Models.Service;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Media.Core;
 
 namespace NahidaTool.Pages.SettingPages;
@@ -80,6 +81,15 @@ public sealed partial class DocumentSettingPage : Page
         VideoPlayerOverlay.Visibility = Visibility.Collapsed;
         VideoPlayerOverlay.Opacity = 0;
         DocumentScrollViewer.Visibility = Visibility.Visible;
+    }
+
+    private void CopyRegistryPath_Click(object sender, RoutedEventArgs e)
+    {
+        var dataPackage = new DataPackage();
+        dataPackage.SetText(Lang.DocumentSettingPage_LoginNetworkRegistryPath);
+        Clipboard.SetContent(dataPackage);
+        Clipboard.Flush();
+        CopyRegistryPathButton.Content = Lang.DocumentSettingPage_RegistryPathCopied;
     }
 
     private static string? FindVideoFile(string fileName)

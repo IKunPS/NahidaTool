@@ -191,10 +191,13 @@
   <data name="DocumentSettingPage_Step4Detail" xml:space="preserve"><value>If you encounter connection errors, check the error codes section below and verify your proxy server is running.</value></data>
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>Error Codes</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>Common error codes you may encounter and their solutions:</value></data>
-  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA decryption failed. Enable Hook RSA in Basic Info, then close and restart the game.</value></data>
-  <data name="DocumentSettingPage_HookRsaMemoryTitle" xml:space="preserve"><value>Hook RSA: Unable to allocate memory in the game process</value></data>
-  <data name="DocumentSettingPage_HookRsaMemoryMessage" xml:space="preserve"><value>Close the game and launcher completely, including any remaining game processes in Task Manager. Restart NahidaTool and approve the administrator prompt. Add NahidaTool, the game executable, and the RSA patch DLLs to the allowlist in Windows Security or your third-party security software, then try again. If the error persists, restart Windows and retry.</value></data>
-  <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>Failed to connect to the server. Check your proxy settings and ensure the proxy server is running and accessible.</value></data>
+  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>Switch to the global version on the Server Switch page instead of using the CN version.</value></data>
+  <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>Failed to connect to the server. Check your proxy settings and ensure the proxy server is running and accessible. If the issue persists, uninstall the certificate and start the game to install a new certificate. Make sure the certificate installation window appears.</value></data>
+  <data name="DocumentSettingPage_LoginNetworkErrorTitle" xml:space="preserve"><value>Network error on the login screen</value></data>
+  <data name="DocumentSettingPage_LoginNetworkErrorMessage" xml:space="preserve"><value>Open Registry Editor, enter the following path in the address bar, and press Enter. Right-click and delete the folder, then restart the game.</value></data>
+  <data name="DocumentSettingPage_LoginNetworkRegistryPath" xml:space="preserve"><value>Computer\HKEY_CURRENT_USER\Software\miHoYo\Genshin Impact</value></data>
+  <data name="DocumentSettingPage_CopyRegistryPath" xml:space="preserve"><value>Copy</value></data>
+  <data name="DocumentSettingPage_RegistryPathCopied" xml:space="preserve"><value>Copied</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. The server is not responding. Check that the proxy service is running and the target server is online.</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>Client patch error. Make sure the correct server patch is applied and copied to the game directory.</value></data>
   <data name="DocumentSettingPage_Error4301" xml:space="preserve"><value>Version data request failed. Your game version may not match the server's expected version. Update your game or check server requirements.</value></data>
@@ -215,7 +218,7 @@
   <data name="Ldiff_Checking" xml:space="preserve"><value>Checking the official patch manifest...</value></data>
   <data name="Ldiff_CurrentVersion" xml:space="preserve"><value>Current version</value></data>
   <data name="Ldiff_TargetVersion" xml:space="preserve"><value>Target version</value></data>
-  <data name="Ldiff_DownloadSize" xml:space="preserve"><value>LDiff size</value></data>
+  <data name="Ldiff_DownloadSize" xml:space="preserve"><value>Official patch size</value></data>
   <data name="Ldiff_Start" xml:space="preserve"><value>Start Update</value></data>
   <data name="Ldiff_Close" xml:space="preserve"><value>Close</value></data>
   <data name="Ldiff_Cancel" xml:space="preserve"><value>Cancel</value></data>
@@ -226,8 +229,9 @@
   <data name="Ldiff_OfficialPackageRequired" xml:space="preserve"><value>The official incremental package is missing or incomplete. Finish pre-download or repair the game in the official launcher, then try again.</value></data>
   <data name="Ldiff_Success" xml:space="preserve"><value>Updated successfully to {0}.</value></data>
   <data name="Ldiff_Failed" xml:space="preserve"><value>LDiff update failed: {0}</value></data>
-  <data name="Ldiff_Cancelled" xml:space="preserve"><value>LDiff update cancelled.</value></data>
-  <data name="Ldiff_Cancelling" xml:space="preserve"><value>Cancelling safely...</value></data>
+  <data name="Ldiff_Cancelled" xml:space="preserve"><value>LDiff update paused. Resume it later to finish updating.</value></data>
+  <data name="Ldiff_Cancelling" xml:space="preserve"><value>Pausing the update...</value></data>
+  <data name="Ldiff_PendingLaunchBlocked" xml:space="preserve"><value>An LDiff update is incomplete. Resume it from Basic Settings before starting the game.</value></data>
   <data name="AppUpdate_Title" xml:space="preserve"><value>Application Update</value></data>
   <data name="AppUpdate_VersionLine" xml:space="preserve"><value>A new version is available: {0} to {1}</value></data>
   <data name="AppUpdate_CurrentVersion" xml:space="preserve"><value>Current version</value></data>

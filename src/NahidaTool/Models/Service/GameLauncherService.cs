@@ -155,6 +155,9 @@ public static class GameLauncherService
         if (string.IsNullOrEmpty(path))
             throw new InvalidOperationException("未找到游戏安装路径");
 
+        if (LdiffPatchService.HasPendingUpdate(path))
+            throw new InvalidOperationException(Lang.Ldiff_PendingLaunchBlocked);
+
         var existing = GetRunningProcess(region);
         if (existing != null)
             throw new InvalidOperationException("游戏已在运行中");

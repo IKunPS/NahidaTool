@@ -190,10 +190,13 @@
   <data name="DocumentSettingPage_Step4Detail" xml:space="preserve"><value>如果遇到连接错误，请查看下方的错误码说明，并确认代理服务器正在运行。</value></data>
   <data name="DocumentSettingPage_ErrorCodes" xml:space="preserve"><value>错误码说明</value></data>
   <data name="DocumentSettingPage_ErrorCodeHint" xml:space="preserve"><value>可能遇到的常见错误码及其解决方案：</value></data>
-  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>RSA 解密失败。请前往“基本信息”开启 Hook RSA，然后完全关闭并重新启动游戏。</value></data>
-  <data name="DocumentSettingPage_HookRsaMemoryTitle" xml:space="preserve"><value>Hook RSA：无法在游戏进程中分配内存</value></data>
-  <data name="DocumentSettingPage_HookRsaMemoryMessage" xml:space="preserve"><value>请完全退出游戏和启动器（任务管理器中也不能残留游戏进程），重新打开 NahidaTool 并允许管理员权限。将 NahidaTool、游戏主程序和 RSA 补丁 DLL 加入 Windows 安全中心或第三方安全软件的允许列表后再试；仍然失败时请重启电脑后重试。</value></data>
-  <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>连接服务器失败。请检查代理设置，确保代理服务器正在运行且可以访问。</value></data>
+  <data name="DocumentSettingPage_Error204" xml:space="preserve"><value>请在转服页转成国际服，而不是使用国服。</value></data>
+  <data name="DocumentSettingPage_Error4201" xml:space="preserve"><value>连接服务器失败。请检查代理设置，确保代理服务器正在运行且可以访问。如果还是不行请卸载证书再启动游戏进行安装新证书，要确保一定有安装证书窗口弹出。</value></data>
+  <data name="DocumentSettingPage_LoginNetworkErrorTitle" xml:space="preserve"><value>登录界面网络错误</value></data>
+  <data name="DocumentSettingPage_LoginNetworkErrorMessage" xml:space="preserve"><value>打开注册表，在上方地址栏输入以下目录并按回车，然后右键删除该文件夹，重启游戏即可。</value></data>
+  <data name="DocumentSettingPage_LoginNetworkRegistryPath" xml:space="preserve"><value>计算机\HKEY_CURRENT_USER\Software\miHoYo\Genshin Impact</value></data>
+  <data name="DocumentSettingPage_CopyRegistryPath" xml:space="preserve"><value>复制</value></data>
+  <data name="DocumentSettingPage_RegistryPathCopied" xml:space="preserve"><value>已复制</value></data>
   <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>连接超时。服务器无响应。请检查代理服务是否运行正常，目标服务器是否在线。</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>客户端补丁错误。请使用正确的服务器补丁，并确认补丁文件已复制到游戏目录。</value></data>
   <data name="DocumentSettingPage_Error4301" xml:space="preserve"><value>版本数据请求失败。游戏版本可能与服务器要求的版本不匹配。请更新游戏或检查服务器要求。</value></data>
@@ -214,7 +217,7 @@
   <data name="Ldiff_Checking" xml:space="preserve"><value>正在检查官方补丁清单...</value></data>
   <data name="Ldiff_CurrentVersion" xml:space="preserve"><value>当前版本</value></data>
   <data name="Ldiff_TargetVersion" xml:space="preserve"><value>目标版本</value></data>
-  <data name="Ldiff_DownloadSize" xml:space="preserve"><value>LDiff 大小</value></data>
+  <data name="Ldiff_DownloadSize" xml:space="preserve"><value>官方补丁大小</value></data>
   <data name="Ldiff_Start" xml:space="preserve"><value>开始更新</value></data>
   <data name="Ldiff_Close" xml:space="preserve"><value>关闭</value></data>
   <data name="Ldiff_Cancel" xml:space="preserve"><value>取消</value></data>
@@ -225,8 +228,9 @@
   <data name="Ldiff_OfficialPackageRequired" xml:space="preserve"><value>官方增量包缺失或不完整。请先在官方启动器中完成预下载或修复游戏，然后再重试。</value></data>
   <data name="Ldiff_Success" xml:space="preserve"><value>已成功更新到 {0}。</value></data>
   <data name="Ldiff_Failed" xml:space="preserve"><value>LDiff 更新失败：{0}</value></data>
-  <data name="Ldiff_Cancelled" xml:space="preserve"><value>已取消 LDiff 更新。</value></data>
-  <data name="Ldiff_Cancelling" xml:space="preserve"><value>正在安全取消...</value></data>
+  <data name="Ldiff_Cancelled" xml:space="preserve"><value>LDiff 更新已暂停，请稍后继续完成。</value></data>
+  <data name="Ldiff_Cancelling" xml:space="preserve"><value>正在暂停更新...</value></data>
+  <data name="Ldiff_PendingLaunchBlocked" xml:space="preserve"><value>检测到未完成的 LDiff 更新。请先在基本设置中继续完成 LDiff 更新，再启动游戏。</value></data>
   <data name="AppUpdate_Title" xml:space="preserve"><value>程序更新</value></data>
   <data name="AppUpdate_VersionLine" xml:space="preserve"><value>发现新版本：{0} → {1}</value></data>
   <data name="AppUpdate_CurrentVersion" xml:space="preserve"><value>当前版本</value></data>
