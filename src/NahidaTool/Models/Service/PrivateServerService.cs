@@ -22,17 +22,20 @@ public static class PrivateServerService
     /// </summary>
     private const string DefaultServerBaseUrl = "http://210.16.175.19:1145";
 
-    private static readonly HttpClient SharedHttpClient = new()
+    private static readonly HttpClient SharedHttpClient = new(new SocketsHttpHandler
+    {
+        Proxy = LauncherHttpProxy.Shared
+    })
     {
         Timeout = TimeSpan.FromSeconds(5),
     };
 
     /// <summary>
-    /// 根据配置的代理地址生成状态接口地址；代理地址为空时回退到默认地址
+    /// 根据当前代理模式生成状态接口地址；普通模式地址为空时回退到默认地址
     /// </summary>
     public static string GetServerBaseUrl(AppSettings settings)
     {
-        string address = settings.ProxyAddress?.Trim() ?? string.Empty;
+        string address = KunServerConfig.GetEffectiveProxyAddress(settings)?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(address))
             return DefaultServerBaseUrl;
 
@@ -53,6 +56,8 @@ public static class PrivateServerService
     public static IReadOnlyList<string> GetCandidateBaseUrls(AppSettings settings)
     {
         string primary = GetServerBaseUrl(settings);
+        if (KunServerConfig.IsEnabled(settings))
+            return new[] { primary };
         if (string.Equals(primary, DefaultServerBaseUrl, StringComparison.OrdinalIgnoreCase))
             return new[] { primary };
         return new[] { primary, DefaultServerBaseUrl };
@@ -83,7 +88,8 @@ public static class PrivateServerService
     }
 
     /// <summary>
-    /// 获取私服当前版本；优先请求配置的代理地址，失败时回退到默认地址。获取失败返回 null。
+    /// 获取私服当前版本；普通模式失败时回退到默认地址。
+    /// Kun 模式只查询所选服务器，避免把另一台服务器的版本误认为匹配。
     /// </summary>
     public static async Task<string?> GetServerVersionAsync(AppSettings settings, CancellationToken ct = default)
     {
@@ -101,6 +107,8 @@ public static class PrivateServerService
                 string json = await response.Content.ReadAsStringAsync(cts.Token);
 
                 var result = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.ServerStatusResponse);
+                if (result?.RetCode != 0)
+                    continue;
                 string? version = result?.Status?.Version;
                 if (!string.IsNullOrWhiteSpace(version))
                 {

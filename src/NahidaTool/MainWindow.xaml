@@ -14,11 +14,12 @@
     mc:Ignorable="d"
     Title="NahidaTool">
 
-    <Grid>
+    <Grid x:Name="BackgroundRoot"
+          Loaded="BackgroundRoot_Loaded"
+          SizeChanged="BackgroundRoot_SizeChanged">
 
         <!-- 双背景图片交叉淡入淡出（视频帧也通过此 Image 渲染） -->
         <Image x:Name="BackgroundImage1"
-               Source="./Assets/Nahida.png"
                Stretch="UniformToFill"
                IsHitTestVisible="False"
                Opacity="1">
@@ -40,9 +41,9 @@
                 IsHitTestVisible="False"
                 Background="{ThemeResource CustomAcrylicBrush}"/>
 
-        <!-- 叠加遮罩层：进入非主页时显示亚克力毛玻璃效果 -->
+        <!-- 非主页仅轻微压暗原图，整页不模糊；毛玻璃保留在卡片与弹窗。 -->
         <Border x:Name="Border_OverlayMask"
-                Background="{ThemeResource CustomAcrylicBrush}"
+                Background="#33000000"
                 IsHitTestVisible="False"
                 Opacity="0">
             <Border.OpacityTransition>
@@ -102,7 +103,8 @@
                 </NavigationViewItem>
 
                 <!-- 转服 -->
-                <NavigationViewItem Tag="ServerSwitch"
+                <NavigationViewItem x:Name="NavigationViewItem_ServerSwitch"
+                                    Tag="ServerSwitch"
                                     ToolTipService.Placement="Right">
                     <ToolTipService.ToolTip>
                         <ToolTip HorizontalOffset="12">

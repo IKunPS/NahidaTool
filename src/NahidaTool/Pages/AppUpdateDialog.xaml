@@ -5,17 +5,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:NahidaTool.Models"
     x:DefaultBindMode="OneWay"
-    Background="{ThemeResource CustomAcrylicBrush}"
-    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-    BorderThickness="1"
     CloseButtonClick="ContentDialog_CloseButtonClick"
     CloseButtonText="{x:Bind models:Lang.AppUpdate_Later}"
     Closing="ContentDialog_Closing"
-    CornerRadius="12"
     DefaultButton="Primary"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     PrimaryButtonText="{x:Bind models:Lang.AppUpdate_DownloadRestart}"
-    Style="{StaticResource DefaultContentDialogStyle}"
+    Style="{StaticResource NahidaDialogStyle}"
     Title="{x:Bind models:Lang.AppUpdate_Title}">
 
     <ContentDialog.Resources>
@@ -35,163 +31,151 @@
         </Style>
     </ContentDialog.Resources>
 
-    <Grid Width="540"
-          MinHeight="350"
-          Padding="0,8,0,2"
-          RowSpacing="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer x:Name="ContentViewport" Style="{StaticResource DialogScrollStyle}">
+        <Grid
+              Padding="0,8,0,2"
+              RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Version transition -->
-        <Grid ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="48"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Version transition -->
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="32"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Border Width="48"
-                    Height="48"
-                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                    CornerRadius="10">
-                <FontIcon FontSize="21"
-                          Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                          Glyph="&#xE895;"
+                <Border Width="48"
+                        Height="48"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        CornerRadius="10">
+                    <FontIcon FontSize="21"
+                              Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                              Glyph="&#xE895;"
+                              IsTextScaleFactorEnabled="False"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource UpdateLabelStyle}"
+                               Text="{x:Bind models:Lang.AppUpdate_CurrentVersion}"/>
+                    <TextBlock x:Name="CurrentVersionText"
+                               Style="{StaticResource UpdateVersionStyle}"/>
+                </StackPanel>
+
+                <FontIcon Grid.Column="2"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          FontSize="16"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          Glyph="&#xE72A;"
                           IsTextScaleFactorEnabled="False"/>
+
+                <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource UpdateLabelStyle}"
+                               Text="{x:Bind models:Lang.AppUpdate_LatestVersion}"/>
+                    <TextBlock x:Name="TargetVersionText"
+                               Style="{StaticResource UpdateVersionStyle}"
+                               Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Release metadata -->
+            <Grid Grid.Row="1" ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon FontSize="13"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              Glyph="&#xE8B7;"
+                              IsTextScaleFactorEnabled="False"/>
+                    <TextBlock x:Name="SourceText"
+                               Grid.Column="1"
+                               Style="{StaticResource UpdateLabelStyle}"
+                               TextTrimming="CharacterEllipsis"/>
+                </Grid>
+
+                <Grid x:Name="PublishedInfo" Grid.Column="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon FontSize="13"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              Glyph="&#xE787;"
+                              IsTextScaleFactorEnabled="False"/>
+                    <TextBlock x:Name="PublishedText"
+                               Grid.Column="1"
+                               Style="{StaticResource UpdateLabelStyle}"
+                               TextTrimming="CharacterEllipsis"/>
+                </Grid>
+            </Grid>
+
+            <Rectangle Grid.Row="2"
+                       Height="1"
+                       HorizontalAlignment="Stretch"
+                       Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                       Opacity="0.12"/>
+
+            <TextBlock Grid.Row="3"
+                       FontSize="13"
+                       FontWeight="SemiBold"
+                       Text="{x:Bind models:Lang.AppUpdate_ReleaseNotes}"/>
+
+            <!-- 日志随整个内容区滚动，操作按钮留在原生页脚。 -->
+            <Border Grid.Row="4" Style="{StaticResource DialogCardStyle}">
+                <TextBlock x:Name="ReleaseNotesText" Style="{StaticResource DialogBodyStyle}"/>
             </Border>
 
-            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                <TextBlock Style="{StaticResource UpdateLabelStyle}"
-                           Text="{x:Bind models:Lang.AppUpdate_CurrentVersion}"/>
-                <TextBlock x:Name="CurrentVersionText"
-                           Style="{StaticResource UpdateVersionStyle}"/>
-            </StackPanel>
-
-            <FontIcon Grid.Column="2"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      FontSize="16"
-                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                      Glyph="&#xE72A;"
-                      IsTextScaleFactorEnabled="False"/>
-
-            <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                <TextBlock Style="{StaticResource UpdateLabelStyle}"
-                           Text="{x:Bind models:Lang.AppUpdate_LatestVersion}"/>
-                <TextBlock x:Name="TargetVersionText"
-                           Style="{StaticResource UpdateVersionStyle}"
-                           Foreground="{ThemeResource AccentFillColorDefaultBrush}"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- Release metadata -->
-        <Grid Grid.Row="1" ColumnSpacing="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <FontIcon FontSize="13"
-                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                          Glyph="&#xE8B7;"
-                          IsTextScaleFactorEnabled="False"/>
-                <TextBlock x:Name="SourceText"
-                           Grid.Column="1"
-                           Style="{StaticResource UpdateLabelStyle}"
-                           TextTrimming="CharacterEllipsis"/>
-            </Grid>
-
-            <Grid x:Name="PublishedInfo" Grid.Column="1" ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <FontIcon FontSize="13"
-                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                          Glyph="&#xE787;"
-                          IsTextScaleFactorEnabled="False"/>
-                <TextBlock x:Name="PublishedText"
-                           Grid.Column="1"
-                           Style="{StaticResource UpdateLabelStyle}"
-                           TextTrimming="CharacterEllipsis"/>
-            </Grid>
-        </Grid>
-
-        <Rectangle Grid.Row="2"
-                   Height="1"
-                   HorizontalAlignment="Stretch"
-                   Fill="{ThemeResource TextFillColorSecondaryBrush}"
-                   Opacity="0.12"/>
-
-        <TextBlock Grid.Row="3"
-                   FontSize="13"
-                   FontWeight="SemiBold"
-                   Text="{x:Bind models:Lang.AppUpdate_ReleaseNotes}"/>
-
-        <!-- Release notes -->
-        <Border Grid.Row="4"
-                MinHeight="116"
-                MaxHeight="230"
-                Padding="14,12"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="8">
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          VerticalScrollMode="Auto">
-                <TextBlock x:Name="ReleaseNotesText"
-                           LineHeight="21"
-                           IsTextSelectionEnabled="True"
-                           TextWrapping="WrapWholeWords"/>
-            </ScrollViewer>
-        </Border>
-
-        <!-- Download progress; hidden until the update starts -->
-        <Border x:Name="ProgressPanel"
-                Grid.Row="5"
-                Padding="12,10"
-                Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                CornerRadius="8"
-                Visibility="Collapsed">
-            <Grid RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="StatusText"
-                               Margin="0,0,16,0"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               TextTrimming="CharacterEllipsis"
-                               TextWrapping="Wrap"/>
-                    <TextBlock x:Name="ProgressPercentText"
-                               Grid.Column="1"
-                               HorizontalAlignment="Right"
-                               FontWeight="SemiBold"
-                               Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                               Text="0%"/>
+            <!-- Download progress; hidden until the update starts -->
+            <Border x:Name="ProgressPanel"
+                    Grid.Row="5"
+                    Padding="12,10"
+                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                    CornerRadius="8"
+                    Visibility="Collapsed">
+                <Grid RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="StatusText"
+                                   Margin="0,0,16,0"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="Wrap"/>
+                        <TextBlock x:Name="ProgressPercentText"
+                                   Grid.Column="1"
+                                   HorizontalAlignment="Right"
+                                   FontWeight="SemiBold"
+                                   Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                   Text="0%"/>
+                    </Grid>
+                    <ProgressBar x:Name="UpdateProgressBar"
+                                 Grid.Row="1"
+                                 Height="6"
+                                 Maximum="100"/>
                 </Grid>
-                <ProgressBar x:Name="UpdateProgressBar"
-                             Grid.Row="1"
-                             Height="6"
-                             Maximum="100"/>
-            </Grid>
-        </Border>
-    </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
 </ContentDialog>

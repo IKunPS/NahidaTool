@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Resources;
 
 namespace NahidaTool.Models;
@@ -59,6 +59,31 @@ public static class Lang
     public static string HomePage_ProxyNotStarted => _resourceManager.GetString("HomePage_ProxyNotStarted") ?? "Not Started";
     public static string HomePage_ProxyRunning => _resourceManager.GetString("HomePage_ProxyRunning") ?? "Running";
     public static string HomePage_ProxyAddress => _resourceManager.GetString("HomePage_ProxyAddress") ?? "Proxy Address";
+    public static string HomePage_KunServerLabel => _resourceManager.GetString("HomePage_KunServerLabel") ?? "Kun Server";
+    public static string HomePage_KunCheckingVersion => _resourceManager.GetString("HomePage_KunCheckingVersion") ?? "Checking version...";
+    public static string HomePage_KunStoryServer => _resourceManager.GetString("HomePage_KunStoryServer") ?? "Story Server";
+    public static string HomePage_KunCommandServer => _resourceManager.GetString("HomePage_KunCommandServer") ?? "Command Server";
+    public static string HomePage_KunProxyFailed => _resourceManager.GetString("HomePage_KunProxyFailed") ?? "Kun proxy could not start. Game launch was cancelled.";
+    public static string HomePage_KunProxyMismatch => _resourceManager.GetString("HomePage_KunProxyMismatch") ?? "Kun proxy settings changed during launch. Please try again.";
+    public static string HomePage_KunServerInvalid => _resourceManager.GetString("HomePage_KunServerInvalid") ?? "Select a valid Kun server.";
+    public static string HomePage_KunOsRequired => _resourceManager.GetString("HomePage_KunOsRequired") ?? "Kun mode requires a global client. Switch to the global version first.";
+    public static string HomePage_KunClientDetectionFailed => _resourceManager.GetString("HomePage_KunClientDetectionFailed") ?? "Could not read the installed game region or version. Game launch was cancelled.";
+    public static string HomePage_KunVersionUnavailable => _resourceManager.GetString("HomePage_KunVersionUnavailable") ?? "Could not read the selected Kun server version. Check the server connection and try again.";
+    public static string HomePage_KunVersionMismatch => _resourceManager.GetString("HomePage_KunVersionMismatch") ?? "Your global client is version {0}, but the selected Kun server requires {1}. Install or switch to a {1} global client, or choose a Kun server that supports {0}, then try again.";
+    public static string HomePage_KunMismatchTitle => _resourceManager.GetString("HomePage_KunMismatchTitle") ?? "Version mismatch";
+    public static string HomePage_KunMismatchSummary => _resourceManager.GetString("HomePage_KunMismatchSummary") ?? "The game was not started. Match the client version to the selected server first.";
+    public static string HomePage_KunClientVersion => _resourceManager.GetString("HomePage_KunClientVersion") ?? "Global client";
+    public static string HomePage_KunRequiredVersion => _resourceManager.GetString("HomePage_KunRequiredVersion") ?? "Server requires";
+    public static string HomePage_KunMismatchAction => _resourceManager.GetString("HomePage_KunMismatchAction") ?? "Install the required global client version, or choose a Kun server that supports your current client.";
+    public static string HomePage_KunChooseServer => _resourceManager.GetString("HomePage_KunChooseServer") ?? "Choose server";
+    public static string HomePage_KunDismiss => _resourceManager.GetString("HomePage_KunDismiss") ?? "Got it";
+    public static string HomePage_KunRegionTitle => _resourceManager.GetString("HomePage_KunRegionTitle") ?? "Global client required";
+    public static string HomePage_KunRegionSummary => _resourceManager.GetString("HomePage_KunRegionSummary") ?? "The selected Kun server cannot start with this client.";
+    public static string HomePage_KunCurrentRegion => _resourceManager.GetString("HomePage_KunCurrentRegion") ?? "Current client";
+    public static string HomePage_KunRequiredRegion => _resourceManager.GetString("HomePage_KunRequiredRegion") ?? "Kun requires";
+    public static string HomePage_KunRegionAction => _resourceManager.GetString("HomePage_KunRegionAction") ?? "Switch the client to the global version on the Server Switch page, then try again.";
+    public static string HomePage_KunGoToServerSwitch => _resourceManager.GetString("HomePage_KunGoToServerSwitch") ?? "Go to Server Switch";
+    public static string HomePage_KunCustomLauncherUnsupported => _resourceManager.GetString("HomePage_KunCustomLauncherUnsupported") ?? "Disable the custom launcher before starting in Kun mode.";
     public static string HomePage_ProxyUrlError => _resourceManager.GetString("HomePage_ProxyUrlError") ?? "URL format error";
     public static string HomePage_StartGame => _resourceManager.GetString("HomePage_StartGame") ?? "Start Game";
     public static string HomePage_GameRunning => _resourceManager.GetString("HomePage_GameRunning") ?? "Game Running";
@@ -71,6 +96,7 @@ public static class Lang
     public static string HomePage_ProxyUrlFormatContent => _resourceManager.GetString("HomePage_ProxyUrlFormatContent") ?? "Proxy address must start with https:// or http://.";
     public static string HomePage_ProxyUrlFormatStartMessage => _resourceManager.GetString("HomePage_ProxyUrlFormatStartMessage") ?? "Proxy address must start with https:// or http://.";
     public static string HomePage_OK => _resourceManager.GetString("HomePage_OK") ?? "OK";
+    public static string HomePage_LaunchFailed => _resourceManager.GetString("HomePage_LaunchFailed") ?? "Unable to start game";
 
     // DownloadPage
     public static string DownloadPage_ResourceInfo => _resourceManager.GetString("DownloadPage_ResourceInfo") ?? "Resource Info";
@@ -163,10 +189,24 @@ public static class Lang
     public static string HomeSettingDialog_CustomLauncher => _resourceManager.GetString("HomeSettingDialog_CustomLauncher") ?? "Custom Launcher";
     public static string HomeSettingDialog_Select => _resourceManager.GetString("HomeSettingDialog_Select") ?? "Select";
     public static string HomeSettingDialog_CustomBgSwitch => _resourceManager.GetString("HomeSettingDialog_CustomBgSwitch") ?? "Custom Background (Supports Video)";
-    public static string HomeSettingDialog_CustomBgHint => _resourceManager.GetString("HomeSettingDialog_CustomBgHint") ?? "Please choose images matching the app window size.";
+    public static string HomeSettingDialog_CustomBgHint => _resourceManager.GetString("HomeSettingDialog_CustomBgHint") ?? "High-resolution images are automatically resized for the display.";
+    public static string HomeSettingDialog_ImagePosition => _resourceManager.GetString("HomeSettingDialog_ImagePosition") ?? "Image position";
+    public static string HomeSettingDialog_ImagePositionCenter => _resourceManager.GetString("HomeSettingDialog_ImagePositionCenter") ?? "Center";
+    public static string HomeSettingDialog_ImagePositionHorizontal => _resourceManager.GetString("HomeSettingDialog_ImagePositionHorizontal") ?? "Horizontal position";
+    public static string HomeSettingDialog_ImagePositionVertical => _resourceManager.GetString("HomeSettingDialog_ImagePositionVertical") ?? "Vertical position";
+    public static string HomeSettingDialog_ImagePositionLeft => _resourceManager.GetString("HomeSettingDialog_ImagePositionLeft") ?? "Move left";
+    public static string HomeSettingDialog_ImagePositionRight => _resourceManager.GetString("HomeSettingDialog_ImagePositionRight") ?? "Move right";
+    public static string HomeSettingDialog_ImagePositionUp => _resourceManager.GetString("HomeSettingDialog_ImagePositionUp") ?? "Move up";
+    public static string HomeSettingDialog_ImagePositionDown => _resourceManager.GetString("HomeSettingDialog_ImagePositionDown") ?? "Move down";
+    public static string HomeSettingDialog_ImagePositionHint => _resourceManager.GetString("HomeSettingDialog_ImagePositionHint") ?? "The image always fills the window. Directions without cropping space are disabled.";
+    public static string HomeSettingDialog_ImagePositionStaticOnly => _resourceManager.GetString("HomeSettingDialog_ImagePositionStaticOnly") ?? "Position controls apply to still images.";
+    public static string HomeSettingDialog_ImagePositionFailed => _resourceManager.GetString("HomeSettingDialog_ImagePositionFailed") ?? "Preview could not load. Reload or choose another image.";
+    public static string HomeSettingDialog_ImagePositionRetry => _resourceManager.GetString("HomeSettingDialog_ImagePositionRetry") ?? "Reload";
+    public static string HomeSettingDialog_ImagePositionLoading => _resourceManager.GetString("HomeSettingDialog_ImagePositionLoading") ?? "Loading preview";
     public static string HomeSettingDialog_DragDropHere => _resourceManager.GetString("HomeSettingDialog_DragDropHere") ?? "Drag image or video file here";
     public static string HomeSettingDialog_EnableProxy => _resourceManager.GetString("HomeSettingDialog_EnableProxy") ?? "Enable Proxy";
     public static string HomeSettingDialog_ProxyHint => _resourceManager.GetString("HomeSettingDialog_ProxyHint") ?? "When enabled, game traffic will be routed through the proxy server.";
+    public static string HomeSettingDialog_EnableKun => _resourceManager.GetString("HomeSettingDialog_EnableKun") ?? "Kun Mode";
     public static string HomeSettingDialog_UninstallCA => _resourceManager.GetString("HomeSettingDialog_UninstallCA") ?? "Uninstall CA Certificate";
     public static string HomeSettingDialog_CannotDeleteRoot => _resourceManager.GetString("HomeSettingDialog_CannotDeleteRoot") ?? "Cannot delete the root directory of a drive";
     public static string HomeSettingDialog_NahidaInGameFolder => _resourceManager.GetString("HomeSettingDialog_NahidaInGameFolder") ?? "NahidaTool is located inside the game folder.";
@@ -248,4 +288,41 @@ public static class Lang
     public static string DocumentSettingPage_TutorialVideos => _resourceManager.GetString("DocumentSettingPage_TutorialVideos") ?? "Tutorial Videos";
     public static string DocumentSettingPage_VideoConnect => _resourceManager.GetString("DocumentSettingPage_VideoConnect") ?? "How to Connect to a Private Server";
     public static string DocumentSettingPage_Back => _resourceManager.GetString("DocumentSettingPage_Back") ?? "Back";
+
+    #region 更新日志
+
+    public static string Changelog_HistoryFeatureTitle => _resourceManager.GetString("Changelog_HistoryFeatureTitle") ?? "Version history";
+    public static string Changelog_HistoryFeatureDescription => _resourceManager.GetString("Changelog_HistoryFeatureDescription") ?? "Expand or collapse archived release notes by version, in Chinese or English, even when offline.";
+    public static string Changelog_CompatibilityTitle => _resourceManager.GetString("Changelog_CompatibilityTitle") ?? "Older Windows 10 compatibility";
+    public static string Changelog_CompatibilityDescription => _resourceManager.GetString("Changelog_CompatibilityDescription") ?? "Keep .NET 10 with an adjusted CET compatibility flag for affected older Windows 10 systems, and include missing pages and built-in assets in published packages.";
+    public static string Changelog_DialogTitle => _resourceManager.GetString("Changelog_DialogTitle") ?? "Acrylic dialogs and settings";
+    public static string Changelog_DialogDescription => _resourceManager.GetString("Changelog_DialogDescription") ?? "Unify acrylic dialogs; correct switch-server confirmation and cancellation, uninstall placement, alignment and top spacing; prevent text from jumping when settings open.";
+    public static string Changelog_BackgroundTitle => _resourceManager.GetString("Changelog_BackgroundTitle") ?? "High-quality backgrounds";
+    public static string Changelog_BackgroundDescription => _resourceManager.GetString("Changelog_BackgroundDescription") ?? "Use a subtle dark tint outside the home page and keep local acrylic effects. Resize large images to the display's physical pixels to reduce jagged fine lines and adapt to DPI changes.";
+    public static string Changelog_ImagePositionTitle => _resourceManager.GetString("Changelog_ImagePositionTitle") ?? "Adjust background composition";
+    public static string Changelog_ImagePositionDescription => _resourceManager.GetString("Changelog_ImagePositionDescription") ?? "Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.";
+    public static string Changelog_ThemeHintTitle => _resourceManager.GetString("Changelog_ThemeHintTitle") ?? "Theme-colored notices";
+    public static string Changelog_ThemeHintDescription => _resourceManager.GetString("Changelog_ThemeHintDescription") ?? "The game-path warning follows the app accent color while keeping readable text in light, dark and high-contrast modes.";
+    public static string Changelog_HistoryBundledSource => _resourceManager.GetString("Changelog_HistoryBundledSource") ?? "Source: bundled {0} release notes";
+
+    public static string Changelog_History => _resourceManager.GetString("Changelog_History") ?? "Version history";
+    public static string Changelog_HistoryHint => _resourceManager.GetString("Changelog_HistoryHint") ?? "Expand a version to read its archived notes. Some updates may appear in more than one version.";
+    public static string Changelog_EntryCount => _resourceManager.GetString("Changelog_EntryCount") ?? "{0} updates";
+    public static string Changelog_HistorySource => _resourceManager.GetString("Changelog_HistorySource") ?? "Archived notes source: {0}";
+
+    public static string Changelog_Title => _resourceManager.GetString("Changelog_Title") ?? "What's new";
+    public static string Changelog_Added => _resourceManager.GetString("Changelog_Added") ?? "NEW";
+    public static string Changelog_Improved => _resourceManager.GetString("Changelog_Improved") ?? "IMPROVEMENTS";
+    public static string Changelog_KunTitle => _resourceManager.GetString("Changelog_KunTitle") ?? "Kun proxy mode";
+    public static string Changelog_KunDescription => _resourceManager.GetString("Changelog_KunDescription") ?? "Choose the story or command server on the home page. Kun is enabled by default as a sub-option of the proxy.";
+    public static string Changelog_CheckTitle => _resourceManager.GetString("Changelog_CheckTitle") ?? "Checks before launch";
+    public static string Changelog_CheckDescription => _resourceManager.GetString("Changelog_CheckDescription") ?? "Checks the Global client and selected server version before launching. Incompatible clients are not started.";
+    public static string Changelog_MismatchTitle => _resourceManager.GetString("Changelog_MismatchTitle") ?? "Clearer compatibility guidance";
+    public static string Changelog_MismatchDescription => _resourceManager.GetString("Changelog_MismatchDescription") ?? "Region and version dialogs show the differences and let you go directly to server conversion or server selection.";
+    public static string Changelog_ProxyTitle => _resourceManager.GetString("Changelog_ProxyTitle") ?? "Launch messages and proxy settings";
+    public static string Changelog_ProxyDescription => _resourceManager.GetString("Changelog_ProxyDescription") ?? "Improved other launch error messages. Your custom proxy address is kept when Kun is turned off.";
+    public static string Changelog_Dismiss => _resourceManager.GetString("Changelog_Dismiss") ?? "Got it";
+    public static string Changelog_Open => _resourceManager.GetString("Changelog_Open") ?? "View changelog";
+
+    #endregion
 }

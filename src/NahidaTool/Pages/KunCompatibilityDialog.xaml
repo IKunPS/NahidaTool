@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="NahidaTool.Pages.KunCompatibilityDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:NahidaTool.Models"
+    x:DefaultBindMode="OneWay"
+    DefaultButton="Primary"
+    CloseButtonText="{x:Bind models:Lang.HomePage_KunDismiss}"
+    Style="{StaticResource NahidaDialogStyle}">
+
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMaxWidth">540</x:Double>
+    </ContentDialog.Resources>
+
+    <ScrollViewer x:Name="ContentViewport" Style="{StaticResource DialogScrollStyle}">
+        <Grid Padding="0,6,0,2" RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Width="40" Height="40"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        CornerRadius="10">
+                    <FontIcon FontSize="19"
+                              Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                              Glyph="&#xE7BA;"
+                              IsTextScaleFactorEnabled="False"/>
+                </Border>
+                <TextBlock x:Name="SummaryText" Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap"/>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border MinHeight="86" Padding="14,12"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8">
+                    <StackPanel Spacing="4">
+                        <TextBlock x:Name="CurrentLabelText"
+                                   FontSize="12"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock x:Name="CurrentValueText"
+                                   FontFamily="{ThemeResource ContentControlThemeFontFamily}"
+                                   FontSize="23" FontWeight="SemiBold"
+                                   TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" MinHeight="86" Padding="14,12"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="8">
+                    <StackPanel Spacing="4">
+                        <TextBlock x:Name="RequiredLabelText"
+                                   FontSize="12"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock x:Name="RequiredValueText"
+                                   FontFamily="{ThemeResource ContentControlThemeFontFamily}"
+                                   FontSize="23" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                   TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="2" Padding="14,12"
+                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                    CornerRadius="8">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <FontIcon VerticalAlignment="Top"
+                              FontSize="16"
+                              Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                              Glyph="&#xE946;"
+                              IsTextScaleFactorEnabled="False"/>
+                    <TextBlock x:Name="ActionText" Grid.Column="1"
+                               FontSize="13" LineHeight="20"
+                               TextWrapping="Wrap"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</ContentDialog>

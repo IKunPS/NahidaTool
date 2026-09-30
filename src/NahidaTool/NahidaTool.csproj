@@ -3,6 +3,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <!-- 兼容旧版 Windows 10 的 CET 启动问题，仅对本程序关闭兼容标记。 -->
+    <CETCompat>false</CETCompat>
     <RootNamespace>NahidaTool</RootNamespace>
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
@@ -16,10 +18,10 @@
     <ApplicationIcon>Assets\ic_launcher.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SignAssembly>False</SignAssembly>
-    <Version>0.1.6.0</Version>
-    <AssemblyVersion>0.1.6.0</AssemblyVersion>
-    <FileVersion>0.1.6.0</FileVersion>
-    <InformationalVersion>0.1.6</InformationalVersion>
+    <Version>0.1.8.0</Version>
+    <AssemblyVersion>0.1.8.0</AssemblyVersion>
+    <FileVersion>0.1.8.0</FileVersion>
+    <InformationalVersion>0.1.8</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -77,5 +79,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+  <!-- 自包含发布保留页面、背景与内置素材，排除运行时生成的转服缓存。 -->
+  <Target Name="IncludeWinUiResourcesInPublish" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <_NahidaWinUiPublishResource Include="$(TargetDir)**\*.xbf;$(TargetDir)$(AssemblyName).pri" />
+      <_NahidaAssetPublishResource Include="$(TargetDir)Assets\**\*"
+                                  Exclude="$(TargetDir)Assets\ServerSwitchCache\**\*" />
+      <ResolvedFileToPublish Include="@(_NahidaWinUiPublishResource)" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(_NahidaAssetPublishResource)" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>Assets\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+    <Error Condition="!Exists('$(TargetDir)$(AssemblyName).pri')"
+           Text="WinUI resource index is missing. Build the application before publishing." />
+  </Target>
 
 </Project>

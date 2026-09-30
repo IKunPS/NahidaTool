@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -63,6 +63,31 @@
   <data name="HomePage_ProxyNotStarted" xml:space="preserve"><value>Not Started</value></data>
   <data name="HomePage_ProxyRunning" xml:space="preserve"><value>Running</value></data>
   <data name="HomePage_ProxyAddress" xml:space="preserve"><value>Proxy Address</value></data>
+  <data name="HomePage_KunServerLabel" xml:space="preserve"><value>Kun Server</value></data>
+  <data name="HomePage_KunCheckingVersion" xml:space="preserve"><value>Checking version...</value></data>
+  <data name="HomePage_KunStoryServer" xml:space="preserve"><value>Story Server</value></data>
+  <data name="HomePage_KunCommandServer" xml:space="preserve"><value>Command Server</value></data>
+  <data name="HomePage_KunProxyFailed" xml:space="preserve"><value>Kun proxy could not start. Game launch was cancelled.</value></data>
+  <data name="HomePage_KunProxyMismatch" xml:space="preserve"><value>Kun proxy settings changed during launch. Please try again.</value></data>
+  <data name="HomePage_KunServerInvalid" xml:space="preserve"><value>Select a valid Kun server.</value></data>
+  <data name="HomePage_KunOsRequired" xml:space="preserve"><value>Kun mode requires a global client. Switch to the global version first.</value></data>
+  <data name="HomePage_KunClientDetectionFailed" xml:space="preserve"><value>Could not read the installed game region or version. Check the game files before trying again.</value></data>
+  <data name="HomePage_KunVersionUnavailable" xml:space="preserve"><value>Could not read the selected Kun server version. Check the server connection and try again.</value></data>
+  <data name="HomePage_KunVersionMismatch" xml:space="preserve"><value>Your global client is version {0}, but the selected Kun server requires {1}. Install or switch to a {1} global client, or choose a Kun server that supports {0}, then try again.</value></data>
+  <data name="HomePage_KunMismatchTitle" xml:space="preserve"><value>Version mismatch</value></data>
+  <data name="HomePage_KunMismatchSummary" xml:space="preserve"><value>The game was not started. Match the client version to the selected server first.</value></data>
+  <data name="HomePage_KunClientVersion" xml:space="preserve"><value>Global client</value></data>
+  <data name="HomePage_KunRequiredVersion" xml:space="preserve"><value>Server requires</value></data>
+  <data name="HomePage_KunMismatchAction" xml:space="preserve"><value>Install the required global client version, or choose a Kun server that supports your current client.</value></data>
+  <data name="HomePage_KunChooseServer" xml:space="preserve"><value>Choose server</value></data>
+  <data name="HomePage_KunDismiss" xml:space="preserve"><value>Got it</value></data>
+  <data name="HomePage_KunRegionTitle" xml:space="preserve"><value>Global client required</value></data>
+  <data name="HomePage_KunRegionSummary" xml:space="preserve"><value>The selected Kun server cannot start with this client.</value></data>
+  <data name="HomePage_KunCurrentRegion" xml:space="preserve"><value>Current client</value></data>
+  <data name="HomePage_KunRequiredRegion" xml:space="preserve"><value>Kun requires</value></data>
+  <data name="HomePage_KunRegionAction" xml:space="preserve"><value>Switch the client to the global version on the Server Switch page, then try again.</value></data>
+  <data name="HomePage_KunGoToServerSwitch" xml:space="preserve"><value>Go to Server Switch</value></data>
+  <data name="HomePage_KunCustomLauncherUnsupported" xml:space="preserve"><value>Disable the custom launcher before starting in Kun mode.</value></data>
   <data name="HomePage_ProxyUrlError" xml:space="preserve"><value>URL format error: must start with https:// or http://</value></data>
   <data name="HomePage_StartGame" xml:space="preserve"><value>Start Game</value></data>
   <data name="HomePage_GameRunning" xml:space="preserve"><value>Game Running</value></data>
@@ -75,6 +100,7 @@
   <data name="HomePage_ProxyUrlFormatContent" xml:space="preserve"><value>Proxy address must start with https:// or http://.&#xA;&#xA;Example: https://127.0.0.1:8080</value></data>
   <data name="HomePage_ProxyUrlFormatStartMessage" xml:space="preserve"><value>Proxy address must start with https:// or http://. Please fix before launching.</value></data>
   <data name="HomePage_OK" xml:space="preserve"><value>OK</value></data>
+  <data name="HomePage_LaunchFailed" xml:space="preserve"><value>Unable to start game</value></data>
 
   <!-- DownloadPage -->
   <data name="DownloadPage_ResourceInfo" xml:space="preserve"><value>Resource Info</value></data>
@@ -166,10 +192,24 @@
   <data name="HomeSettingDialog_CustomLauncher" xml:space="preserve"><value>Custom Launcher</value></data>
   <data name="HomeSettingDialog_Select" xml:space="preserve"><value>Select</value></data>
   <data name="HomeSettingDialog_CustomBgSwitch" xml:space="preserve"><value>Custom Background (Supports Video)</value></data>
-  <data name="HomeSettingDialog_CustomBgHint" xml:space="preserve"><value>Please choose images with dimensions matching the app window. Large images may affect performance.</value></data>
+  <data name="HomeSettingDialog_CustomBgHint" xml:space="preserve"><value>High-resolution images are automatically resized for the display using high-quality filtering.</value></data>
+  <data name="HomeSettingDialog_ImagePosition" xml:space="preserve"><value>Image position</value></data>
+  <data name="HomeSettingDialog_ImagePositionCenter" xml:space="preserve"><value>Center</value></data>
+  <data name="HomeSettingDialog_ImagePositionHorizontal" xml:space="preserve"><value>Horizontal position</value></data>
+  <data name="HomeSettingDialog_ImagePositionVertical" xml:space="preserve"><value>Vertical position</value></data>
+  <data name="HomeSettingDialog_ImagePositionLeft" xml:space="preserve"><value>Move left</value></data>
+  <data name="HomeSettingDialog_ImagePositionRight" xml:space="preserve"><value>Move right</value></data>
+  <data name="HomeSettingDialog_ImagePositionUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="HomeSettingDialog_ImagePositionDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="HomeSettingDialog_ImagePositionHint" xml:space="preserve"><value>The image always fills the window. Directions without cropping space are disabled.</value></data>
+  <data name="HomeSettingDialog_ImagePositionStaticOnly" xml:space="preserve"><value>Position controls apply to still images.</value></data>
+  <data name="HomeSettingDialog_ImagePositionFailed" xml:space="preserve"><value>Preview could not load. Reload or choose another image.</value></data>
+  <data name="HomeSettingDialog_ImagePositionRetry" xml:space="preserve"><value>Reload</value></data>
+  <data name="HomeSettingDialog_ImagePositionLoading" xml:space="preserve"><value>Loading preview</value></data>
   <data name="HomeSettingDialog_DragDropHere" xml:space="preserve"><value>Drag image or video file here</value></data>
   <data name="HomeSettingDialog_EnableProxy" xml:space="preserve"><value>Enable Proxy</value></data>
   <data name="HomeSettingDialog_ProxyHint" xml:space="preserve"><value>When enabled, a proxy card will appear at the bottom-left of the home page. Game traffic will be routed through the proxy server.</value></data>
+  <data name="HomeSettingDialog_EnableKun" xml:space="preserve"><value>Enable Kun Mode</value></data>
   <data name="HomeSettingDialog_UninstallCA" xml:space="preserve"><value>Uninstall CA Certificate</value></data>
   <data name="HomeSettingDialog_CannotDeleteRoot" xml:space="preserve"><value>Cannot delete the root directory of a drive</value></data>
   <data name="HomeSettingDialog_NahidaInGameFolder" xml:space="preserve"><value>NahidaTool is located inside the game folder and would be deleted as well. Please move NahidaTool outside the game folder and try again.</value></data>
@@ -198,7 +238,7 @@
   <data name="DocumentSettingPage_LoginNetworkRegistryPath" xml:space="preserve"><value>Computer\HKEY_CURRENT_USER\Software\miHoYo\Genshin Impact</value></data>
   <data name="DocumentSettingPage_CopyRegistryPath" xml:space="preserve"><value>Copy</value></data>
   <data name="DocumentSettingPage_RegistryPathCopied" xml:space="preserve"><value>Copied</value></data>
-  <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. The server is not responding. Check that the proxy service is running and the target server is online.</value></data>
+  <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>Connection timed out. Check that the proxy is running and the target server is online. If the issue persists, close the game completely and make sure the proxy has stopped. In Proxy Settings, select Uninstall CA Certificate, then start the game again. Make sure the certificate installation window appears and complete the new certificate installation.</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>Client patch error. Make sure the correct server patch is applied and copied to the game directory.</value></data>
   <data name="DocumentSettingPage_Error4301" xml:space="preserve"><value>Version data request failed. Your game version may not match the server's expected version. Update your game or check server requirements.</value></data>
   <data name="DocumentSettingPage_Error4308" xml:space="preserve"><value>Resource download failed. The server could not provide required game resources. Check your server's resource directory configuration.</value></data>
@@ -249,4 +289,127 @@
   <data name="AppUpdate_Cancelled" xml:space="preserve"><value>Update cancelled.</value></data>
   <data name="AppUpdate_Cancelling" xml:space="preserve"><value>Cancelling safely...</value></data>
   <data name="AppUpdate_Failed" xml:space="preserve"><value>Update failed: {0}</value></data>
+  <data name="Changelog_Title" xml:space="preserve">
+    <value>What's new</value>
+  </data>
+  <data name="Changelog_Added" xml:space="preserve">
+    <value>NEW</value>
+  </data>
+  <data name="Changelog_Improved" xml:space="preserve">
+    <value>IMPROVEMENTS</value>
+  </data>
+  <data name="Changelog_KunTitle" xml:space="preserve">
+    <value>Kun proxy mode</value>
+  </data>
+  <data name="Changelog_KunDescription" xml:space="preserve">
+    <value>Choose the story or command server on the home page. Kun is enabled by default as a sub-option of the proxy.</value>
+  </data>
+  <data name="Changelog_CheckTitle" xml:space="preserve">
+    <value>Checks before launch</value>
+  </data>
+  <data name="Changelog_CheckDescription" xml:space="preserve">
+    <value>Checks the Global client and selected server version before launching. Incompatible clients are not started.</value>
+  </data>
+  <data name="Changelog_MismatchTitle" xml:space="preserve">
+    <value>Clearer compatibility guidance</value>
+  </data>
+  <data name="Changelog_MismatchDescription" xml:space="preserve">
+    <value>Region and version dialogs show the differences and let you go directly to server conversion or server selection.</value>
+  </data>
+  <data name="Changelog_ProxyTitle" xml:space="preserve">
+    <value>Launch messages and proxy settings</value>
+  </data>
+  <data name="Changelog_ProxyDescription" xml:space="preserve">
+    <value>Improved other launch error messages. Your custom proxy address is kept when Kun is turned off.</value>
+  </data>
+  <data name="Changelog_Dismiss" xml:space="preserve">
+    <value>Got it</value>
+  </data>
+  <data name="Changelog_Open" xml:space="preserve">
+    <value>View changelog</value>
+  </data>
+  <data name="Changelog_History" xml:space="preserve"><value>Version history</value></data>
+  <data name="Changelog_HistoryHint" xml:space="preserve"><value>Expand a version to read its archived notes. Some updates may appear in more than one version.</value></data>
+  <data name="Changelog_EntryCount" xml:space="preserve"><value>{0} updates</value></data>
+  <data name="Changelog_HistorySource" xml:space="preserve"><value>Archived notes source: {0}</value></data>
+  <!-- MainWindow.xaml.cs @ 0b272061242eb689409794895a883cdd3282f2c3; v0.1.6 -->
+  <data name="Changelog_History016" xml:space="preserve"><value>· Reworked LDiff incremental updates, improving resource verification, old-file cleanup, and safe replacement.
+· Improved LDiff download resumption and recovery after interruption. Launching the game is blocked while an update is incomplete, with a prompt to resume it.
+· Improved LDiff download and patching progress displays and recovery reliability after errors.
+· Updated the documentation FAQ with guidance for errors 2, 0, 4 and 4201, and network errors on the login screen.
+· Prepared a small surprise for the client.</value></data>
+  <!-- MainWindow.xaml.cs @ a7008f07887821aaf7e13f5108f9183d146f944e; v0.1.5 -->
+  <data name="Changelog_History015" xml:space="preserve"><value>· Redesigned the application update dialog with consistent styling and clearer version information, release notes, and download progress.
+· The tutorial page opens on the first launch of each application version, and the documentation page includes video tutorial guidance.
+· Improved pre-download resource retrieval, with a safe fallback to the matching pre-download branch when the release branch is unavailable.
+· Strengthened LDiff prerequisite checks. Missing or damaged official incremental packages prompt users to pre-download or repair through the official launcher first.
+· Added LDiff patch records, original-file backups, and error recovery. Problematic files can be cleaned up and patched again.
+· Application updates temporarily preserve server-switch resources and restore them after the old app directory is removed, including recovery after an interrupted update.
+· Redesigned the server-switch completion dialog with consistent styling and the target server region and game version.
+· Improved RSA patch version matching and file verification. Launching stops with a message when no matching patch is available.
+· Fixed the unresponsive cancel button while downloading an application update.
+· Added tutorial guidance on Chinese characters in game paths, error 2, 0, 4, and Hook RSA memory-allocation failures.
+· Improved the Hook RSA injection flow to identify the actual game process and verify that the patch DLL loaded.</value></data>
+  <!-- MainWindow.xaml.cs @ 4b79a3b71d77e51cb196451b841b525891ce74ac; v0.1.4 -->
+  <data name="Changelog_History014" xml:space="preserve"><value>· Redesigned the application update dialog with consistent styling and clearer version information, release notes, and download progress.
+· The tutorial page opens on the first launch of each application version, and the documentation page includes video tutorial guidance.
+· Improved pre-download resource retrieval, with a safe fallback to the matching pre-download branch when the release branch is unavailable.
+· Strengthened LDiff prerequisite checks. Missing or damaged official incremental packages prompt users to pre-download or repair through the official launcher first.
+· Added LDiff patch records, original-file backups, and error recovery. Problematic files can be cleaned up and patched again.
+· Application updates temporarily preserve server-switch resources and restore them after the old app directory is removed, including recovery after an interrupted update.
+· Redesigned the server-switch completion dialog with consistent styling and the target server region and game version.
+· Improved RSA patch version matching and file verification. Launching stops with a message when no matching patch is available.
+· Fixed the unresponsive cancel button while downloading an application update.</value></data>
+  <!-- MainWindow.xaml.cs @ 8ad617a24c512a5e7a06fc09cf3a592d2c0e15e4; v0.1.3 -->
+  <data name="Changelog_History013" xml:space="preserve"><value>· Added application self-updates: check the server recommended by the proxy, verify update packages, and restart automatically.
+· Added LDiff updates for CN and Global clients, with resumable downloads, local-file reuse, and integrity verification.
+· Redesigned the game download dialog with server-region selection, multiple voice packs, and download and required-space information.
+· Added private-server version recommendations and improved download pausing, resumption, progress, and install-path detection.
+· Improved server switching with MD5 verification of cached resources, transactional replacement, and rollback on failure.
+· Moved download settings to the home page and added 7.x RSA resources and a release-package SHA-256 generation script.</value></data>
+  <data name="Changelog_HistoryFeatureTitle" xml:space="preserve">
+    <value>Version history</value>
+  </data>
+  <data name="Changelog_HistoryFeatureDescription" xml:space="preserve">
+    <value>Expand or collapse archived release notes by version, in Chinese or English, even when offline.</value>
+  </data>
+  <data name="Changelog_CompatibilityTitle" xml:space="preserve">
+    <value>Older Windows 10 compatibility</value>
+  </data>
+  <data name="Changelog_CompatibilityDescription" xml:space="preserve">
+    <value>Keep .NET 10 with an adjusted CET compatibility flag for affected older Windows 10 systems, and include missing pages and built-in assets in published packages.</value>
+  </data>
+  <data name="Changelog_DialogTitle" xml:space="preserve">
+    <value>Acrylic dialogs and settings</value>
+  </data>
+  <data name="Changelog_DialogDescription" xml:space="preserve">
+    <value>Unify acrylic dialogs; correct switch-server confirmation and cancellation, uninstall placement, alignment and top spacing; prevent text from jumping when settings open.</value>
+  </data>
+  <data name="Changelog_BackgroundTitle" xml:space="preserve">
+    <value>High-quality backgrounds</value>
+  </data>
+  <data name="Changelog_BackgroundDescription" xml:space="preserve">
+    <value>Use a subtle dark tint outside the home page and keep local acrylic effects. Resize large images to the display's physical pixels to reduce jagged fine lines and adapt to DPI changes.</value>
+  </data>
+  <data name="Changelog_ImagePositionTitle" xml:space="preserve">
+    <value>Adjust background composition</value>
+  </data>
+  <data name="Changelog_ImagePositionDescription" xml:space="preserve">
+    <value>Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.</value>
+  </data>
+  <data name="Changelog_ThemeHintTitle" xml:space="preserve">
+    <value>Theme-colored notices</value>
+  </data>
+  <data name="Changelog_ThemeHintDescription" xml:space="preserve">
+    <value>The game-path warning follows the app accent color while keeping readable text in light, dark and high-contrast modes.</value>
+  </data>
+  <data name="Changelog_HistoryBundledSource" xml:space="preserve">
+    <value>Source: bundled {0} release notes</value>
+  </data>
+  <data name="Changelog_History017" xml:space="preserve">
+    <value>· Kun proxy mode: Choose the story or command server on the home page. Kun is enabled by default as a sub-option of the proxy.
+· Checks before launch: Checks the Global client and selected server version before launching. Incompatible clients are not started.
+· Clearer compatibility guidance: Region and version dialogs show the differences and let you go directly to server conversion or server selection.
+· Launch messages and proxy settings: Improved other launch error messages. Your custom proxy address is kept when Kun is turned off.</value>
+  </data>
 </root>

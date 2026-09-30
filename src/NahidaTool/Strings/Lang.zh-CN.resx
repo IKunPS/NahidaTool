@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -63,6 +63,31 @@
   <data name="HomePage_ProxyNotStarted" xml:space="preserve"><value>未启动</value></data>
   <data name="HomePage_ProxyRunning" xml:space="preserve"><value>运行中</value></data>
   <data name="HomePage_ProxyAddress" xml:space="preserve"><value>代理地址</value></data>
+  <data name="HomePage_KunServerLabel" xml:space="preserve"><value>Kun 服务器</value></data>
+  <data name="HomePage_KunCheckingVersion" xml:space="preserve"><value>正在校验版本...</value></data>
+  <data name="HomePage_KunStoryServer" xml:space="preserve"><value>剧情服</value></data>
+  <data name="HomePage_KunCommandServer" xml:space="preserve"><value>指令服</value></data>
+  <data name="HomePage_KunProxyFailed" xml:space="preserve"><value>Kun 代理启动失败，已取消启动游戏。</value></data>
+  <data name="HomePage_KunProxyMismatch" xml:space="preserve"><value>启动过程中 Kun 代理设置发生变化，请重试。</value></data>
+  <data name="HomePage_KunServerInvalid" xml:space="preserve"><value>请选择有效的 Kun 服务器。</value></data>
+  <data name="HomePage_KunOsRequired" xml:space="preserve"><value>Kun 模式只能使用国际服客户端，请先在转服页转换为国际服。</value></data>
+  <data name="HomePage_KunClientDetectionFailed" xml:space="preserve"><value>无法读取已安装客户端的服区或版本，已取消启动游戏。请检查游戏文件。</value></data>
+  <data name="HomePage_KunVersionUnavailable" xml:space="preserve"><value>无法获取所选 Kun 服务器的版本号，请检查服务器连接后重试。</value></data>
+  <data name="HomePage_KunVersionMismatch" xml:space="preserve"><value>当前国际服客户端版本为 {0}，所选 Kun 服务器要求 {1}。请安装或切换到 {1} 版国际服客户端，或在主页改选支持 {0} 的 Kun 服务器，然后重试启动。</value></data>
+  <data name="HomePage_KunMismatchTitle" xml:space="preserve"><value>版本不匹配</value></data>
+  <data name="HomePage_KunMismatchSummary" xml:space="preserve"><value>游戏尚未启动，请先让客户端版本与所选服务器匹配。</value></data>
+  <data name="HomePage_KunClientVersion" xml:space="preserve"><value>国际服客户端</value></data>
+  <data name="HomePage_KunRequiredVersion" xml:space="preserve"><value>服务器要求</value></data>
+  <data name="HomePage_KunMismatchAction" xml:space="preserve"><value>安装对应版本的国际服客户端，或选择支持当前客户端版本的 Kun 服务器。</value></data>
+  <data name="HomePage_KunChooseServer" xml:space="preserve"><value>切换服务器</value></data>
+  <data name="HomePage_KunDismiss" xml:space="preserve"><value>知道了</value></data>
+  <data name="HomePage_KunRegionTitle" xml:space="preserve"><value>需要国际服客户端</value></data>
+  <data name="HomePage_KunRegionSummary" xml:space="preserve"><value>当前客户端无法连接所选 Kun 服务器。</value></data>
+  <data name="HomePage_KunCurrentRegion" xml:space="preserve"><value>当前客户端</value></data>
+  <data name="HomePage_KunRequiredRegion" xml:space="preserve"><value>Kun 需要</value></data>
+  <data name="HomePage_KunRegionAction" xml:space="preserve"><value>请先在转服页将客户端转换为国际服，然后重新启动游戏。</value></data>
+  <data name="HomePage_KunGoToServerSwitch" xml:space="preserve"><value>前往转服</value></data>
+  <data name="HomePage_KunCustomLauncherUnsupported" xml:space="preserve"><value>Kun 模式不能使用自定义启动程序，请先在启动参数中关闭。</value></data>
   <data name="HomePage_ProxyUrlError" xml:space="preserve"><value>URL 格式错误：必须以 https:// 或 http:// 开头</value></data>
   <data name="HomePage_StartGame" xml:space="preserve"><value>启动游戏</value></data>
   <data name="HomePage_GameRunning" xml:space="preserve"><value>游戏运行中</value></data>
@@ -75,6 +100,7 @@
   <data name="HomePage_ProxyUrlFormatContent" xml:space="preserve"><value>代理地址必须以 https:// 或 http:// 开头。&#xA;&#xA;示例: https://127.0.0.1:8080</value></data>
   <data name="HomePage_ProxyUrlFormatStartMessage" xml:space="preserve"><value>代理地址必须以 https:// 或 http:// 开头，请修改后再启动。</value></data>
   <data name="HomePage_OK" xml:space="preserve"><value>确定</value></data>
+  <data name="HomePage_LaunchFailed" xml:space="preserve"><value>无法启动游戏</value></data>
 
   <!-- DownloadPage -->
   <data name="DownloadPage_ResourceInfo" xml:space="preserve"><value>资源信息</value></data>
@@ -166,10 +192,24 @@
   <data name="HomeSettingDialog_CustomLauncher" xml:space="preserve"><value>自定义启动程序</value></data>
   <data name="HomeSettingDialog_Select" xml:space="preserve"><value>选择</value></data>
   <data name="HomeSettingDialog_CustomBgSwitch" xml:space="preserve"><value>自定义背景（支持视频）</value></data>
-  <data name="HomeSettingDialog_CustomBgHint" xml:space="preserve"><value>请选择像素大小与应用窗口相匹配的图片，较大的图片会降低性能。</value></data>
+  <data name="HomeSettingDialog_CustomBgHint" xml:space="preserve"><value>支持高分辨率图片，程序会按窗口显示尺寸自动高质量缩放。</value></data>
+  <data name="HomeSettingDialog_ImagePosition" xml:space="preserve"><value>图片位置</value></data>
+  <data name="HomeSettingDialog_ImagePositionCenter" xml:space="preserve"><value>居中</value></data>
+  <data name="HomeSettingDialog_ImagePositionHorizontal" xml:space="preserve"><value>水平位置</value></data>
+  <data name="HomeSettingDialog_ImagePositionVertical" xml:space="preserve"><value>垂直位置</value></data>
+  <data name="HomeSettingDialog_ImagePositionLeft" xml:space="preserve"><value>画面左移</value></data>
+  <data name="HomeSettingDialog_ImagePositionRight" xml:space="preserve"><value>画面右移</value></data>
+  <data name="HomeSettingDialog_ImagePositionUp" xml:space="preserve"><value>画面上移</value></data>
+  <data name="HomeSettingDialog_ImagePositionDown" xml:space="preserve"><value>画面下移</value></data>
+  <data name="HomeSettingDialog_ImagePositionHint" xml:space="preserve"><value>画面始终铺满窗口，没有裁剪空间的方向会置灰。</value></data>
+  <data name="HomeSettingDialog_ImagePositionStaticOnly" xml:space="preserve"><value>图片位置仅适用于静态背景。</value></data>
+  <data name="HomeSettingDialog_ImagePositionFailed" xml:space="preserve"><value>预览加载失败，请重新加载或更换图片。</value></data>
+  <data name="HomeSettingDialog_ImagePositionRetry" xml:space="preserve"><value>重新加载</value></data>
+  <data name="HomeSettingDialog_ImagePositionLoading" xml:space="preserve"><value>正在加载预览</value></data>
   <data name="HomeSettingDialog_DragDropHere" xml:space="preserve"><value>拖放图片或视频文件到此处</value></data>
   <data name="HomeSettingDialog_EnableProxy" xml:space="preserve"><value>开启代理</value></data>
   <data name="HomeSettingDialog_ProxyHint" xml:space="preserve"><value>开启后主页左下角将显示代理卡片，游戏流量将通过代理服务器转发。</value></data>
+  <data name="HomeSettingDialog_EnableKun" xml:space="preserve"><value>开启 Kun 模式</value></data>
   <data name="HomeSettingDialog_UninstallCA" xml:space="preserve"><value>卸载 CA 证书</value></data>
   <data name="HomeSettingDialog_CannotDeleteRoot" xml:space="preserve"><value>不能删除驱动器根目录</value></data>
   <data name="HomeSettingDialog_NahidaInGameFolder" xml:space="preserve"><value>NahidaTool 程序位于游戏文件夹内，删除游戏时会一并被删除。请将程序移出游戏文件夹后重试。</value></data>
@@ -197,7 +237,7 @@
   <data name="DocumentSettingPage_LoginNetworkRegistryPath" xml:space="preserve"><value>计算机\HKEY_CURRENT_USER\Software\miHoYo\Genshin Impact</value></data>
   <data name="DocumentSettingPage_CopyRegistryPath" xml:space="preserve"><value>复制</value></data>
   <data name="DocumentSettingPage_RegistryPathCopied" xml:space="preserve"><value>已复制</value></data>
-  <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>连接超时。服务器无响应。请检查代理服务是否运行正常，目标服务器是否在线。</value></data>
+  <data name="DocumentSettingPage_Error4206" xml:space="preserve"><value>连接超时。请检查代理是否正常运行、目标服务器是否在线。若仍无法连接，请完全退出游戏并确认代理已停止，再到“代理设置”点击“卸载 CA 证书”。然后重新启动游戏，确保出现证书安装窗口并完成新证书的安装。</value></data>
   <data name="DocumentSettingPage_Error4214" xml:space="preserve"><value>客户端补丁错误。请使用正确的服务器补丁，并确认补丁文件已复制到游戏目录。</value></data>
   <data name="DocumentSettingPage_Error4301" xml:space="preserve"><value>版本数据请求失败。游戏版本可能与服务器要求的版本不匹配。请更新游戏或检查服务器要求。</value></data>
   <data name="DocumentSettingPage_Error4308" xml:space="preserve"><value>资源下载失败。服务器无法提供所需的游戏资源。请检查服务器的资源目录配置。</value></data>
@@ -248,4 +288,127 @@
   <data name="AppUpdate_Cancelled" xml:space="preserve"><value>已取消程序更新。</value></data>
   <data name="AppUpdate_Cancelling" xml:space="preserve"><value>正在安全取消...</value></data>
   <data name="AppUpdate_Failed" xml:space="preserve"><value>程序更新失败：{0}</value></data>
+  <data name="Changelog_Title" xml:space="preserve">
+    <value>更新日志</value>
+  </data>
+  <data name="Changelog_Added" xml:space="preserve">
+    <value>新增</value>
+  </data>
+  <data name="Changelog_Improved" xml:space="preserve">
+    <value>优化</value>
+  </data>
+  <data name="Changelog_KunTitle" xml:space="preserve">
+    <value>Kun 代理模式</value>
+  </data>
+  <data name="Changelog_KunDescription" xml:space="preserve">
+    <value>主页可选择剧情服或指令服；Kun 作为代理子开关默认开启。</value>
+  </data>
+  <data name="Changelog_CheckTitle" xml:space="preserve">
+    <value>启动前版本校验</value>
+  </data>
+  <data name="Changelog_CheckDescription" xml:space="preserve">
+    <value>启动前校验国际服客户端和所选服务器版本，不符合要求时阻止启动。</value>
+  </data>
+  <data name="Changelog_MismatchTitle" xml:space="preserve">
+    <value>更直观的兼容性提示</value>
+  </data>
+  <data name="Changelog_MismatchDescription" xml:space="preserve">
+    <value>直观展示客户端服区与版本差异，可直接前往转服或切换服务器。</value>
+  </data>
+  <data name="Changelog_ProxyTitle" xml:space="preserve">
+    <value>启动提示与代理设置</value>
+  </data>
+  <data name="Changelog_ProxyDescription" xml:space="preserve">
+    <value>优化其他启动错误提示，关闭 Kun 后仍保留自定义代理地址。</value>
+  </data>
+  <data name="Changelog_Dismiss" xml:space="preserve">
+    <value>我知道了</value>
+  </data>
+  <data name="Changelog_Open" xml:space="preserve">
+    <value>查看更新日志</value>
+  </data>
+  <data name="Changelog_History" xml:space="preserve"><value>历史更新日志</value></data>
+  <data name="Changelog_HistoryHint" xml:space="preserve"><value>点击版本展开。保留旧版日志原文，部分更新内容可能重复。</value></data>
+  <data name="Changelog_EntryCount" xml:space="preserve"><value>{0} 项更新</value></data>
+  <data name="Changelog_HistorySource" xml:space="preserve"><value>旧版日志来源：{0}</value></data>
+  <!-- MainWindow.xaml.cs @ 0b272061242eb689409794895a883cdd3282f2c3; v0.1.6 -->
+  <data name="Changelog_History016" xml:space="preserve"><value>· 重构 LDiff 增量更新，完善资源校验、旧文件清理与安全替换流程
+· 增强 LDiff 断点续传和中断恢复，更新未完成时会阻止启动游戏并提示继续更新
+· 优化 LDiff 下载与修补进度显示，提升异常状态下的恢复可靠性
+· 更新文档页常见问题说明，补充 2, 0, 4、4201 与登录界面网络错误的处理方法
+· 准备了客户端的一个小惊喜</value></data>
+  <!-- MainWindow.xaml.cs @ a7008f07887821aaf7e13f5108f9183d146f944e; v0.1.5 -->
+  <data name="Changelog_History015" xml:space="preserve"><value>· 重做程序更新弹窗，统一主题样式，优化版本信息、更新说明与下载进度展示
+· 每个程序版本首次启动时自动打开教程页，并在文档页增加视频教程提示
+· 优化预下载版本资源获取，正式分支不可用时可安全回退到对应预下载分支
+· 强化 LDiff 更新前置检查，缺少或损坏官方增量包时提示先通过官方启动器预下载或修复
+· LDiff 新增修补记录、原文件备份与异常恢复，问题文件可清理后重新修补
+· 程序更新时自动暂存转服资源，删除旧版 app 后恢复，并支持更新中断后的再次恢复
+· 重做转服完成弹窗，统一主题样式并展示目标服务器与游戏版本
+· 优化 RSA 补丁版本匹配与文件校验，无适配补丁时中止启动并给出提示
+· 修复程序更新下载过程中取消按钮无响应的问题
+· 教程页新增中文游戏路径风险说明、2, 0, 4 错误及 Hook RSA 内存分配失败的处理提示
+· 优化 Hook RSA 注入流程，自动识别真实游戏进程并校验补丁 DLL 加载结果</value></data>
+  <!-- MainWindow.xaml.cs @ 4b79a3b71d77e51cb196451b841b525891ce74ac; v0.1.4 -->
+  <data name="Changelog_History014" xml:space="preserve"><value>· 重做程序更新弹窗，统一主题样式，优化版本信息、更新说明与下载进度展示
+· 每个程序版本首次启动时自动打开教程页，并在文档页增加视频教程提示
+· 优化预下载版本资源获取，正式分支不可用时可安全回退到对应预下载分支
+· 强化 LDiff 更新前置检查，缺少或损坏官方增量包时提示先通过官方启动器预下载或修复
+· LDiff 新增修补记录、原文件备份与异常恢复，问题文件可清理后重新修补
+· 程序更新时自动暂存转服资源，删除旧版 app 后恢复，并支持更新中断后的再次恢复
+· 重做转服完成弹窗，统一主题样式并展示目标服务器与游戏版本
+· 优化 RSA 补丁版本匹配与文件校验，无适配补丁时中止启动并给出提示
+· 修复程序更新下载过程中取消按钮无响应的问题</value></data>
+  <!-- MainWindow.xaml.cs @ 8ad617a24c512a5e7a06fc09cf3a592d2c0e15e4; v0.1.3 -->
+  <data name="Changelog_History013" xml:space="preserve"><value>· 新增程序自更新：从代理推荐服务器检查更新，校验更新包并自动重启
+· 新增国服/国际服 LDiff 差分更新，支持断点续传、本地文件复用与完整性校验
+· 重做游戏下载弹窗：支持区服切换、多语音包、容量与所需空间显示
+· 新增私服版本推荐，并优化下载暂停、续传、进度和安装路径识别
+· 转服优化：资源缓存 MD5 校验、事务化替换与失败回滚
+· 下载设置移至首页，补充 7.x RSA 资源及发行包 SHA-256 生成脚本</value></data>
+  <data name="Changelog_HistoryFeatureTitle" xml:space="preserve">
+    <value>历史更新日志</value>
+  </data>
+  <data name="Changelog_HistoryFeatureDescription" xml:space="preserve">
+    <value>按版本展开或收起旧版更新记录，支持中英文显示，离线也能查看。</value>
+  </data>
+  <data name="Changelog_CompatibilityTitle" xml:space="preserve">
+    <value>旧版 Windows 10 启动兼容</value>
+  </data>
+  <data name="Changelog_CompatibilityDescription" xml:space="preserve">
+    <value>保留 .NET 10，调整 CET 兼容标记以解决部分旧版 Windows 10 的启动报错，并补齐发布包中的页面与内置素材。</value>
+  </data>
+  <data name="Changelog_DialogTitle" xml:space="preserve">
+    <value>透明弹窗与设置交互</value>
+  </data>
+  <data name="Changelog_DialogDescription" xml:space="preserve">
+    <value>统一透明毛玻璃弹窗，修正转服确认与取消、卸载按钮位置、文字对齐和顶部间距，消除设置打开时的文字跳动。</value>
+  </data>
+  <data name="Changelog_BackgroundTitle" xml:space="preserve">
+    <value>高质量背景显示</value>
+  </data>
+  <data name="Changelog_BackgroundDescription" xml:space="preserve">
+    <value>取消非主页整页模糊，保留局部毛玻璃；按窗口实际像素高质量缩放大图，减少细线锯齿，并适配 DPI 变化。</value>
+  </data>
+  <data name="Changelog_ImagePositionTitle" xml:space="preserve">
+    <value>自定义背景构图</value>
+  </data>
+  <data name="Changelog_ImagePositionDescription" xml:space="preserve">
+    <value>默认背景和自定义静态图片均可水平、垂直移动，支持构图预览、自动保存和一键居中。</value>
+  </data>
+  <data name="Changelog_ThemeHintTitle" xml:space="preserve">
+    <value>提示条跟随主题配色</value>
+  </data>
+  <data name="Changelog_ThemeHintDescription" xml:space="preserve">
+    <value>文档页路径警告的底色和图标跟随主题色，兼顾浅色、深色与高对比度显示。</value>
+  </data>
+  <data name="Changelog_HistoryBundledSource" xml:space="preserve">
+    <value>来源：{0} 内置更新说明</value>
+  </data>
+  <data name="Changelog_History017" xml:space="preserve">
+    <value>· Kun 代理模式：主页可选择剧情服或指令服；Kun 作为代理子开关默认开启。
+· 启动前版本校验：启动前校验国际服客户端和所选服务器版本，不符合要求时阻止启动。
+· 更直观的兼容性提示：直观展示客户端服区与版本差异，可直接前往转服或切换服务器。
+· 启动提示与代理设置：优化其他启动错误提示，关闭 Kun 后仍保留自定义代理地址。</value>
+  </data>
 </root>

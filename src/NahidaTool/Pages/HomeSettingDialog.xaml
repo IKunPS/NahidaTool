@@ -7,12 +7,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:NahidaTool.Models"
+    xmlns:controls="using:NahidaTool.Pages.Controls"
     x:DefaultBindMode="OneWay"
     mc:Ignorable="d"
-    Background="{ThemeResource CustomAcrylicBrush}"
-    BorderThickness="0"
-    CornerRadius="8"
-    Style="{StaticResource DefaultContentDialogStyle}">
+    Style="{StaticResource NahidaDialogStyle}">
 
     <ContentDialog.Resources>
         <x:Double x:Key="ContentDialogMaxWidth">1200</x:Double>
@@ -21,16 +19,45 @@
         <StaticResource x:Key="ContentDialogTopOverlay" ResourceKey="ControlFillColorTransparentBrush"/>
     </ContentDialog.Resources>
 
-    <Grid Width="800"
-          Height="480"
-          Padding="24,24,24,0"
-          Background="{ThemeResource CustomAcrylicBrush}">
-
-        <NavigationView IsBackButtonVisible="Collapsed"
+    <Grid x:Name="SettingsLayout" Width="800" Height="520"
+          Padding="24,24,24,16" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="SettingsHeader" Margin="0,0,0,8" ColumnSpacing="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"
+                       TextWrapping="Wrap" Text="{x:Bind models:Lang.HomeSettingDialog_Title}"/>
+            <Button x:Name="SettingsCloseButton" Grid.Column="1" Width="32"
+                    Height="32"
+                    Margin="0"
+                    AutomationProperties.Name="{x:Bind models:Lang.AppUpdate_Close}"
+                    ToolTipService.ToolTip="{x:Bind models:Lang.AppUpdate_Close}"
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    BorderThickness="0"
+                    Click="CloseButton_Click"
+                    CornerRadius="8"
+                    Style="{StaticResource DateTimePickerFlyoutButtonStyle}">
+                <FontIcon FontSize="16"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          Glyph="&#xE711;"
+                          IsTextScaleFactorEnabled="False"/>
+            </Button>
+        </Grid>
+        <NavigationView Grid.Row="1" x:Name="SettingsNavigation" IsBackButtonVisible="Collapsed"
                         IsPaneToggleButtonVisible="False"
+                        IsTitleBarAutoPaddingEnabled="False"
+                        AlwaysShowHeader="False"
                         IsSettingsVisible="False"
                         ItemInvoked="NavigationView_ItemInvoked"
-                        OpenPaneLength="200"
+                        OpenPaneLength="176"
                         PaneDisplayMode="Left">
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent"/>
@@ -39,13 +66,6 @@
                 <Thickness x:Key="NavigationViewHeaderMargin">0</Thickness>
                 <x:Double x:Key="PaneToggleButtonHeight">0</x:Double>
             </NavigationView.Resources>
-
-            <NavigationView.PaneHeader>
-                <TextBlock Margin="16,0,0,8"
-                           FontSize="20"
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="{x:Bind models:Lang.HomeSettingDialog_Title}"/>
-            </NavigationView.PaneHeader>
 
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="{x:Bind models:Lang.HomeSettingDialog_BasicInfo}"
@@ -64,7 +84,7 @@
             </NavigationView.MenuItems>
 
             <FlipView x:Name="FlipView_Settings"
-                      Margin="24,24,0,0"
+                      Margin="20,0,0,0"
                       Background="Transparent"
                       Loaded="FlipView_Settings_Loaded">
                 <FlipView.ItemsPanel>
@@ -74,22 +94,22 @@
                 </FlipView.ItemsPanel>
 
                 <!-- 基本信息 -->
-                <FlipViewItem>
+                <FlipViewItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ScrollViewer Style="{StaticResource DialogScrollStyle}">
                     <StackPanel Spacing="12">
 
                         <Grid ColumnSpacing="20">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="1"
+                            <TextBlock x:Name="GameTitleText" Grid.Column="0"
                                        VerticalAlignment="Center"
                                        FontSize="16"
                                        Text="Genshin Impact"/>
                             <!-- 定位游戏 (无路径时显示) -->
                             <Button x:Name="LocateGameButton"
-                                    Grid.Column="2"
+                                    Grid.Column="1"
                                     Height="36"
                                     Click="LocateGamePath_Click"
                                     CornerRadius="8"
@@ -102,41 +122,6 @@
                                               Glyph="&#xE838;"/>
                                     <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind models:Lang.HomeSettingDialog_LocateGame}"/>
                                 </StackPanel>
-                            </Button>
-                            <!-- 卸载游戏 (有路径时显示) -->
-                            <Button x:Name="UninstallGameButton"
-                                    Grid.Column="2"
-                                    Height="36"
-                                    Click="ShowUninstallWarning_Click"
-                                    CornerRadius="8"
-                                    Style="{StaticResource DateTimePickerFlyoutButtonStyle}"
-                                    Visibility="Collapsed">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon Width="20"
-                                              Height="20"
-                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                              Glyph="&#xE74D;"/>
-                                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind models:Lang.HomeSettingDialog_UninstallGame}"/>
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-
-                        <!-- 卸载警告 -->
-                        <Grid x:Name="Grid_UninstallWarning"
-                              ColumnSpacing="12"
-                              Visibility="Collapsed">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock VerticalAlignment="Center"
-                                       FontSize="12"
-                                       Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                       Text="{x:Bind models:Lang.HomeSettingDialog_UninstallWarning}"
-                                       TextWrapping="Wrap"/>
-                            <Button Grid.Column="1"
-                                    Click="UninstallGame_Click">
-                                <TextBlock Foreground="{ThemeResource SystemFillColorCriticalBrush}" Text="{x:Bind models:Lang.HomeSettingDialog_ConfirmUninstall}"/>
                             </Button>
                         </Grid>
 
@@ -189,7 +174,8 @@
                         </Grid>
 
                         <!-- 一些操作 -->
-                        <StackPanel Orientation="Horizontal" Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="12"
+                                    Visibility="{Binding Visibility, ElementName=InstallPathGrid}">
                             <Button x:Name="GameSizeButton"
                                     Height="36"
                                     CornerRadius="8"
@@ -240,18 +226,48 @@
                                       OnContent="Hook RSA"
                                       OffContent="Hook RSA"/>
 
+
+                        <!-- 卸载操作留在内容区，并要求再次确认。 -->
+                        <Border x:Name="UninstallSection" Margin="0,16,0,0"
+                                Style="{StaticResource DialogCardStyle}" Visibility="Collapsed">
+                            <StackPanel Spacing="12">
+                                <Button x:Name="UninstallGameButton" HorizontalAlignment="Left"
+                                        Padding="12,8" CornerRadius="8" Click="ShowUninstallWarning_Click"
+                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontSize="16" Glyph="&#xE74D;"/>
+                                        <TextBlock Text="{x:Bind models:Lang.HomeSettingDialog_UninstallGame}"/>
+                                    </StackPanel>
+                                </Button>
+                                <StackPanel x:Name="Grid_UninstallWarning" Spacing="12" Visibility="Collapsed">
+                                    <TextBlock FontSize="12" TextWrapping="Wrap"
+                                               Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                               Text="{x:Bind models:Lang.HomeSettingDialog_UninstallWarning}"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button x:Name="ConfirmUninstallButton" Click="UninstallGame_Click"
+                                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                                Content="{x:Bind models:Lang.HomeSettingDialog_ConfirmUninstall}"/>
+                                        <Button x:Name="CancelUninstallButton" Click="CancelUninstall_Click"
+                                                Content="{x:Bind models:Lang.ServerSwitchPage_Cancel}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
+                    </ScrollViewer>
                 </FlipViewItem>
 
                 <!-- 启动参数 -->
-                <FlipViewItem>
+                <FlipViewItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ScrollViewer Style="{StaticResource DialogScrollStyle}">
                     <StackPanel Spacing="12">
 
                         <TextBlock Text="{x:Bind models:Lang.HomeSettingDialog_CmdArgs}"/>
 
                         <TextBox x:Name="StartArgumentTextBox"
-                                 MinWidth="320"
-                                 HorizontalAlignment="Left"
+                                 MinWidth="0"
+                                 HorizontalAlignment="Stretch"
                                  IsSpellCheckEnabled="False"
                                  TextChanged="StartArgumentTextBox_TextChanged"
                                  TextWrapping="Wrap"/>
@@ -266,7 +282,7 @@
                         <TextBlock Margin="0,12,0,0" Text="{x:Bind models:Lang.HomeSettingDialog_AfterStartGame}"/>
                         <ComboBox x:Name="ComboBox_AfterStartAction"
                                   Height="36"
-                                  MinWidth="280"
+                                  MinWidth="0"
                                   Padding="18.5,0,0,0"
                                   BorderThickness="0"
                                   CornerRadius="8"
@@ -333,12 +349,13 @@
                         </Grid>
 
                     </StackPanel>
+                    </ScrollViewer>
                 </FlipViewItem>
 
                 <!-- 自定义背景 -->
-                <FlipViewItem>
+                <FlipViewItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ScrollViewer Style="{StaticResource DialogScrollStyle}">
                     <StackPanel Spacing="12">
-
                         <ToggleSwitch x:Name="CustomBgToggleSwitch"
                                       Margin="0,0,0,-8"
                                       Toggled="CustomBgToggleSwitch_Toggled"
@@ -400,7 +417,7 @@
                                 </Button>
                             </Grid>
                         </Grid>
-
+                        <controls:BackgroundImagePositionControl x:Name="BackgroundPositionControl"/>
                         <!-- 音量 -->
                         <Grid Margin="0,-4,0,-8"
                               ColumnSpacing="12"
@@ -439,61 +456,45 @@
                                    Visibility="Collapsed"/>
 
                     </StackPanel>
+                    </ScrollViewer>
                 </FlipViewItem>
 
                 <!-- 代理设置 -->
-                <FlipViewItem>
+                <FlipViewItem HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ScrollViewer Style="{StaticResource DialogScrollStyle}">
                     <StackPanel Spacing="16">
-
                         <ToggleSwitch x:Name="ProxyToggleSwitch"
                                       Toggled="ProxyToggleSwitch_Toggled"
                                       OnContent="{x:Bind models:Lang.HomeSettingDialog_EnableProxy}"
                                       OffContent="{x:Bind models:Lang.HomeSettingDialog_EnableProxy}"/>
-
+                        <ToggleSwitch x:Name="KunToggleSwitch"
+                                      Margin="0,-12,0,0"
+                                      Toggled="KunToggleSwitch_Toggled"
+                                      OnContent="{x:Bind models:Lang.HomeSettingDialog_EnableKun}"
+                                      OffContent="{x:Bind models:Lang.HomeSettingDialog_EnableKun}"/>
                         <TextBlock FontSize="12"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                    Text="{x:Bind models:Lang.HomeSettingDialog_ProxyHint}"
                                    TextWrapping="Wrap"/>
-
                         <Button x:Name="UninstallCaButton"
                                 HorizontalAlignment="Left"
                                 Click="UninstallCaButton_Click">
                             <TextBlock Text="{x:Bind models:Lang.HomeSettingDialog_UninstallCA}"
                                        Foreground="{ThemeResource SystemFillColorCautionBrush}"/>
                         </Button>
-
                     </StackPanel>
+                    </ScrollViewer>
                 </FlipViewItem>
-
             </FlipView>
-
         </NavigationView>
-
         <!-- 错误提示 -->
-        <TextBlock x:Name="GeneralErrorText"
-                   Margin="0,0,44,0"
-                   VerticalAlignment="Bottom"
+        <TextBlock x:Name="GeneralErrorText" Grid.Row="2"
+                   Margin="0,12,0,0"
                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                    Text=""
                    TextWrapping="Wrap"
                    Visibility="Collapsed"/>
 
-        <!-- Close Button -->
-        <Button Width="32"
-                Height="32"
-                Margin="-20"
-                Padding="0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                BorderThickness="0"
-                Click="CloseButton_Click"
-                CornerRadius="8"
-                Style="{StaticResource DateTimePickerFlyoutButtonStyle}">
-            <FontIcon FontSize="16"
-                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                      Glyph="&#xE711;"
-                      IsTextScaleFactorEnabled="False"/>
-        </Button>
 
     </Grid>
 </ContentDialog>

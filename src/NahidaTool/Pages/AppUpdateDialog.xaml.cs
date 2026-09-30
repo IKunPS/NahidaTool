@@ -18,6 +18,7 @@ public sealed partial class AppUpdateDialog : ContentDialog
     public AppUpdateDialog(AppUpdateInfo update, AppUpdateService service)
     {
         InitializeComponent();
+        NahidaTool.Models.Helper.DialogPresentation.Configure(this, ContentViewport, 520, 500);
         _update = update;
         _service = service;
         CurrentVersionText.Text = AppVersion.Current;

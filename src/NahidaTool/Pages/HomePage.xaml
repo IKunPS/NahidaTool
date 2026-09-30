@@ -147,7 +147,8 @@
                 <StackPanel Grid.Row="1"
                             Padding="16,0,16,12"
                             Spacing="6">
-                    <TextBlock FontSize="12"
+                    <TextBlock x:Name="ProxyAddressLabel"
+                               FontSize="12"
                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                Text="{x:Bind models:Lang.HomePage_ProxyAddress}"/>
                     <TextBox x:Name="ProxyAddressTextBox"
@@ -157,6 +158,15 @@
                              TextChanged="ProxyAddressTextBox_TextChanged"
                              LostFocus="ProxyAddressTextBox_LostFocus"
                              TextWrapping="NoWrap"/>
+                    <ComboBox x:Name="KunServerComboBox"
+                              Height="36"
+                              HorizontalAlignment="Stretch"
+                              AutomationProperties.Name="{x:Bind models:Lang.HomePage_KunServerLabel}"
+                              SelectionChanged="KunServerComboBox_SelectionChanged"
+                              Visibility="Collapsed">
+                        <ComboBoxItem Content="{x:Bind models:Lang.HomePage_KunStoryServer}"/>
+                        <ComboBoxItem Content="{x:Bind models:Lang.HomePage_KunCommandServer}"/>
+                    </ComboBox>
                     <TextBlock x:Name="ProxyErrorText"
                                FontSize="11"
                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"

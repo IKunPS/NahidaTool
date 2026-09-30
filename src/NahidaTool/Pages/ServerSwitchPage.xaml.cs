@@ -303,10 +303,8 @@ public sealed partial class ServerSwitchPage : Page
         if (this.XamlRoot == null)
             return;
 
-        ContentDialog dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
+        ContentDialog dialog = new NoticeDialog(title, message)
+            {
             CloseButtonText = Lang.ServerSwitchPage_OK,
             XamlRoot = this.XamlRoot
         };
@@ -315,15 +313,10 @@ public sealed partial class ServerSwitchPage : Page
 
     private async System.Threading.Tasks.Task<bool> ShowConfirmDialogAsync(string title, string message)
     {
-        ContentDialog dialog = new ContentDialog
-        {
-            Title = title,
-            Content = message,
-            PrimaryButtonText = Lang.ServerSwitchPage_OK,
-            CloseButtonText = Lang.ServerSwitchPage_Cancel,
-            DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = this.XamlRoot
-        };
+        if (XamlRoot == null) return false;
+        ContentDialog dialog = NoticeDialog.CreateConfirmation(title, message,
+            Lang.ServerSwitchPage_ConfirmSwitch, Lang.ServerSwitchPage_Cancel);
+        dialog.XamlRoot = XamlRoot;
 
         var result = await dialog.ShowAsync();
         return result == ContentDialogResult.Primary;

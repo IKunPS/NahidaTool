@@ -10,7 +10,6 @@ namespace NahidaTool.Models.Service;
 public static class ProxyService
 {
     private static string _dispatch = string.Empty;
-    private const int LocalPort = 6898;
 
     private static readonly string[] s_redirectDomains =
     {
@@ -20,6 +19,8 @@ public static class ProxyService
     };
 
     public static bool IsRunning => Eavesdropper.IsRunning;
+
+    public static string CurrentTarget => _dispatch;
 
     static ProxyService()
     {
@@ -35,7 +36,7 @@ public static class ProxyService
 
             var settings = AppSettings.Load();
 
-            var address = settings.ProxyAddress;
+            var address = KunServerConfig.GetEffectiveProxyAddress(settings);
             if (string.IsNullOrEmpty(address))
             {
                 LogService.Error("代理地址不能为空");
@@ -69,9 +70,9 @@ public static class ProxyService
                 LogService.Info("根证书安装失败或已取消，HTTPS 流量可能无法拦截");
 
             Eavesdropper.RequestInterceptedAsync += OnRequestInterceptedAsync;
-            Eavesdropper.Initiate(LocalPort);
+            Eavesdropper.Initiate(GameProxyEndpoint.Port);
 
-            LogService.Info($"代理已启动 :{LocalPort} → {_dispatch}");
+            LogService.Info($"代理已启动 :{GameProxyEndpoint.Port} → {_dispatch}");
             return true;
         }
         catch (Exception ex)

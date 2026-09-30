@@ -5,18 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:NahidaTool.Models"
     x:DefaultBindMode="OneWay"
-    Background="{ThemeResource CustomAcrylicBrush}"
-    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-    BorderThickness="1"
     CloseButtonText="{x:Bind models:Lang.Ldiff_Close}"
     Closing="ContentDialog_Closing"
-    CornerRadius="12"
     DefaultButton="Primary"
     IsPrimaryButtonEnabled="False"
     Opened="ContentDialog_Opened"
     PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     PrimaryButtonText="{x:Bind models:Lang.Ldiff_Start}"
-    Style="{StaticResource DefaultContentDialogStyle}"
+    Style="{StaticResource NahidaDialogStyle}"
     Title="{x:Bind models:Lang.Ldiff_Title}">
 
     <ContentDialog.Resources>
@@ -36,127 +32,128 @@
         </Style>
     </ContentDialog.Resources>
 
-    <Grid Width="500"
-          MinHeight="260"
-          Padding="0,8,0,2"
-          RowSpacing="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer x:Name="ContentViewport" Style="{StaticResource DialogScrollStyle}">
+        <Grid
+              Padding="0,8,0,2"
+              RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <!-- Current operation and state -->
-        <Grid ColumnSpacing="14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Current operation and state -->
+            <Grid ColumnSpacing="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Border Width="40"
-                    Height="40"
-                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                    CornerRadius="8">
-                <FontIcon FontSize="19"
-                          Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                          Glyph="&#xE896;"
+                <Border Width="40"
+                        Height="40"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        CornerRadius="8">
+                    <FontIcon FontSize="19"
+                              Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                              Glyph="&#xE896;"
+                              IsTextScaleFactorEnabled="False"/>
+                </Border>
+
+                <TextBlock x:Name="StatusText"
+                           Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontSize="14"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                           MaxLines="3"
+                           Text="{x:Bind models:Lang.Ldiff_Checking}"
+                           TextTrimming="CharacterEllipsis"
+                           TextWrapping="WrapWholeWords"/>
+            </Grid>
+
+            <!-- Version transition -->
+            <Grid Grid.Row="1" ColumnSpacing="18">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="36"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="132"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource LdiffLabelStyle}"
+                               Text="{x:Bind models:Lang.Ldiff_CurrentVersion}"/>
+                    <TextBlock x:Name="CurrentVersionText"
+                               Style="{StaticResource LdiffValueStyle}"
+                               Text="-"/>
+                </StackPanel>
+
+                <FontIcon Grid.Column="1"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          FontSize="16"
+                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                          Glyph="&#xE72A;"
                           IsTextScaleFactorEnabled="False"/>
-            </Border>
 
-            <TextBlock x:Name="StatusText"
-                       Grid.Column="1"
-                       VerticalAlignment="Center"
-                       FontSize="14"
-                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                       MaxLines="3"
-                       Text="{x:Bind models:Lang.Ldiff_Checking}"
-                       TextTrimming="CharacterEllipsis"
-                       TextWrapping="WrapWholeWords"/>
-        </Grid>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource LdiffLabelStyle}"
+                               Text="{x:Bind models:Lang.Ldiff_TargetVersion}"/>
+                    <TextBlock x:Name="TargetVersionText"
+                               Style="{StaticResource LdiffValueStyle}"
+                               Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                               Text="-"/>
+                </StackPanel>
 
-        <!-- Version transition -->
-        <Grid Grid.Row="1" ColumnSpacing="18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="36"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="1"/>
-                <ColumnDefinition Width="132"/>
-            </Grid.ColumnDefinitions>
+                <Rectangle Grid.Column="3"
+                           Width="1"
+                           Height="48"
+                           VerticalAlignment="Center"
+                           Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                           Opacity="0.16"/>
 
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Style="{StaticResource LdiffLabelStyle}"
-                           Text="{x:Bind models:Lang.Ldiff_CurrentVersion}"/>
-                <TextBlock x:Name="CurrentVersionText"
-                           Style="{StaticResource LdiffValueStyle}"
-                           Text="-"/>
-            </StackPanel>
+                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                    <TextBlock Style="{StaticResource LdiffLabelStyle}"
+                               Text="{x:Bind models:Lang.Ldiff_DownloadSize}"/>
+                    <TextBlock x:Name="DownloadSizeText"
+                               Style="{StaticResource LdiffValueStyle}"
+                               FontSize="18"
+                               Text="-"/>
+                </StackPanel>
+            </Grid>
 
-            <FontIcon Grid.Column="1"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      FontSize="16"
-                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                      Glyph="&#xE72A;"
-                      IsTextScaleFactorEnabled="False"/>
-
-            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                <TextBlock Style="{StaticResource LdiffLabelStyle}"
-                           Text="{x:Bind models:Lang.Ldiff_TargetVersion}"/>
-                <TextBlock x:Name="TargetVersionText"
-                           Style="{StaticResource LdiffValueStyle}"
-                           Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                           Text="-"/>
-            </StackPanel>
-
-            <Rectangle Grid.Column="3"
-                       Width="1"
-                       Height="48"
-                       VerticalAlignment="Center"
+            <Rectangle Grid.Row="2"
+                       Height="1"
+                       HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TextFillColorSecondaryBrush}"
-                       Opacity="0.16"/>
+                       Opacity="0.12"/>
 
-            <StackPanel Grid.Column="4" VerticalAlignment="Center">
+            <!-- Progress information -->
+            <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
                 <TextBlock Style="{StaticResource LdiffLabelStyle}"
-                           Text="{x:Bind models:Lang.Ldiff_DownloadSize}"/>
-                <TextBlock x:Name="DownloadSizeText"
-                           Style="{StaticResource LdiffValueStyle}"
-                           FontSize="18"
-                           Text="-"/>
-            </StackPanel>
+                           Text="{x:Bind models:Lang.Ldiff_Title}"/>
+                <TextBlock x:Name="ProgressText"
+                           Grid.Column="1"
+                           Margin="16,0,0,0"
+                           HorizontalAlignment="Right"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text=""
+                           TextTrimming="CharacterEllipsis"/>
+            </Grid>
+
+            <ProgressBar x:Name="UpdateProgressBar"
+                         Grid.Row="4"
+                         Height="6"
+                         IsIndeterminate="True"
+                         Maximum="100"/>
         </Grid>
-
-        <Rectangle Grid.Row="2"
-                   Height="1"
-                   HorizontalAlignment="Stretch"
-                   Fill="{ThemeResource TextFillColorSecondaryBrush}"
-                   Opacity="0.12"/>
-
-        <!-- Progress information -->
-        <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Style="{StaticResource LdiffLabelStyle}"
-                       Text="{x:Bind models:Lang.Ldiff_Title}"/>
-            <TextBlock x:Name="ProgressText"
-                       Grid.Column="1"
-                       Margin="16,0,0,0"
-                       HorizontalAlignment="Right"
-                       FontSize="12"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                       Text=""
-                       TextTrimming="CharacterEllipsis"/>
-        </Grid>
-
-        <ProgressBar x:Name="UpdateProgressBar"
-                     Grid.Row="4"
-                     Height="6"
-                     IsIndeterminate="True"
-                     Maximum="100"/>
-    </Grid>
+    </ScrollViewer>
 </ContentDialog>

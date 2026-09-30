@@ -33,6 +33,10 @@ public class AppSettings
 
     public bool EnableProxy { get; set; }
 
+    public bool EnableKun { get; set; } = true;
+
+    public KunServerType KunServer { get; set; } = KunServerType.Story;
+
     public string ProxyAddress { get; set; } = "https://127.0.0.1:443";
 
     public bool StartGameWithCMD { get; set; } // TODO：在主页设置里实现cmd启动游戏
@@ -48,6 +52,10 @@ public class AppSettings
     public bool EnableCustomBg { get; set; }
 
     public string CustomBg { get; set; } = string.Empty;
+
+    public int BackgroundImageOffsetX { get; set; }
+
+    public int BackgroundImageOffsetY { get; set; }
 
     public int VideoBgVolume { get; set; } = 100;
 

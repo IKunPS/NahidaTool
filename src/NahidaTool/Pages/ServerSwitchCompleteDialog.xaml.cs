@@ -9,6 +9,7 @@ public sealed partial class ServerSwitchCompleteDialog : ContentDialog
     public ServerSwitchCompleteDialog(ServerRegionType region, string version)
     {
         InitializeComponent();
+        NahidaTool.Models.Helper.DialogPresentation.Configure(this, ContentViewport, 420, 360);
 
         RegionText.Text = region == ServerRegionType.CN
             ? Lang.ServerSwitchPage_CN_Display

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using NahidaTool.Models;
@@ -162,6 +163,49 @@ public static class GameLauncherService
         if (existing != null)
             throw new InvalidOperationException("游戏已在运行中");
 
+        if (KunServerConfig.IsEnabled(settings))
+        {
+            if (!System.Enum.IsDefined(settings.KunServer))
+                throw new InvalidOperationException(Lang.HomePage_KunServerInvalid);
+            if (!ProxyService.IsRunning ||
+                !string.Equals(ProxyService.CurrentTarget, KunServerConfig.GetAddress(settings.KunServer),
+                    StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(Lang.HomePage_KunProxyMismatch);
+            if (settings.EnableThirdPartyTool)
+                throw new InvalidOperationException(Lang.HomePage_KunCustomLauncherUnsupported);
+            if (!File.Exists(Path.Combine(path, OSExeName)))
+                throw new KunClientRegionException(File.Exists(Path.Combine(path, CNExeName))
+                    ? ServerRegionType.CN : null);
+
+            // The normal region detector accepts either data folder. For Kun, read the
+            // metadata belonging to the exact international executable we will launch.
+            string apmPath = Path.Combine(path, "GenshinImpact_Data", "StreamingAssets", "APMConfig.json");
+            APMConfig? apmConfig;
+            try
+            {
+                string apmJson = await File.ReadAllTextAsync(apmPath);
+                apmConfig = JsonSerializer.Deserialize(apmJson, AppJsonSerializerContext.Default.APMConfig);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            {
+                LogService.Warn($"Kun 客户端信息读取失败: {ex.GetType().Name}");
+                throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed, ex);
+            }
+            if (apmConfig == null)
+                throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed);
+            if (!apmConfig.IsOS)
+                throw new KunClientRegionException(apmConfig.IsCN ? ServerRegionType.CN : null);
+            string installedVersion = apmConfig.GetVersionNumber();
+            if (string.IsNullOrWhiteSpace(installedVersion))
+                throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed);
+
+            string? serverVersion = await PrivateServerService.GetServerVersionAsync(settings);
+            if (string.IsNullOrWhiteSpace(serverVersion))
+                throw new InvalidOperationException(Lang.HomePage_KunVersionUnavailable);
+            if (!string.Equals(installedVersion.Trim(), serverVersion, StringComparison.OrdinalIgnoreCase))
+                throw new KunVersionMismatchException(installedVersion.Trim(), serverVersion);
+        }
+
         // 确定启动的 exe 路径（两个区域都试，不因切服而找不到已安装的游戏）
         string? exePath;
         string verb = "runas";
@@ -178,7 +222,7 @@ public static class GameLauncherService
         }
         else
         {
-            exePath = FindActualExe(path);
+            exePath = KunServerConfig.IsEnabled(settings) ? Path.Combine(path, OSExeName) : FindActualExe(path);
             if (exePath is null)
                 throw new FileNotFoundException($"找不到游戏文件 ({CNExeName} 或 {OSExeName})", path);
         }

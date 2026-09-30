@@ -17,6 +17,7 @@ public class ApiService
     // 共享 SocketsHttpHandler — 全局连接池，避免 socket 泄漏
     private static readonly SocketsHttpHandler SharedHandler = new()
     {
+        Proxy = LauncherHttpProxy.Shared,
         MaxConnectionsPerServer = 6,
         PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
@@ -121,7 +122,7 @@ public class ApiService
         response.EnsureSuccessStatusCode();
 
         string json = await response.Content.ReadAsStringAsync(ct);
-        LogService.Debug($"分支API响应: {json.Substring(0, Math.Min(500, json.Length))}...");
+        LogService.Debug($"分支API响应长度: {json.Length} 字符");
 
         var branchResponse = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.BranchResponse);
 

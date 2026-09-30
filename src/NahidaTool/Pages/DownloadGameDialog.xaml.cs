@@ -16,7 +16,7 @@ using Windows.UI;
 namespace NahidaTool.Pages;
 
 /// <summary>
-/// 选择安装路径弹窗：毛玻璃深色 UI，含语言多选/快捷方式/容量信息
+/// 安装选项弹窗，保留路径校验、区服选择和资源容量检查。
 /// </summary>
 public sealed partial class DownloadGameDialog : ContentDialog
 {
@@ -71,8 +71,7 @@ public sealed partial class DownloadGameDialog : ContentDialog
     public DownloadGameDialog()
     {
         InitializeComponent();
-        PrimaryButtonText = "";
-        CloseButtonText = "";
+        DialogPresentation.Configure(this, ContentViewport, 480, 480);
         Loaded += (_, _) => ApplyAccentColor();
         AccentColorChangedMessage.AccentColorChanged += OnAccentColorChanged;
         Closed += (_, _) => AccentColorChangedMessage.AccentColorChanged -= OnAccentColorChanged;
@@ -91,7 +90,6 @@ public sealed partial class DownloadGameDialog : ContentDialog
         var accentBg = Application.Current.Resources["AccentFillColorDefaultBrush"] as SolidColorBrush;
         if (accentBg == null) return;
         ChangeButton.Background = accentBg;
-        StartInstallButton.Background = accentBg;
     }
 
     /// <summary>
@@ -155,7 +153,7 @@ public sealed partial class DownloadGameDialog : ContentDialog
 
         ResolvedVersion = resolvedVersion;
         ResourceReady = gameCompressed > 0 && gameUncompressed > 0;
-        StartInstallButton.IsEnabled = ResourceReady;
+        IsPrimaryButtonEnabled = ResourceReady;
         ValidationText.Text = ResourceReady ? string.Empty : Lang.DownloadPage_NoResourceInfo;
         RefreshSummary();
     }
@@ -164,7 +162,7 @@ public sealed partial class DownloadGameDialog : ContentDialog
     {
         ResourceReady = false;
         ResolvedVersion = string.Empty;
-        StartInstallButton.IsEnabled = false;
+        IsPrimaryButtonEnabled = false;
         GameSizeText.Text = "--";
         ChineseSizeText.Text = "--";
         EnglishSizeText.Text = "--";
@@ -179,7 +177,7 @@ public sealed partial class DownloadGameDialog : ContentDialog
     {
         ResourceReady = false;
         ResolvedVersion = string.Empty;
-        StartInstallButton.IsEnabled = false;
+        IsPrimaryButtonEnabled = false;
         ValidationText.Text = message;
     }
 
@@ -330,19 +328,22 @@ public sealed partial class DownloadGameDialog : ContentDialog
         LocateGameRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    private void StartInstallButton_Click(object sender, RoutedEventArgs e)
+    private void InstallButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         if (!ResourceReady)
         {
             ValidationText.Text = Lang.DownloadPage_NoResourceInfo;
+            args.Cancel = true;
             return;
         }
 
         if (!TryValidateInstallPath())
+        {
+            args.Cancel = true;
             return;
+        }
 
         Confirmed = true;
-        Hide();
     }
 
     private bool TryValidateInstallPath()
@@ -394,8 +395,4 @@ public sealed partial class DownloadGameDialog : ContentDialog
         }
     }
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
-    {
-        Hide();
-    }
 }

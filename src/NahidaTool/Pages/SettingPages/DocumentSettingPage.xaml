@@ -38,7 +38,32 @@
                          IsClosable="False"
                          Severity="Warning"
                          Title="{x:Bind models:Lang.DocumentSettingPage_PathWarningTitle}"
-                         Message="{x:Bind models:Lang.DocumentSettingPage_PathWarningMessage}"/>
+                         Message="{x:Bind models:Lang.DocumentSettingPage_PathWarningMessage}">
+                    <InfoBar.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Light">
+                                    <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush"
+                                                     Color="{ThemeResource SystemAccentColorLight3}"/>
+                                    <SolidColorBrush x:Key="InfoBarWarningSeverityIconBackground"
+                                                     Color="{ThemeResource SystemAccentColorDark3}"/>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Dark">
+                                    <SolidColorBrush x:Key="InfoBarWarningSeverityBackgroundBrush"
+                                                     Color="{ThemeResource SystemAccentColorDark3}"/>
+                                    <SolidColorBrush x:Key="InfoBarWarningSeverityIconBackground"
+                                                     Color="{ThemeResource SystemAccentColorLight3}"/>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <StaticResource x:Key="InfoBarWarningSeverityBackgroundBrush"
+                                                    ResourceKey="SystemColorWindowColorBrush"/>
+                                    <StaticResource x:Key="InfoBarWarningSeverityIconBackground"
+                                                    ResourceKey="SystemColorHighlightColorBrush"/>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </InfoBar.Resources>
+                </InfoBar>
 
                 <!-- 服务器游玩教程 -->
                 <StackPanel Spacing="12">

@@ -23,6 +23,7 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
     public LdiffUpdateDialog(ApiService apiService, AppSettings settings)
     {
         InitializeComponent();
+        NahidaTool.Models.Helper.DialogPresentation.Configure(this, ContentViewport, 480, 400);
         _apiService = apiService;
         _settings = settings;
     }
