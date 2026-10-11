@@ -705,10 +705,8 @@ public sealed class LdiffPatchService
                         File.ReadAllText(path), LdiffPatchJournalJsonContext.Default.LdiffPatchJournal);
                     if (journal?.Completed == true)
                         continue;
-                    if (journal?.AllOperationsApplied == true &&
-                        string.Equals(ReadInstalledVersion(gameRoot), journal.TargetVersion,
-                            StringComparison.OrdinalIgnoreCase))
-                        continue;
+                    // Only a completed journal releases the launch guard. An
+                    // installer version string is not proof of a completed update.
                     if (journal == null || journal.Completed != true)
                         return true;
                 }
@@ -724,21 +722,6 @@ public sealed class LdiffPatchService
         {
             return true;
         }
-    }
-
-    private static string? ReadInstalledVersion(string gameRoot)
-    {
-        string configPath = Path.Combine(gameRoot, "config.ini");
-        if (!File.Exists(configPath))
-            return null;
-
-        foreach (string line in File.ReadLines(configPath))
-        {
-            if (line.StartsWith("game_version=", StringComparison.OrdinalIgnoreCase))
-                return line["game_version=".Length..].Trim();
-        }
-
-        return null;
     }
 
     private static bool ContainsAnyFile(string? folder)

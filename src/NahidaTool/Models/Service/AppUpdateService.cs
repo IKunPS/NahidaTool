@@ -360,7 +360,6 @@ public sealed class AppUpdateService
     {
         var client = new HttpClient(new SocketsHttpHandler
         {
-            Proxy = LauncherHttpProxy.Shared,
             AllowAutoRedirect = true,
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         })

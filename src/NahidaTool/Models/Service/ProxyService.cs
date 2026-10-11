@@ -66,6 +66,16 @@ public static class ProxyService
             foreach (var domain in s_redirectDomains)
                 Eavesdropper.InterceptHosts.Add(domain);
 
+            // Let official launcher APIs use the user's normal network route,
+            // including VPN/TUN. Only game traffic is rewritten to the private server.
+            Eavesdropper.PassthroughHosts.Clear();
+            foreach (string url in new[]
+            {
+                ServerConfig.CN.BranchApiUrl, ServerConfig.CN.SophonApiUrl, ServerConfig.CN.SophonPatchApiUrl,
+                ServerConfig.OS.BranchApiUrl, ServerConfig.OS.SophonApiUrl, ServerConfig.OS.SophonPatchApiUrl
+            })
+                Eavesdropper.PassthroughHosts.Add(new Uri(url).IdnHost);
+
             if (!Eavesdropper.Certifier.CreateTrustedRootCertificate())
                 LogService.Info("根证书安装失败或已取消，HTTPS 流量可能无法拦截");
 
@@ -103,19 +113,12 @@ public static class ProxyService
 
     private static Task OnRequestInterceptedAsync(object sender, RequestInterceptedEventArgs e)
     {
-        var url = e.Request.RequestUri.OriginalString;
-        foreach (var domain in s_redirectDomains)
-        {
-            var i = url.IndexOf(domain, StringComparison.OrdinalIgnoreCase);
-            if (i == -1) continue;
-
-            var p = url.IndexOf('/', i + domain.Length);
-            var target = p >= 0 ? _dispatch + url[p..] : _dispatch;
-
-            e.Request = RedirectRequest((HttpWebRequest)e.Request, new Uri(target));
+        Uri original = e.Request.RequestUri;
+        if (!ProxyHostPolicy.ShouldIntercept(original.IdnHost, Eavesdropper.InterceptHosts,
+                Eavesdropper.PassthroughHosts))
             return Task.CompletedTask;
-        }
-
+        var target = new Uri(_dispatch + original.PathAndQuery);
+        e.Request = RedirectRequest((HttpWebRequest)e.Request, target);
         return Task.CompletedTask;
     }
 
@@ -133,7 +136,9 @@ public static class ProxyService
         {
             switch (name.ToLower())
             {
-                case "host":              newRequest.Host            = request.Host;            break;
+                // HTTPS/SNI and virtual-host routing must use the destination's
+                // authority; carrying the game Host to game.kunps.cn breaks TLS.
+                case "host": break;
                 case "accept":            newRequest.Accept          = request.Accept;          break;
                 case "referer":           newRequest.Referer         = request.Referer;         break;
                 case "user-agent":        newRequest.UserAgent       = request.UserAgent;       break;

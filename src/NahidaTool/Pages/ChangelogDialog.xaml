@@ -48,12 +48,12 @@
                             <ColumnDefinition Width="24"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <FontIcon Glyph="&#xE81C;" FontSize="19" VerticalAlignment="Top" Margin="0,2,0,0"
+                        <FontIcon Glyph="&#xE774;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                         <StackPanel Grid.Column="1" Spacing="5">
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_HistoryFeatureTitle}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_StoryEndpointTitle}"
                                        Style="{StaticResource DialogItemTitleStyle}"/>
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_HistoryFeatureDescription}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_StoryEndpointDescription}"
                                        Style="{StaticResource DialogBodyStyle}"/>
                         </StackPanel>
                     </Grid>
@@ -64,18 +64,17 @@
                             <ColumnDefinition Width="24"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <FontIcon Glyph="&#xE91B;" FontSize="19" VerticalAlignment="Top" Margin="0,2,0,0"
+                        <FontIcon Glyph="&#xE118;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                         <StackPanel Grid.Column="1" Spacing="5">
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_ImagePositionTitle}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizeTitle}"
                                        Style="{StaticResource DialogItemTitleStyle}"/>
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_ImagePositionDescription}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizeDescription}"
                                        Style="{StaticResource DialogBodyStyle}"/>
                         </StackPanel>
                     </Grid>
                 </Border>
             </StackPanel>
-
             <StackPanel Spacing="10">
                 <TextBlock Text="{x:Bind models:Lang.Changelog_Improved}"
                            Style="{StaticResource DialogSectionStyle}"/>
@@ -86,12 +85,12 @@
                                 <ColumnDefinition Width="24"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE73E;" FontSize="17" VerticalAlignment="Top" Margin="0,3,0,0"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <FontIcon Glyph="&#xE73E;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_CompatibilityTitle}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_ClientDetectionTitle}"
                                            Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_CompatibilityDescription}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_ClientDetectionDescription}"
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>
@@ -101,12 +100,12 @@
                                 <ColumnDefinition Width="24"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE8AB;" FontSize="17" VerticalAlignment="Top" Margin="0,3,0,0"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <FontIcon Glyph="&#xE774;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_DialogTitle}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_TunProxyTitle}"
                                            Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_DialogDescription}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_TunProxyDescription}"
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>
@@ -116,12 +115,12 @@
                                 <ColumnDefinition Width="24"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE713;" FontSize="17" VerticalAlignment="Top" Margin="0,3,0,0"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <FontIcon Glyph="&#xE8AB;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_BackgroundTitle}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_VersionCheckTitle}"
                                            Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_BackgroundDescription}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_VersionCheckDescription}"
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>
@@ -131,12 +130,27 @@
                                 <ColumnDefinition Width="24"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE946;" FontSize="17" VerticalAlignment="Top" Margin="0,3,0,0"
-                                      Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <FontIcon Glyph="&#xE713;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_ThemeHintTitle}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_TransferFlowTitle}"
                                            Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_ThemeHintDescription}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_TransferFlowDescription}"
+                                           Style="{StaticResource DialogBodyStyle}"/>
+                            </StackPanel>
+                        </Grid>
+                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE734;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
+                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
+                            <StackPanel Grid.Column="1" Spacing="5">
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_SurpriseTitle}"
+                                           Style="{StaticResource DialogItemTitleStyle}"/>
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_SurpriseDescription}"
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>

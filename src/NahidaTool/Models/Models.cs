@@ -400,6 +400,7 @@ public class ServerStatus
 // 私服状态相关类型
 [JsonSerializable(typeof(ServerStatusResponse))]
 [JsonSerializable(typeof(ServerStatus))]
+[JsonSerializable(typeof(KunServerMetadataResponse))]
 [JsonSerializable(typeof(List<string>))]
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {

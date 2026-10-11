@@ -10,16 +10,14 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Security.Authentication;
 using System.Text.RegularExpressions;
-using System.Security.Cryptography.X509Certificates;
 using NahidaTool.Models.Service;
 
 //using BrotliSharpLib;
 
 namespace NahidaTool.Eavesdrop.Network
 {
-    public class EavesNode : IDisposable
+    public partial class EavesNode : IDisposable
     {
         private SslStream? _secureStream;
         private readonly TcpClient _client;
@@ -54,9 +52,10 @@ namespace NahidaTool.Eavesdrop.Network
             if (string.IsNullOrWhiteSpace(command)) return null;
 
             string[] values = command.Split(' ');
+            if (values.Length < 2) return null;
 
             method = values[0];
-            requestUrl = (requestUrl ?? "") + values[1];
+            requestUrl = baseUri == null ? values[1] : new Uri(baseUri, values[1]).AbsoluteUri;
             while (_client.Connected)
             {
                 string? header = ReadNonBufferedLine();
@@ -69,92 +68,11 @@ namespace NahidaTool.Eavesdrop.Network
             {
                 baseUri = new Uri("https://" + requestUrl);
 
-                // 检查是否需要 MITM 拦截该域名，不需要则做原始 TCP 隧道透传
-                if (!ShouldInterceptHost(baseUri.Host))
-                {
-                    await SendResponseAsync(HttpStatusCode.OK).ConfigureAwait(false);
-                    await RelayTunnelAsync(baseUri.Host, baseUri.Port).ConfigureAwait(false);
-                    return null;
-                }
-
                 await SendResponseAsync(HttpStatusCode.OK).ConfigureAwait(false);
-
-                if (!SecureTunnel(baseUri.Host)) return null;
-                return await ReadRequestAsync(baseUri).ConfigureAwait(false);
+                Uri? gameOrigin = await OpenTunnelAsync(baseUri).ConfigureAwait(false);
+                return gameOrigin == null ? null : await ReadRequestAsync(gameOrigin).ConfigureAwait(false);
             }
             else return CreateRequest(method, headers, new Uri(requestUrl));
-        }
-
-        /// <summary>
-        /// 判断是否应对该主机做 MITM 拦截
-        /// </summary>
-        private static bool ShouldInterceptHost(string host)
-        {
-            if (Eavesdropper.InterceptHosts.Count == 0)
-                return true; // 未配置拦截列表时默认全部拦截（保持向后兼容）
-
-            foreach (string domain in Eavesdropper.InterceptHosts)
-            {
-                if (host.EndsWith(domain, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 原始 TCP 隧道：在客户端与远程服务器间双向盲转数据（不做 TLS 解密）
-        /// </summary>
-        private async Task RelayTunnelAsync(string remoteHost, int remotePort)
-        {
-            using var remoteClient = new TcpClient();
-            try
-            {
-                await remoteClient.ConnectAsync(remoteHost, remotePort).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                LogService.Debug($"TCP隧道连接远程服务器失败 ({remoteHost}:{remotePort}): {ex.Message}");
-                return; // 无法连接远程服务器
-            }
-
-            remoteClient.NoDelay = true;
-            remoteClient.SendBufferSize = RelayBufferSize;
-            remoteClient.ReceiveBufferSize = RelayBufferSize;
-
-            Stream clientStream = _client.GetStream();
-            Stream remoteStream = remoteClient.GetStream();
-
-            // 双向盲转
-            var clientToRemote = RelayAsync(clientStream, remoteStream);
-            var remoteToClient = RelayAsync(remoteStream, clientStream);
-
-            await Task.WhenAny(clientToRemote, remoteToClient).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 单向数据中继
-        /// </summary>
-        private static async Task RelayAsync(Stream source, Stream destination)
-        {
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(RelayBufferSize);
-            try
-            {
-                while (true)
-                {
-                    int bytesRead = await source.ReadAsync(
-                        buffer.AsMemory(0, RelayBufferSize)).ConfigureAwait(false);
-                    if (bytesRead == 0) break; // EOF
-                    await destination.WriteAsync(
-                        buffer.AsMemory(0, bytesRead)).ConfigureAwait(false);
-                    await destination.FlushAsync().ConfigureAwait(false);
-                }
-            }
-            catch (IOException) { }
-            catch (ObjectDisposedException) { }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
         }
 
         public async Task<ByteArrayContent> ReadRequestContentAsync(WebRequest request)
@@ -272,7 +190,7 @@ namespace NahidaTool.Eavesdrop.Network
 
         public Stream GetStream()
         {
-            return ((Stream)_secureStream ?? _client.GetStream());
+            return (Stream?)_secureStream ?? _tunnelTransport ?? _client.GetStream();
         }
         private StreamWriter WrapStreamWriter()
         {
@@ -308,23 +226,6 @@ namespace NahidaTool.Eavesdrop.Network
             catch (IOException) { }
 
             return pos > 0 ? Encoding.UTF8.GetString(lineBuffer[..pos]) : null;
-        }
-        private bool SecureTunnel(string host)
-        {
-            try
-            {
-                X509Certificate2 certificate = _certifier.GenerateCertificate(host);
-
-                _secureStream = new SslStream(GetStream());
-                _secureStream.AuthenticateAsServer(certificate, false, SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls, false);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                LogService.Debug($"SSL隧道建立失败 ({host}): {ex.Message}");
-                return false;
-            }
         }
         private IEnumerable<Cookie> GetCookies(string cookieHeader, string host)
         {

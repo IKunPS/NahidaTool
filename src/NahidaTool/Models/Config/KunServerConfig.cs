@@ -5,16 +5,19 @@ namespace NahidaTool.Models.Config;
 
 public static class KunServerConfig
 {
-    // The existing default private server is the story endpoint; Kun's command
-    // endpoint uses the same host with a different port.
-    private const string Host = "210.16.175.19";
+    // Keep normalized base URLs: the game proxy compares these to its active
+    // destination and appends the original request path separately.
+    public const string StoryAddress = "https://game.kunps.cn";
+    public const string StoryMetadataAddress = StoryAddress + "/api/meta";
+    public const string CommandAddress = "http://210.16.175.19:2712";
+    public const string UpdateAddress = "http://210.16.175.19:1027";
 
     public static bool IsEnabled(AppSettings settings) => settings.EnableProxy && settings.EnableKun;
 
     public static string GetAddress(KunServerType server) => server switch
     {
-        KunServerType.Story => $"http://{Host}:1145",
-        KunServerType.Command => $"http://{Host}:2712",
+        KunServerType.Story => StoryAddress,
+        KunServerType.Command => CommandAddress,
         _ => throw new ArgumentOutOfRangeException(nameof(server))
     };
 

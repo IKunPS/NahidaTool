@@ -142,6 +142,10 @@ public static class Lang
     public static string ServerSwitchPage_Description => _resourceManager.GetString("ServerSwitchPage_Description") ?? "Switch game client between CN and OS server";
     public static string ServerSwitchPage_CurrentServer => _resourceManager.GetString("ServerSwitchPage_CurrentServer") ?? "Current Server";
     public static string ServerSwitchPage_Detecting => _resourceManager.GetString("ServerSwitchPage_Detecting") ?? "Detecting...";
+    public static string ServerSwitchPage_DetectionTimeout => _resourceManager.GetString("ServerSwitchPage_DetectionTimeout") ?? "Detection timed out. Check the game directory and try again.";
+    public static string ServerSwitchPage_DetectionFailed => _resourceManager.GetString("ServerSwitchPage_DetectionFailed") ?? "Could not detect the client. Please try again.";
+    internal static string GameInstallationIssueMessage(GameInstallationIssue issue) =>
+        _resourceManager.GetString($"GameInstallation_{issue}") ?? ServerSwitchPage_DetectionFailed;
     public static string ServerSwitchPage_ReDetect => _resourceManager.GetString("ServerSwitchPage_ReDetect") ?? "Re-detect";
     public static string ServerSwitchPage_SelectTargetServer => _resourceManager.GetString("ServerSwitchPage_SelectTargetServer") ?? "Select Target Server";
     public static string ServerSwitchPage_CN => _resourceManager.GetString("ServerSwitchPage_CN") ?? "CN";
@@ -149,6 +153,11 @@ public static class Lang
     public static string ServerSwitchPage_OS => _resourceManager.GetString("ServerSwitchPage_OS") ?? "OS";
     public static string ServerSwitchPage_OS_Short => _resourceManager.GetString("ServerSwitchPage_OS_Short") ?? "OS";
     public static string ServerSwitchPage_Warning => _resourceManager.GetString("ServerSwitchPage_Warning") ?? "Please close the game before switching.";
+    public static string ServerSwitchPage_DownloadSizePending => _resourceManager.GetString("ServerSwitchPage_DownloadSizePending") ?? "Detect the client to calculate the required download.";
+    public static string ServerSwitchPage_DownloadSizeCalculating => _resourceManager.GetString("ServerSwitchPage_DownloadSizeCalculating") ?? "Calculating download size...";
+    public static string ServerSwitchPage_DownloadSizeCached => _resourceManager.GetString("ServerSwitchPage_DownloadSizeCached") ?? "Valid resources are cached. No download is needed.";
+    public static string ServerSwitchPage_DownloadSize => _resourceManager.GetString("ServerSwitchPage_DownloadSize") ?? "Required resource download: {0}";
+    public static string ServerSwitchPage_DownloadSizeUnavailable => _resourceManager.GetString("ServerSwitchPage_DownloadSizeUnavailable") ?? "Download size is unavailable. Re-detect to retry.";
     public static string ServerSwitchPage_Preparing => _resourceManager.GetString("ServerSwitchPage_Preparing") ?? "Preparing...";
     public static string ServerSwitchPage_NotSelectedPath => _resourceManager.GetString("ServerSwitchPage_NotSelectedPath") ?? "Game path not selected";
     public static string ServerSwitchPage_CN_Display => _resourceManager.GetString("ServerSwitchPage_CN_Display") ?? "CN";
@@ -291,18 +300,20 @@ public static class Lang
 
     #region 更新日志
 
-    public static string Changelog_HistoryFeatureTitle => _resourceManager.GetString("Changelog_HistoryFeatureTitle") ?? "Version history";
-    public static string Changelog_HistoryFeatureDescription => _resourceManager.GetString("Changelog_HistoryFeatureDescription") ?? "Expand or collapse archived release notes by version, in Chinese or English, even when offline.";
-    public static string Changelog_CompatibilityTitle => _resourceManager.GetString("Changelog_CompatibilityTitle") ?? "Older Windows 10 compatibility";
-    public static string Changelog_CompatibilityDescription => _resourceManager.GetString("Changelog_CompatibilityDescription") ?? "Keep .NET 10 with an adjusted CET compatibility flag for affected older Windows 10 systems, and include missing pages and built-in assets in published packages.";
-    public static string Changelog_DialogTitle => _resourceManager.GetString("Changelog_DialogTitle") ?? "Acrylic dialogs and settings";
-    public static string Changelog_DialogDescription => _resourceManager.GetString("Changelog_DialogDescription") ?? "Unify acrylic dialogs; correct switch-server confirmation and cancellation, uninstall placement, alignment and top spacing; prevent text from jumping when settings open.";
-    public static string Changelog_BackgroundTitle => _resourceManager.GetString("Changelog_BackgroundTitle") ?? "High-quality backgrounds";
-    public static string Changelog_BackgroundDescription => _resourceManager.GetString("Changelog_BackgroundDescription") ?? "Use a subtle dark tint outside the home page and keep local acrylic effects. Resize large images to the display's physical pixels to reduce jagged fine lines and adapt to DPI changes.";
-    public static string Changelog_ImagePositionTitle => _resourceManager.GetString("Changelog_ImagePositionTitle") ?? "Adjust background composition";
-    public static string Changelog_ImagePositionDescription => _resourceManager.GetString("Changelog_ImagePositionDescription") ?? "Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.";
-    public static string Changelog_ThemeHintTitle => _resourceManager.GetString("Changelog_ThemeHintTitle") ?? "Theme-colored notices";
-    public static string Changelog_ThemeHintDescription => _resourceManager.GetString("Changelog_ThemeHintDescription") ?? "The game-path warning follows the app accent color while keeping readable text in light, dark and high-contrast modes.";
+    public static string Changelog_StoryEndpointTitle => _resourceManager.GetString("Changelog_StoryEndpointTitle") ?? "New story-server endpoint";
+    public static string Changelog_StoryEndpointDescription => _resourceManager.GetString("Changelog_StoryEndpointDescription") ?? "The story server now uses https://game.kunps.cn/ and queries the game version through /api/meta. The command-server address and API stay unchanged.";
+    public static string Changelog_DownloadSizeTitle => _resourceManager.GetString("Changelog_DownloadSizeTitle") ?? "Dynamic server-switch download size";
+    public static string Changelog_DownloadSizeDescription => _resourceManager.GetString("Changelog_DownloadSizeDescription") ?? "Calculate the required download from the installed version and target region, counting shared chunks once. The page and confirmation dialog show the same size; valid caches need no download.";
+    public static string Changelog_ClientDetectionTitle => _resourceManager.GetString("Changelog_ClientDetectionTitle") ?? "More reliable client detection";
+    public static string Changelog_ClientDetectionDescription => _resourceManager.GetString("Changelog_ClientDetectionDescription") ?? "Read the region and version only from client files and APMConfig.json, with timeouts, clear errors, and protection against stale requests. Synchronize the region after a successful switch.";
+    public static string Changelog_TunProxyTitle => _resourceManager.GetString("Changelog_TunProxyTitle") ?? "Improved VPN / TUN proxy compatibility";
+    public static string Changelog_TunProxyDescription => _resourceManager.GetString("Changelog_TunProxyDescription") ?? "Identify game requests by their TLS server name. Launcher APIs are no longer forced through the game proxy, and other HTTPS traffic stays end-to-end.";
+    public static string Changelog_VersionCheckTitle => _resourceManager.GetString("Changelog_VersionCheckTitle") ?? "More accurate version checks";
+    public static string Changelog_VersionCheckDescription => _resourceManager.GetString("Changelog_VersionCheckDescription") ?? "Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.";
+    public static string Changelog_TransferFlowTitle => _resourceManager.GetString("Changelog_TransferFlowTitle") ?? "Improved transfers and progress logs";
+    public static string Changelog_TransferFlowDescription => _resourceManager.GetString("Changelog_TransferFlowDescription") ?? "Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.";
+    public static string Changelog_SurpriseTitle => _resourceManager.GetString("Changelog_SurpriseTitle") ?? "A little surprise";
+    public static string Changelog_SurpriseDescription => _resourceManager.GetString("Changelog_SurpriseDescription") ?? "A little surprise is waiting for you to discover.";
     public static string Changelog_HistoryBundledSource => _resourceManager.GetString("Changelog_HistoryBundledSource") ?? "Source: bundled {0} release notes";
 
     public static string Changelog_History => _resourceManager.GetString("Changelog_History") ?? "Version history";

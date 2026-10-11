@@ -14,7 +14,7 @@ namespace NahidaTool.Models.Service;
 /// <summary>
 /// 转服服务 - 处理国服/国际服切换
 /// </summary>
-public class ServerSwitchService
+public partial class ServerSwitchService
 {
     #region Singleton & Fields
 
@@ -83,61 +83,6 @@ public class ServerSwitchService
 
     #endregion
 
-    #region Detection
-
-    /// <summary>
-    /// 检测游戏当前服务器
-    /// </summary>
-    public async Task<(ServerRegionType region, string version, string error)> DetectCurrentServerAsync(string gamePath)
-    {
-        try
-        {
-            // 首先尝试找到Data文件夹
-            string? dataFolder = null;
-            string cnDataPath = Path.Combine(gamePath, CN_DATA_FOLDER);
-            string osDataPath = Path.Combine(gamePath, OS_DATA_FOLDER);
-
-            if (Directory.Exists(cnDataPath))
-            {
-                dataFolder = cnDataPath;
-            }
-            else if (Directory.Exists(osDataPath))
-            {
-                dataFolder = osDataPath;
-            }
-            else
-            {
-                return (ServerRegionType.CN, string.Empty, "未找到游戏Data文件夹");
-            }
-
-            // 读取APMConfig.json
-            string apmConfigPath = Path.Combine(dataFolder, "StreamingAssets", "APMConfig.json");
-            if (!File.Exists(apmConfigPath))
-            {
-                return (ServerRegionType.CN, string.Empty, "未找到APMConfig.json");
-            }
-
-            string json = await File.ReadAllTextAsync(apmConfigPath);
-            var apmConfig = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.APMConfig);
-
-            if (apmConfig == null)
-            {
-                return (ServerRegionType.CN, string.Empty, "无法解析APMConfig.json");
-            }
-
-            var region = apmConfig.IsCN ? ServerRegionType.CN : ServerRegionType.OS;
-            var version = apmConfig.GetVersionNumber();
-
-            return (region, version, string.Empty);
-        }
-        catch (Exception ex)
-        {
-            return (ServerRegionType.CN, string.Empty, $"检测失败: {ex.Message}");
-        }
-    }
-
-    #endregion
-
     #region Cache
 
     /// <summary>
@@ -155,8 +100,9 @@ public class ServerSwitchService
     /// <summary>
     /// 检查缓存是否存在且有效
     /// </summary>
-    private async Task<bool> IsCacheValidAsync(ServerRegionType region, string version)
+    private async Task<bool> IsCacheValidAsync(ServerRegionType region, string version, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         string cacheDir = GetCacheDirectory(region, version);
         string cacheInfoPath = Path.Combine(cacheDir, "cache_info.json");
 
@@ -165,17 +111,18 @@ public class ServerSwitchService
 
         try
         {
-            string json = await File.ReadAllTextAsync(cacheInfoPath);
+            string json = await File.ReadAllTextAsync(cacheInfoPath, cancellationToken);
             var cacheInfo = JsonSerializer.Deserialize(json, AppJsonSerializerContext.Default.ServerSwitchCacheInfo);
 
             string expectedRegion = region == ServerRegionType.CN ? "CN" : "OS";
             if (cacheInfo == null || cacheInfo.Version != version || cacheInfo.Region != expectedRegion ||
-                cacheInfo.Files == null || cacheInfo.FileChecksums == null)
+                cacheInfo.Files is not { Count: > 0 } || cacheInfo.FileChecksums == null)
                 return false;
 
             // 缓存元数据和文件内容都必须匹配，避免复用损坏或被改写的缓存。
             foreach (var file in cacheInfo.Files)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!cacheInfo.FileChecksums.TryGetValue(file, out string? expectedChecksum))
                     return false;
 
@@ -183,13 +130,14 @@ public class ServerSwitchService
                 if (!IsPathInsideDirectory(cacheDir, filePath) || !File.Exists(filePath))
                     return false;
 
-                string actualChecksum = await CalculateFileChecksumAsync(filePath);
+                string actualChecksum = await CalculateFileChecksumAsync(filePath, cancellationToken);
                 if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.OrdinalIgnoreCase))
                     return false;
             }
 
             return true;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception ex)
         {
             LogService.Debug($"检查缓存有效性失败: {ex.Message}");
@@ -205,12 +153,12 @@ public class ServerSwitchService
         return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static async Task<string> CalculateFileChecksumAsync(string path)
+    private static async Task<string> CalculateFileChecksumAsync(string path, CancellationToken cancellationToken = default)
     {
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
             bufferSize: 81920, useAsync: true);
         using var md5 = MD5.Create();
-        byte[] hash = await md5.ComputeHashAsync(stream);
+        byte[] hash = await md5.ComputeHashAsync(stream, cancellationToken);
         return Convert.ToHexString(hash);
     }
 
@@ -241,12 +189,17 @@ public class ServerSwitchService
 
             // 1. 检测当前服务器
             NotifyStatus("正在检测当前服务器...", dispatcherQueue);
-            var (currentRegion, currentVersion, error) = await DetectCurrentServerAsync(gamePath);
-
-            if (!string.IsNullOrEmpty(error))
+            InstalledGameInfo installation;
+            try
             {
-                throw new Exception(error);
+                installation = await GameInstallationReader.ReadAsync(gamePath, cancellationToken);
             }
+            catch (GameInstallationDetectionException ex)
+            {
+                throw new InvalidOperationException(Lang.GameInstallationIssueMessage(ex.Issue), ex);
+            }
+            var currentRegion = installation.Region;
+            string currentVersion = installation.Version;
 
             if (currentRegion == targetRegion)
             {
@@ -259,14 +212,14 @@ public class ServerSwitchService
 
             // 2. 检查缓存
             NotifyStatus("正在检查本地缓存...", dispatcherQueue);
-            bool cacheValid = await IsCacheValidAsync(targetRegion, currentVersion);
+            bool cacheValid = await IsCacheValidAsync(targetRegion, currentVersion, cancellationToken);
             string cacheDir = GetCacheDirectory(targetRegion, currentVersion);
 
             if (!cacheValid)
             {
                 NotifyDetail("缓存无效或不存在，需要下载资源", dispatcherQueue);
                 ClearInvalidCache(cacheDir);
-                await DownloadServerFilesAsync(targetRegion, currentVersion, cacheDir, dispatcherQueue);
+                await DownloadServerFilesAsync(targetRegion, currentVersion, cacheDir, dispatcherQueue, cancellationToken);
             }
             else
             {
@@ -314,216 +267,7 @@ public class ServerSwitchService
 
     #endregion
 
-    #region Download & Merge
-
-    /// <summary>
-    /// 从API下载服务器文件
-    /// </summary>
-    private async Task DownloadServerFilesAsync(ServerRegionType targetRegion, string version, string cacheDir,
-        DispatcherQueue dispatcherQueue)
-    {
-        NotifyStatus("正在从服务器获取资源信息...", dispatcherQueue);
-
-        // 设置API区域
-        _apiService.SetRegion(targetRegion);
-
-        // 获取构建信息 - 传递当前游戏版本作为tag，确保获取对应版本的资源
-        var buildInfo = await _apiService.GetBuildInfoAsync(version);
-        if (buildInfo?.Data?.Manifests == null || buildInfo.Data.Manifests.Count == 0)
-        {
-            throw new Exception("无法获取服务器构建信息");
-        }
-
-        // 找到游戏主体的BuildData
-        var gameBuildData = buildInfo.Data.Manifests.FirstOrDefault(m =>
-            m.MatchingField == "game" || string.IsNullOrEmpty(m.MatchingField));
-
-        if (gameBuildData == null)
-        {
-            throw new Exception("无法找到游戏主体资源");
-        }
-
-        NotifyDetail($"构建ID: {buildInfo.Data.BuildId}", dispatcherQueue);
-        NotifyDetail($"Tag: {buildInfo.Data.Tag}", dispatcherQueue);
-
-        // 下载并解析Manifest
-        NotifyStatus("正在下载Manifest...", dispatcherQueue);
-        byte[] manifestData = await _apiService.DownloadManifestAsync(
-            gameBuildData.ManifestDownload?.UrlPrefix ?? string.Empty,
-            gameBuildData.Manifest?.Id ?? string.Empty);
-
-        byte[] decompressedData = _manifestParser.DecompressZstd(manifestData);
-        List<FileChunkInfo> allFiles = _manifestParser.ParseChunkManifest(decompressedData);
-
-        NotifyDetail($"Manifest解析完成，共 {allFiles.Count} 个文件", dispatcherQueue);
-
-        // 筛选需要下载的文件
-        var filesToDownload = FilterFilesToDownload(allFiles, targetRegion);
-        NotifyDetail($"需要下载 {filesToDownload.Count} 个转服文件", dispatcherQueue);
-
-        if (filesToDownload.Count == 0)
-        {
-            throw new Exception("未找到需要下载的转服文件");
-        }
-
-        // 创建缓存目录
-        Directory.CreateDirectory(cacheDir);
-        string chunksDir = Path.Combine(cacheDir, "chunks");
-        Directory.CreateDirectory(chunksDir);
-
-        // 下载文件
-        int totalChunks = filesToDownload.Sum(f => f.Chunks?.Count ?? 0);
-        int downloadedChunks = 0;
-        var downloadedFiles = new List<string>();
-        var fileChecksums = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        using var semaphore = new SemaphoreSlim(8);
-
-        foreach (var fileInfo in filesToDownload)
-        {
-            NotifyDetail($"下载: {fileInfo.FilePath}", dispatcherQueue);
-
-            var tasks = new List<Task>();
-            foreach (var chunk in fileInfo.Chunks ?? new List<ChunkInfo>())
-            {
-                tasks.Add(DownloadChunkAsync(chunk, gameBuildData.ChunkDownload?.UrlPrefix ?? string.Empty,
-                    chunksDir, semaphore, () =>
-                    {
-                        Interlocked.Increment(ref downloadedChunks);
-                        double progress = totalChunks > 0 ? (double)downloadedChunks / totalChunks * 50 : 0;
-                        NotifyProgress(progress, dispatcherQueue);
-                    }));
-            }
-
-            await Task.WhenAll(tasks);
-
-            // 合并文件
-            string outputPath = Path.Combine(cacheDir, fileInfo.FilePath ?? string.Empty);
-            string? outputDirPath = Path.GetDirectoryName(outputPath);
-            if (!string.IsNullOrEmpty(outputDirPath))
-            {
-                Directory.CreateDirectory(outputDirPath);
-            }
-
-            await MergeFileAsync(fileInfo, chunksDir, outputPath);
-            string? expectedChecksum = fileInfo.CheckSum;
-            if (string.IsNullOrWhiteSpace(expectedChecksum))
-                throw new InvalidDataException($"转服资源缺少校验值: {fileInfo.FilePath}");
-
-            string actualChecksum = await CalculateFileChecksumAsync(outputPath);
-            if (!string.Equals(actualChecksum, expectedChecksum, StringComparison.OrdinalIgnoreCase))
-            {
-                File.Delete(outputPath);
-                throw new InvalidDataException($"转服资源校验失败: {fileInfo.FilePath}");
-            }
-
-            string relativePath = fileInfo.FilePath ?? string.Empty;
-            downloadedFiles.Add(relativePath);
-            fileChecksums[relativePath] = actualChecksum;
-        }
-
-        // 保存缓存信息
-        var cacheInfo = new ServerSwitchCacheInfo
-        {
-            Version = version,
-            Region = targetRegion == ServerRegionType.CN ? "CN" : "OS",
-            CachedTime = DateTime.Now,
-            Files = downloadedFiles,
-            FileChecksums = fileChecksums
-        };
-
-        string cacheInfoPath = Path.Combine(cacheDir, "cache_info.json");
-        string json = JsonSerializer.Serialize(cacheInfo, AppJsonSerializerContext.Default.ServerSwitchCacheInfo);
-        await File.WriteAllTextAsync(cacheInfoPath, json);
-
-        // 清理chunks目录
-        try
-        {
-            if (Directory.Exists(chunksDir))
-            {
-                Directory.Delete(chunksDir, true);
-            }
-        }
-        catch (Exception ex)
-        {
-            LogService.Debug($"清理chunks目录失败: {ex.Message}");
-        }
-
-        NotifyDetail("资源下载完成", dispatcherQueue);
-    }
-
-    /// <summary>
-    /// 筛选需要下载的文件
-    /// </summary>
-    private List<FileChunkInfo> FilterFilesToDownload(List<FileChunkInfo> allFiles, ServerRegionType targetRegion)
-    {
-        var result = new List<FileChunkInfo>();
-        string dataFolder = targetRegion == ServerRegionType.CN ? CN_DATA_FOLDER : OS_DATA_FOLDER;
-        string targetExe = targetRegion == ServerRegionType.CN ? CN_EXE : OS_EXE;
-
-        // 优化: 预构建 Data 文件 HashSet，O(1) 查找替代 O(n*m) 嵌套循环
-        var dataFileSet = new HashSet<string>(FilesToReplace.Length, StringComparer.OrdinalIgnoreCase);
-        foreach (var df in FilesToReplace)
-            dataFileSet.Add(Path.Combine(dataFolder, df));
-
-        foreach (var file in allFiles)
-        {
-            if (string.IsNullOrEmpty(file.FilePath)) continue;
-
-            string normalizedPath = file.FilePath.Replace("/", "\\");
-
-            if (RootFileSet.Contains(normalizedPath)
-                || dataFileSet.Contains(normalizedPath)
-                || normalizedPath.Equals(targetExe, StringComparison.OrdinalIgnoreCase))
-            {
-                result.Add(file);
-            }
-        }
-
-        return result;
-    }
-
-    private async Task DownloadChunkAsync(ChunkInfo chunk, string urlPrefix, string chunksDir,
-        SemaphoreSlim semaphore, Action onCompleted)
-    {
-        if (chunk == null) return;
-
-        await semaphore.WaitAsync();
-        try
-        {
-
-            string chunkPath = Path.Combine(chunksDir, chunk.ChunkId ?? string.Empty);
-
-            // 检查是否已存在且有效
-            if (File.Exists(chunkPath) && new FileInfo(chunkPath).Length == chunk.CompressedSize)
-            {
-                onCompleted?.Invoke();
-                return;
-            }
-
-            await _apiService.DownloadChunkToFileAsync(urlPrefix, chunk.ChunkId ?? string.Empty, chunkPath);
-            onCompleted?.Invoke();
-        }
-        finally
-        {
-            semaphore.Release();
-        }
-    }
-
-    private async Task MergeFileAsync(FileChunkInfo fileInfo, string chunksDir, string outputPath)
-    {
-        using var outputStream = new FileStream(outputPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
-        foreach (var chunk in fileInfo.Chunks ?? new List<ChunkInfo>())
-        {
-            string chunkPath = Path.Combine(chunksDir, chunk.ChunkId ?? string.Empty);
-            if (File.Exists(chunkPath))
-            {
-                // 流式解压：直接从文件流解压到输出流，避免在内存中保留完整数据
-                await using var chunkStream = new FileStream(chunkPath, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, true);
-                await _manifestParser.DecompressZstdToStreamAsync(chunkStream, outputStream);
-            }
-        }
-    }
+    #region File Replacement
 
     /// <summary>
     /// 替换文件

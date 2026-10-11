@@ -17,7 +17,6 @@ public class ApiService
     // 共享 SocketsHttpHandler — 全局连接池，避免 socket 泄漏
     private static readonly SocketsHttpHandler SharedHandler = new()
     {
-        Proxy = LauncherHttpProxy.Shared,
         MaxConnectionsPerServer = 6,
         PooledConnectionLifetime = TimeSpan.FromMinutes(10),
         PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
@@ -258,12 +257,13 @@ public class ApiService
         return result;
     }
 
-    public async Task<byte[]> DownloadManifestAsync(string urlPrefix, string manifestId)
+    public async Task<byte[]> DownloadManifestAsync(string urlPrefix, string manifestId, CancellationToken ct = default)
     {
         string url = $"{urlPrefix}/{manifestId}";
 
         using HttpClient httpClient = CreateDownloadClient();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromMinutes(5));
         using HttpResponseMessage response = await httpClient.GetAsync(url, cts.Token);
         response.EnsureSuccessStatusCode();
 
@@ -273,19 +273,20 @@ public class ApiService
     /// <summary>
     /// 流式下载Chunk，直接写入文件，避免在内存中缓冲整个响应
     /// </summary>
-    public async Task DownloadChunkToFileAsync(string urlPrefix, string chunkId, string filePath)
+    public async Task DownloadChunkToFileAsync(string urlPrefix, string chunkId, string filePath, CancellationToken ct = default)
     {
         string url = $"{urlPrefix}/{chunkId}";
 
         using HttpClient httpClient = CreateDownloadClient();
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromMinutes(10));
         using HttpResponseMessage response =
             await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cts.Token);
         response.EnsureSuccessStatusCode();
 
-        await using var contentStream = await response.Content.ReadAsStreamAsync();
+        await using var contentStream = await response.Content.ReadAsStreamAsync(cts.Token);
         await using var fileStream =
             new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
-        await contentStream.CopyToAsync(fileStream);
+        await contentStream.CopyToAsync(fileStream, cts.Token);
     }
 }

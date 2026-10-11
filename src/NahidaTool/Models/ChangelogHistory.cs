@@ -21,6 +21,7 @@ internal static class ChangelogHistory
     // 保留各版本原有日志，不根据提交标题补写或合并重复内容。
     private static readonly (string Version, string ResourceKey, string Commit)[] Releases =
     [
+        ("0.1.8", "Changelog_History018", "56aca9fdad942f282a7c7051b9bb041c69fbaf9e"),
         ("0.1.7", "Changelog_History017", string.Empty),
         ("0.1.6", "Changelog_History016", "0b272061242eb689409794895a883cdd3282f2c3"),
         ("0.1.5", "Changelog_History015", "a7008f07887821aaf7e13f5108f9183d146f944e"),

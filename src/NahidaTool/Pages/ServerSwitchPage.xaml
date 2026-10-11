@@ -31,8 +31,18 @@
 
                     <StackPanel Grid.Column="0" Spacing="6">
                         <TextBlock Text="{x:Bind models:Lang.ServerSwitchPage_CurrentServer}" FontSize="14" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="CurrentServerText" Text="{x:Bind models:Lang.ServerSwitchPage_Detecting}"
-                                   FontSize="16" FontWeight="Medium" Foreground="{StaticResource GenshinPrimaryBrush}"/>
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ProgressRing x:Name="DetectionProgress" Width="18" Height="18"
+                                          IsActive="False" Visibility="Collapsed"
+                                          AutomationProperties.Name="{x:Bind models:Lang.ServerSwitchPage_Detecting}"/>
+                            <TextBlock x:Name="CurrentServerText" Grid.Column="1" Text="{x:Bind models:Lang.ServerSwitchPage_NotSelectedPath}"
+                                       FontSize="16" FontWeight="Medium" TextWrapping="Wrap"
+                                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                        </Grid>
                     </StackPanel>
 
                     <Button x:Name="DetectButton" Grid.Column="1" Click="DetectButton_Click"
@@ -105,12 +115,21 @@
             <!-- 提示 -->
             <Border Background="#25FFC107" CornerRadius="6" Padding="16,14"
                     BorderBrush="#40FFC107" BorderThickness="1">
-                <StackPanel Orientation="Horizontal" Spacing="12">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
                     <FontIcon Glyph="&#xE946;" FontSize="16"
                               Foreground="#FFC107" VerticalAlignment="Top" Margin="0,2,0,0"/>
-                    <TextBlock Text="{x:Bind models:Lang.ServerSwitchPage_Warning}"
-                               FontSize="13" TextWrapping="Wrap"/>
-                </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="8">
+                        <TextBlock Text="{x:Bind models:Lang.ServerSwitchPage_Warning}"
+                                   FontSize="13" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="DownloadSizeText"
+                                   Text="{x:Bind models:Lang.ServerSwitchPage_DownloadSizePending}"
+                                   FontSize="13" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
             </Border>
 
             <!-- 进度卡片 -->

@@ -146,13 +146,29 @@
   <data name="ServerSwitchPage_Description" xml:space="preserve"><value>Switch game client between CN and OS server</value></data>
   <data name="ServerSwitchPage_CurrentServer" xml:space="preserve"><value>Current Server</value></data>
   <data name="ServerSwitchPage_Detecting" xml:space="preserve"><value>Detecting...</value></data>
+  <data name="ServerSwitchPage_DetectionTimeout" xml:space="preserve"><value>Detection timed out. Check that the game directory is accessible, then try again.</value></data>
+  <data name="ServerSwitchPage_DetectionFailed" xml:space="preserve"><value>Could not detect the client. Try again or locate the game again.</value></data>
+  <data name="GameInstallation_DirectoryMissing" xml:space="preserve"><value>The game directory was not found. Locate the game on the home page first.</value></data>
+  <data name="GameInstallation_DataMissing" xml:space="preserve"><value>Game data was not found. Select the full game installation directory.</value></data>
+  <data name="GameInstallation_MetadataMissing" xml:space="preserve"><value>APMConfig.json is missing. Repair the game files and detect again.</value></data>
+  <data name="GameInstallation_MetadataInvalid" xml:space="preserve"><value>The client configuration is invalid. Repair the game files and detect again.</value></data>
+  <data name="GameInstallation_MetadataUnreadable" xml:space="preserve"><value>Could not read the client configuration. Check file permissions and detect again.</value></data>
+  <data name="GameInstallation_RegionUnknown" xml:space="preserve"><value>The client region could not be identified. Repair the configuration or locate the game again.</value></data>
+  <data name="GameInstallation_RegionMismatch" xml:space="preserve"><value>The client region does not match its data directory. Repair the game files first.</value></data>
+  <data name="GameInstallation_AmbiguousInstallation" xml:space="preserve"><value>Both client regions are present and the active client is ambiguous. Locate the game again.</value></data>
+  <data name="GameInstallation_VersionMissing" xml:space="preserve"><value>APMConfig.json has no valid client version. Repair the game files and detect again.</value></data>
   <data name="ServerSwitchPage_ReDetect" xml:space="preserve"><value>Re-detect</value></data>
   <data name="ServerSwitchPage_SelectTargetServer" xml:space="preserve"><value>Select Target Server</value></data>
   <data name="ServerSwitchPage_CN" xml:space="preserve"><value>CN</value></data>
   <data name="ServerSwitchPage_CN_Short" xml:space="preserve"><value>CN</value></data>
   <data name="ServerSwitchPage_OS" xml:space="preserve"><value>OS</value></data>
   <data name="ServerSwitchPage_OS_Short" xml:space="preserve"><value>OS</value></data>
-  <data name="ServerSwitchPage_Warning" xml:space="preserve"><value>Please make sure the game is completely closed before switching. First time switch requires about 500MB download.</value></data>
+  <data name="ServerSwitchPage_Warning" xml:space="preserve"><value>Close the game before switching. Do not close this tool during the switch.</value></data>
+  <data name="ServerSwitchPage_DownloadSizePending" xml:space="preserve"><value>Detect the client to calculate the required resource download.</value></data>
+  <data name="ServerSwitchPage_DownloadSizeCalculating" xml:space="preserve"><value>Calculating resource download size…</value></data>
+  <data name="ServerSwitchPage_DownloadSizeCached" xml:space="preserve"><value>Valid resources are cached. No download is needed.</value></data>
+  <data name="ServerSwitchPage_DownloadSize" xml:space="preserve"><value>Required resource download: {0}</value></data>
+  <data name="ServerSwitchPage_DownloadSizeUnavailable" xml:space="preserve"><value>Download size is unavailable. Re-detect to retry.</value></data>
   <data name="ServerSwitchPage_Preparing" xml:space="preserve"><value>Preparing...</value></data>
   <data name="ServerSwitchPage_NotSelectedPath" xml:space="preserve"><value>Game path not selected</value></data>
   <data name="ServerSwitchPage_CN_Display" xml:space="preserve"><value>CN</value></data>
@@ -161,8 +177,8 @@
   <data name="ServerSwitchPage_AlreadyCN" xml:space="preserve"><value>Game is already on CN server</value></data>
   <data name="ServerSwitchPage_AlreadyOS" xml:space="preserve"><value>Game is already on OS server</value></data>
   <data name="ServerSwitchPage_ConfirmSwitch" xml:space="preserve"><value>Confirm Switch</value></data>
-  <data name="ServerSwitchPage_ConfirmSwitchToCN" xml:space="preserve"><value>Switch from OS to CN server?&#xA;&#xA;Current version: {0}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching&#xA;- First time switch requires about 100MB download</value></data>
-  <data name="ServerSwitchPage_ConfirmSwitchToOS" xml:space="preserve"><value>Switch from CN to OS server?&#xA;&#xA;Current version: {0}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching&#xA;- First time switch requires about 100MB download</value></data>
+  <data name="ServerSwitchPage_ConfirmSwitchToCN" xml:space="preserve"><value>Switch from OS to CN server?&#xA;&#xA;Current version: {0}&#xA;{1}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching</value></data>
+  <data name="ServerSwitchPage_ConfirmSwitchToOS" xml:space="preserve"><value>Switch from CN to OS server?&#xA;&#xA;Current version: {0}&#xA;{1}&#xA;&#xA;Note:&#xA;- Please close the game first&#xA;- Do not close this tool during switching</value></data>
   <data name="ServerSwitchPage_SwitchComplete" xml:space="preserve"><value>Switch Complete</value></data>
   <data name="ServerSwitchPage_SwitchCompleteMessage" xml:space="preserve"><value>Game server switched successfully!&#xA;&#xA;You can now launch the game.</value></data>
   <data name="ServerSwitchPage_SwitchFailed" xml:space="preserve"><value>Switch Failed</value></data>
@@ -367,42 +383,6 @@
 · Added private-server version recommendations and improved download pausing, resumption, progress, and install-path detection.
 · Improved server switching with MD5 verification of cached resources, transactional replacement, and rollback on failure.
 · Moved download settings to the home page and added 7.x RSA resources and a release-package SHA-256 generation script.</value></data>
-  <data name="Changelog_HistoryFeatureTitle" xml:space="preserve">
-    <value>Version history</value>
-  </data>
-  <data name="Changelog_HistoryFeatureDescription" xml:space="preserve">
-    <value>Expand or collapse archived release notes by version, in Chinese or English, even when offline.</value>
-  </data>
-  <data name="Changelog_CompatibilityTitle" xml:space="preserve">
-    <value>Older Windows 10 compatibility</value>
-  </data>
-  <data name="Changelog_CompatibilityDescription" xml:space="preserve">
-    <value>Keep .NET 10 with an adjusted CET compatibility flag for affected older Windows 10 systems, and include missing pages and built-in assets in published packages.</value>
-  </data>
-  <data name="Changelog_DialogTitle" xml:space="preserve">
-    <value>Acrylic dialogs and settings</value>
-  </data>
-  <data name="Changelog_DialogDescription" xml:space="preserve">
-    <value>Unify acrylic dialogs; correct switch-server confirmation and cancellation, uninstall placement, alignment and top spacing; prevent text from jumping when settings open.</value>
-  </data>
-  <data name="Changelog_BackgroundTitle" xml:space="preserve">
-    <value>High-quality backgrounds</value>
-  </data>
-  <data name="Changelog_BackgroundDescription" xml:space="preserve">
-    <value>Use a subtle dark tint outside the home page and keep local acrylic effects. Resize large images to the display's physical pixels to reduce jagged fine lines and adapt to DPI changes.</value>
-  </data>
-  <data name="Changelog_ImagePositionTitle" xml:space="preserve">
-    <value>Adjust background composition</value>
-  </data>
-  <data name="Changelog_ImagePositionDescription" xml:space="preserve">
-    <value>Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.</value>
-  </data>
-  <data name="Changelog_ThemeHintTitle" xml:space="preserve">
-    <value>Theme-colored notices</value>
-  </data>
-  <data name="Changelog_ThemeHintDescription" xml:space="preserve">
-    <value>The game-path warning follows the app accent color while keeping readable text in light, dark and high-contrast modes.</value>
-  </data>
   <data name="Changelog_HistoryBundledSource" xml:space="preserve">
     <value>Source: bundled {0} release notes</value>
   </data>
@@ -412,4 +392,53 @@
 · Clearer compatibility guidance: Region and version dialogs show the differences and let you go directly to server conversion or server selection.
 · Launch messages and proxy settings: Improved other launch error messages. Your custom proxy address is kept when Kun is turned off.</value>
   </data>
+  <data name="Changelog_StoryEndpointTitle" xml:space="preserve">
+    <value>New story-server endpoint</value>
+  </data>
+  <data name="Changelog_StoryEndpointDescription" xml:space="preserve">
+    <value>The story server now uses https://game.kunps.cn/ and queries the game version through /api/meta. The command-server address and API stay unchanged.</value>
+  </data>
+  <data name="Changelog_DownloadSizeTitle" xml:space="preserve">
+    <value>Dynamic server-switch download size</value>
+  </data>
+  <data name="Changelog_DownloadSizeDescription" xml:space="preserve">
+    <value>Calculate the required download from the installed version and target region, counting shared chunks once. The page and confirmation dialog show the same size; valid caches need no download.</value>
+  </data>
+  <data name="Changelog_ClientDetectionTitle" xml:space="preserve">
+    <value>More reliable client detection</value>
+  </data>
+  <data name="Changelog_ClientDetectionDescription" xml:space="preserve">
+    <value>Read the region and version only from client files and APMConfig.json, with timeouts, clear errors, and protection against stale requests. Synchronize the region after a successful switch.</value>
+  </data>
+  <data name="Changelog_TunProxyTitle" xml:space="preserve">
+    <value>Improved VPN / TUN proxy compatibility</value>
+  </data>
+  <data name="Changelog_TunProxyDescription" xml:space="preserve">
+    <value>Identify game requests by their TLS server name. Launcher APIs are no longer forced through the game proxy, and other HTTPS traffic stays end-to-end.</value>
+  </data>
+  <data name="Changelog_VersionCheckTitle" xml:space="preserve">
+    <value>More accurate version checks</value>
+  </data>
+  <data name="Changelog_VersionCheckDescription" xml:space="preserve">
+    <value>Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.</value>
+  </data>
+  <data name="Changelog_TransferFlowTitle" xml:space="preserve">
+    <value>Improved transfers and progress logs</value>
+  </data>
+  <data name="Changelog_TransferFlowDescription" xml:space="preserve">
+    <value>Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.</value>
+  </data>
+  <data name="Changelog_SurpriseTitle" xml:space="preserve">
+    <value>A little surprise</value>
+  </data>
+  <data name="Changelog_SurpriseDescription" xml:space="preserve">
+    <value>A little surprise is waiting for you to discover.</value>
+  </data>
+  <!-- ChangelogDialog.xaml @ 56aca9fdad942f282a7c7051b9bb041c69fbaf9e -->
+  <data name="Changelog_History018" xml:space="preserve"><value>· Version history: Expand or collapse archived release notes by version, in Chinese or English, even when offline.
+· Adjust background composition: Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.
+· Older Windows 10 compatibility: Keep .NET 10 with an adjusted CET compatibility flag for affected older Windows 10 systems, and include missing pages and built-in assets in published packages.
+· Acrylic dialogs and settings: Unify acrylic dialogs; correct switch-server confirmation and cancellation, uninstall placement, alignment and top spacing; prevent text from jumping when settings open.
+· High-quality backgrounds: Use a subtle dark tint outside the home page and keep local acrylic effects. Resize large images to the display's physical pixels to reduce jagged fine lines and adapt to DPI changes.
+· Theme-colored notices: The game-path warning follows the app accent color while keeping readable text in light, dark and high-contrast modes.</value></data>
 </root>

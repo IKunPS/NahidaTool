@@ -32,7 +32,8 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
     {
         try
         {
-            string sourceVersion = ReadInstalledVersion(_settings.GameInstallPath, _settings.GameVersion);
+            var installation = await GameInstallationReader.ReadAsync(_settings.GameInstallPath);
+            string sourceVersion = installation.Version;
             CurrentVersionText.Text = sourceVersion;
             _update = await new LdiffPatchService(_apiService)
                 .GetAvailableUpdateAsync(sourceVersion, _settings.VoiceLanguage);
@@ -52,6 +53,12 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
                 : Lang.Ldiff_OfficialPackageRequired;
             IsPrimaryButtonEnabled = true;
             UpdateProgressBar.IsIndeterminate = false;
+        }
+        catch (GameInstallationDetectionException ex)
+        {
+            StatusText.Text = Lang.GameInstallationIssueMessage(ex.Issue);
+            UpdateProgressBar.IsIndeterminate = false;
+            LogService.Warn($"LDiff 客户端检测失败: {ex.Issue}");
         }
         catch (LdiffPrerequisiteException ex)
         {
@@ -164,20 +171,6 @@ public sealed partial class LdiffUpdateDialog : ContentDialog
         _closeAfterCancellation = true;
         StatusText.Text = Lang.Ldiff_Cancelling;
         _cts?.Cancel();
-    }
-
-    private static string ReadInstalledVersion(string gameRoot, string fallback)
-    {
-        string configPath = Path.Combine(gameRoot, "config.ini");
-        if (File.Exists(configPath))
-        {
-            foreach (string line in File.ReadLines(configPath))
-            {
-                if (line.StartsWith("game_version=", StringComparison.OrdinalIgnoreCase))
-                    return line["game_version=".Length..].Trim();
-            }
-        }
-        return fallback;
     }
 
     private static string FormatSize(long bytes)

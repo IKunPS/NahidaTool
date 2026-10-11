@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using NahidaTool.Models;
@@ -151,6 +150,7 @@ public static class GameLauncherService
     public static async Task<Process?> StartGameAsync(ServerRegionType region, string? installPath = null)
     {
         var settings = AppSettings.Load();
+        string gameVersion = settings.GameVersion;
         var path = installPath ?? settings.GameInstallPath;
 
         if (string.IsNullOrEmpty(path))
@@ -177,33 +177,25 @@ public static class GameLauncherService
                 throw new KunClientRegionException(File.Exists(Path.Combine(path, CNExeName))
                     ? ServerRegionType.CN : null);
 
-            // The normal region detector accepts either data folder. For Kun, read the
-            // metadata belonging to the exact international executable we will launch.
-            string apmPath = Path.Combine(path, "GenshinImpact_Data", "StreamingAssets", "APMConfig.json");
-            APMConfig? apmConfig;
+            InstalledGameInfo installation;
             try
             {
-                string apmJson = await File.ReadAllTextAsync(apmPath);
-                apmConfig = JsonSerializer.Deserialize(apmJson, AppJsonSerializerContext.Default.APMConfig);
+                installation = await GameInstallationReader.ReadAsync(path);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            catch (GameInstallationDetectionException ex)
             {
-                LogService.Warn($"Kun 客户端信息读取失败: {ex.GetType().Name}");
+                LogService.Warn($"Kun 客户端信息读取失败: {ex.Issue}");
                 throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed, ex);
             }
-            if (apmConfig == null)
-                throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed);
-            if (!apmConfig.IsOS)
-                throw new KunClientRegionException(apmConfig.IsCN ? ServerRegionType.CN : null);
-            string installedVersion = apmConfig.GetVersionNumber();
-            if (string.IsNullOrWhiteSpace(installedVersion))
-                throw new InvalidOperationException(Lang.HomePage_KunClientDetectionFailed);
+            if (installation.Region != ServerRegionType.OS)
+                throw new KunClientRegionException(installation.Region);
+            gameVersion = installation.Version;
 
             string? serverVersion = await PrivateServerService.GetServerVersionAsync(settings);
             if (string.IsNullOrWhiteSpace(serverVersion))
                 throw new InvalidOperationException(Lang.HomePage_KunVersionUnavailable);
-            if (!string.Equals(installedVersion.Trim(), serverVersion, StringComparison.OrdinalIgnoreCase))
-                throw new KunVersionMismatchException(installedVersion.Trim(), serverVersion);
+            if (!string.Equals(gameVersion, serverVersion, StringComparison.OrdinalIgnoreCase))
+                throw new KunVersionMismatchException(gameVersion, serverVersion);
         }
 
         // 确定启动的 exe 路径（两个区域都试，不因切服而找不到已安装的游戏）
@@ -229,23 +221,23 @@ public static class GameLauncherService
 
         bool useRsa = settings.EnableRSA;
         bool useHookRsa = useRsa && settings.EnableHookRSA;
-        if (useRsa && RsaService.FindMatchingRsaDll(settings.GameVersion) == null)
+        if (useRsa && RsaService.FindMatchingRsaDll(gameVersion) == null)
         {
             throw new InvalidOperationException(string.Format(
                 Lang.HomePage_RsaPatchUnavailable,
-                string.IsNullOrWhiteSpace(settings.GameVersion)
+                string.IsNullOrWhiteSpace(gameVersion)
                     ? Lang.DownloadPage_UnknownVersion
-                    : settings.GameVersion));
+                    : gameVersion));
         }
 
         if (useRsa && !useHookRsa)
         {
             LogService.Info("RSA: 正在部署 RSA DLL 到游戏目录...");
-            if (!RsaService.CopyRsaToGameDirectory(settings.GameVersion, path))
+            if (!RsaService.CopyRsaToGameDirectory(gameVersion, path))
             {
                 throw new InvalidOperationException(string.Format(
                     Lang.HomePage_RsaPatchUnavailable,
-                    settings.GameVersion));
+                    gameVersion));
             }
         }
 
@@ -326,7 +318,7 @@ public static class GameLauncherService
                     {
                         try
                         {
-                            await RsaService.InjectHookRsaAsync(hookTarget, settings.GameVersion);
+                            await RsaService.InjectHookRsaAsync(hookTarget, gameVersion);
                         }
                         catch (Exception ex)
                         {

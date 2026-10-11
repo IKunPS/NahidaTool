@@ -40,6 +40,7 @@ namespace NahidaTool.Eavesdrop
 
         public static List<string> Overrides { get; }
         public static HashSet<string> InterceptHosts { get; }
+        public static HashSet<string> PassthroughHosts { get; }
         public static bool IsRunning { get; private set; }
         public static Certifier Certifier { get; set; }
 
@@ -52,6 +53,7 @@ namespace NahidaTool.Eavesdrop
 
             Overrides = new List<string>();
             InterceptHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            PassthroughHosts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             Certifier = new Certifier("Eavesdrop", "Eavesdrop Root Certificate Authority");
         }
 
