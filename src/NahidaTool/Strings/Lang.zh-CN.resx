@@ -427,12 +427,6 @@
   <data name="Changelog_TransferFlowDescription" xml:space="preserve">
     <value>资源预览与实际下载共用清单，共享块只下载一次，完善请求取消处理；日志分批刷新，最多显示 200 条。</value>
   </data>
-  <data name="Changelog_SurpriseTitle" xml:space="preserve">
-    <value>小惊喜</value>
-  </data>
-  <data name="Changelog_SurpriseDescription" xml:space="preserve">
-    <value>还有一点小惊喜，留给你发现。</value>
-  </data>
   <!-- ChangelogDialog.xaml @ 56aca9fdad942f282a7c7051b9bb041c69fbaf9e -->
   <data name="Changelog_History018" xml:space="preserve"><value>· 历史更新日志: 按版本展开或收起旧版更新记录，支持中英文显示，离线也能查看。
 · 自定义背景构图: 默认背景和自定义静态图片均可水平、垂直移动，支持构图预览、自动保存和一键居中。

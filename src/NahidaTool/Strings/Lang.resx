@@ -428,12 +428,6 @@
   <data name="Changelog_TransferFlowDescription" xml:space="preserve">
     <value>Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.</value>
   </data>
-  <data name="Changelog_SurpriseTitle" xml:space="preserve">
-    <value>A little surprise</value>
-  </data>
-  <data name="Changelog_SurpriseDescription" xml:space="preserve">
-    <value>A little surprise is waiting for you to discover.</value>
-  </data>
   <!-- ChangelogDialog.xaml @ 56aca9fdad942f282a7c7051b9bb041c69fbaf9e -->
   <data name="Changelog_History018" xml:space="preserve"><value>· Version history: Expand or collapse archived release notes by version, in Chinese or English, even when offline.
 · Adjust background composition: Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.

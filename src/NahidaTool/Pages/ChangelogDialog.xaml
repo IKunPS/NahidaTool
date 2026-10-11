@@ -139,21 +139,6 @@
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>
-                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE734;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_SurpriseTitle}"
-                                           Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_SurpriseDescription}"
-                                           Style="{StaticResource DialogBodyStyle}"/>
-                            </StackPanel>
-                        </Grid>
                     </StackPanel>
                 </Border>
             </StackPanel>

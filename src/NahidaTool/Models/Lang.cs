@@ -312,8 +312,6 @@ public static class Lang
     public static string Changelog_VersionCheckDescription => _resourceManager.GetString("Changelog_VersionCheckDescription") ?? "Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.";
     public static string Changelog_TransferFlowTitle => _resourceManager.GetString("Changelog_TransferFlowTitle") ?? "Improved transfers and progress logs";
     public static string Changelog_TransferFlowDescription => _resourceManager.GetString("Changelog_TransferFlowDescription") ?? "Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.";
-    public static string Changelog_SurpriseTitle => _resourceManager.GetString("Changelog_SurpriseTitle") ?? "A little surprise";
-    public static string Changelog_SurpriseDescription => _resourceManager.GetString("Changelog_SurpriseDescription") ?? "A little surprise is waiting for you to discover.";
     public static string Changelog_HistoryBundledSource => _resourceManager.GetString("Changelog_HistoryBundledSource") ?? "Source: bundled {0} release notes";
 
     public static string Changelog_History => _resourceManager.GetString("Changelog_History") ?? "Version history";
