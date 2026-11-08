@@ -51,9 +51,9 @@
                         <FontIcon Glyph="&#xE774;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                         <StackPanel Grid.Column="1" Spacing="5">
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_StoryEndpointTitle}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_UnifiedKunTitle}"
                                        Style="{StaticResource DialogItemTitleStyle}"/>
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_StoryEndpointDescription}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_UnifiedKunDescription}"
                                        Style="{StaticResource DialogBodyStyle}"/>
                         </StackPanel>
                     </Grid>
@@ -67,9 +67,9 @@
                         <FontIcon Glyph="&#xE118;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
                                   Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                         <StackPanel Grid.Column="1" Spacing="5">
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizeTitle}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizePreloadTitle}"
                                        Style="{StaticResource DialogItemTitleStyle}"/>
-                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizeDescription}"
+                            <TextBlock Text="{x:Bind models:Lang.Changelog_DownloadSizePreloadDescription}"
                                        Style="{StaticResource DialogBodyStyle}"/>
                         </StackPanel>
                     </Grid>
@@ -88,54 +88,9 @@
                             <FontIcon Glyph="&#xE73E;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
                                       Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_ClientDetectionTitle}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_SupportedVersionsTitle}"
                                            Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_ClientDetectionDescription}"
-                                           Style="{StaticResource DialogBodyStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE774;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_TunProxyTitle}"
-                                           Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_TunProxyDescription}"
-                                           Style="{StaticResource DialogBodyStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE8AB;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_VersionCheckTitle}"
-                                           Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_VersionCheckDescription}"
-                                           Style="{StaticResource DialogBodyStyle}"/>
-                            </StackPanel>
-                        </Grid>
-                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
-                        <Grid ColumnSpacing="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <FontIcon Glyph="&#xE713;" FontSize="18" VerticalAlignment="Top" Margin="0,2,0,0"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"/>
-                            <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_TransferFlowTitle}"
-                                           Style="{StaticResource DialogItemTitleStyle}"/>
-                                <TextBlock Text="{x:Bind models:Lang.Changelog_TransferFlowDescription}"
+                                <TextBlock Text="{x:Bind models:Lang.Changelog_SupportedVersionsDescription}"
                                            Style="{StaticResource DialogBodyStyle}"/>
                             </StackPanel>
                         </Grid>

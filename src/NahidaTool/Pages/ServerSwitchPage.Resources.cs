@@ -37,8 +37,7 @@ public sealed partial class ServerSwitchPage
         {
             var target = installed.Region == ServerRegionType.CN ? ServerRegionType.OS : ServerRegionType.CN;
             CancellationToken token = request.Token;
-            long bytes = await Task.Run(() =>
-                _switchService.GetRequiredDownloadSizeAsync(target, installed.Version, token), token).WaitAsync(token);
+            long bytes = await _switchService.GetRequiredDownloadSizeAsync(target, installed.Version, token);
             if (IsCurrent())
                 _requiredDownloadBytes = bytes;
         }
@@ -47,11 +46,10 @@ public sealed partial class ServerSwitchPage
             if (IsCurrent())
                 _downloadSizeFailed = true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (IsCurrent())
                 _downloadSizeFailed = true;
-            LogService.Warn($"计算转服下载大小失败: {ex.GetType().Name}");
         }
         finally
         {

@@ -35,8 +35,6 @@ public class AppSettings
 
     public bool EnableKun { get; set; } = true;
 
-    public KunServerType KunServer { get; set; } = KunServerType.Story;
-
     public string ProxyAddress { get; set; } = "https://127.0.0.1:443";
 
     public bool StartGameWithCMD { get; set; } // TODO：在主页设置里实现cmd启动游戏

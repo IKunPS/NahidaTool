@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace NahidaTool.Models;
 
-/// <summary>剧情服 /api/meta 的版本查询响应。</summary>
+/// <summary>Kun 统一入口 /api/meta 的版本查询响应。</summary>
 public sealed class KunServerMetadataResponse
 {
     [JsonPropertyName("ok")]
@@ -14,7 +14,7 @@ public sealed class KunServerMetadataResponse
 
 public sealed class KunServerMetadata
 {
-    // "version" is the website/SDK build, not the supported game client.
+    // "version" 是网站/SDK 构建号；gameversion 可列出多个版本，如 7.1/7.0。
     [JsonPropertyName("gameversion")]
     public string? GameVersion { get; set; }
 }

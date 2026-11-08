@@ -201,6 +201,7 @@ public partial class App : Application
             _window = new MainWindow();
             MainWindow = _window;
             _window.Activate();
+            ServerSwitchService.Instance.StartDownloadSizePreload();
         }
         catch (Exception ex)
         {

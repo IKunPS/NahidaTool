@@ -23,7 +23,8 @@ public sealed partial class KunCompatibilityDialog : ContentDialog
             CurrentLabelText.Text = Lang.HomePage_KunClientVersion;
             RequiredLabelText.Text = Lang.HomePage_KunRequiredVersion;
             ActionText.Text = Lang.HomePage_KunMismatchAction;
-            PrimaryButtonText = Lang.HomePage_KunChooseServer;
+            PrimaryButtonText = string.Empty;
+            DefaultButton = ContentDialogButton.Close;
         }
         else
         {

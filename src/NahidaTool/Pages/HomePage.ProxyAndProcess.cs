@@ -102,34 +102,18 @@ public sealed partial class HomePage
 
     private void RefreshProxyInput()
     {
-        bool showProxy = _lastSettings.EnableProxy;
+        bool showProxy = _lastSettings.EnableProxy && !KunServerConfig.IsEnabled(_lastSettings);
         ProxyCard.Visibility = showProxy ? Visibility.Visible : Visibility.Collapsed;
+        ProxyErrorText.Visibility = Visibility.Collapsed;
 
         if (showProxy)
         {
-            ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
-            bool kunMode = KunServerConfig.IsEnabled(_lastSettings);
-            ProxyAddressLabel.Text = kunMode ? Lang.HomePage_KunServerLabel : Lang.HomePage_ProxyAddress;
-            ProxyAddressTextBox.Visibility = kunMode ? Visibility.Collapsed : Visibility.Visible;
-            KunServerComboBox.Visibility = kunMode ? Visibility.Visible : Visibility.Collapsed;
-            ProxyErrorText.Visibility = Visibility.Collapsed;
+            ProxyStatusText.Text = ProxyService.IsRunning ? Lang.HomePage_ProxyRunning : Lang.HomePage_ProxyNotStarted;
 
             _isUpdatingProxyInput = true;
             try
             {
-                if (kunMode)
-                {
-                    KunServerComboBox.SelectedIndex = _lastSettings.KunServer switch
-                    {
-                        KunServerType.Story => 0,
-                        KunServerType.Command => 1,
-                        _ => -1
-                    };
-                }
-                else
-                {
-                    ProxyAddressTextBox.Text = _lastSettings.ProxyAddress;
-                }
+                ProxyAddressTextBox.Text = _lastSettings.ProxyAddress;
             }
             finally
             {
@@ -140,19 +124,6 @@ public sealed partial class HomePage
 
     private bool _suppressProxyError;
     private bool _isUpdatingProxyInput;
-
-    private void KunServerComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_isUpdatingProxyInput || !KunServerConfig.IsEnabled(_lastSettings) || KunServerComboBox.SelectedIndex is not (0 or 1))
-            return;
-
-        KunServerType server = KunServerComboBox.SelectedIndex switch
-        {
-            0 => KunServerType.Story,
-            _ => KunServerType.Command
-        };
-        _lastSettings = AppSettings.Update(settings => settings.KunServer = server);
-    }
 
     private void ProxyAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {

@@ -107,6 +107,7 @@ public sealed partial class MainWindow : WindowEx
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        ServerSwitchService.Instance.StopDownloadSizePreload();
         DisposeBackground();
         Environment.Exit(0);
     }

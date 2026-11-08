@@ -63,26 +63,21 @@
   <data name="HomePage_ProxyNotStarted" xml:space="preserve"><value>Not Started</value></data>
   <data name="HomePage_ProxyRunning" xml:space="preserve"><value>Running</value></data>
   <data name="HomePage_ProxyAddress" xml:space="preserve"><value>Proxy Address</value></data>
-  <data name="HomePage_KunServerLabel" xml:space="preserve"><value>Kun Server</value></data>
   <data name="HomePage_KunCheckingVersion" xml:space="preserve"><value>Checking version...</value></data>
-  <data name="HomePage_KunStoryServer" xml:space="preserve"><value>Story Server</value></data>
-  <data name="HomePage_KunCommandServer" xml:space="preserve"><value>Command Server</value></data>
   <data name="HomePage_KunProxyFailed" xml:space="preserve"><value>Kun proxy could not start. Game launch was cancelled.</value></data>
   <data name="HomePage_KunProxyMismatch" xml:space="preserve"><value>Kun proxy settings changed during launch. Please try again.</value></data>
-  <data name="HomePage_KunServerInvalid" xml:space="preserve"><value>Select a valid Kun server.</value></data>
   <data name="HomePage_KunOsRequired" xml:space="preserve"><value>Kun mode requires a global client. Switch to the global version first.</value></data>
   <data name="HomePage_KunClientDetectionFailed" xml:space="preserve"><value>Could not read the installed game region or version. Check the game files before trying again.</value></data>
-  <data name="HomePage_KunVersionUnavailable" xml:space="preserve"><value>Could not read the selected Kun server version. Check the server connection and try again.</value></data>
-  <data name="HomePage_KunVersionMismatch" xml:space="preserve"><value>Your global client is version {0}, but the selected Kun server requires {1}. Install or switch to a {1} global client, or choose a Kun server that supports {0}, then try again.</value></data>
+  <data name="HomePage_KunVersionUnavailable" xml:space="preserve"><value>Could not read the game versions supported by Kun. Check the server connection and try again.</value></data>
+  <data name="HomePage_KunVersionMismatch" xml:space="preserve"><value>Your global client is version {0}, but Kun supports {1}. Install a supported global client version, then try again.</value></data>
   <data name="HomePage_KunMismatchTitle" xml:space="preserve"><value>Version mismatch</value></data>
-  <data name="HomePage_KunMismatchSummary" xml:space="preserve"><value>The game was not started. Match the client version to the selected server first.</value></data>
+  <data name="HomePage_KunMismatchSummary" xml:space="preserve"><value>The game was not started. Use a global client version supported by Kun.</value></data>
   <data name="HomePage_KunClientVersion" xml:space="preserve"><value>Global client</value></data>
-  <data name="HomePage_KunRequiredVersion" xml:space="preserve"><value>Server requires</value></data>
-  <data name="HomePage_KunMismatchAction" xml:space="preserve"><value>Install the required global client version, or choose a Kun server that supports your current client.</value></data>
-  <data name="HomePage_KunChooseServer" xml:space="preserve"><value>Choose server</value></data>
+  <data name="HomePage_KunRequiredVersion" xml:space="preserve"><value>Server supports</value></data>
+  <data name="HomePage_KunMismatchAction" xml:space="preserve"><value>Install a global client matching any supported version shown above, then launch the game again.</value></data>
   <data name="HomePage_KunDismiss" xml:space="preserve"><value>Got it</value></data>
   <data name="HomePage_KunRegionTitle" xml:space="preserve"><value>Global client required</value></data>
-  <data name="HomePage_KunRegionSummary" xml:space="preserve"><value>The selected Kun server cannot start with this client.</value></data>
+  <data name="HomePage_KunRegionSummary" xml:space="preserve"><value>Kun mode requires a global client. This client does not meet that requirement.</value></data>
   <data name="HomePage_KunCurrentRegion" xml:space="preserve"><value>Current client</value></data>
   <data name="HomePage_KunRequiredRegion" xml:space="preserve"><value>Kun requires</value></data>
   <data name="HomePage_KunRegionAction" xml:space="preserve"><value>Switch the client to the global version on the Server Switch page, then try again.</value></data>
@@ -392,42 +387,31 @@
 · Clearer compatibility guidance: Region and version dialogs show the differences and let you go directly to server conversion or server selection.
 · Launch messages and proxy settings: Improved other launch error messages. Your custom proxy address is kept when Kun is turned off.</value>
   </data>
-  <data name="Changelog_StoryEndpointTitle" xml:space="preserve">
-    <value>New story-server endpoint</value>
+  <data name="Changelog_UnifiedKunTitle" xml:space="preserve">
+    <value>Unified Kun endpoint</value>
   </data>
-  <data name="Changelog_StoryEndpointDescription" xml:space="preserve">
-    <value>The story server now uses https://game.kunps.cn/ and queries the game version through /api/meta. The command-server address and API stay unchanged.</value>
+  <data name="Changelog_UnifiedKunDescription" xml:space="preserve">
+    <value>Kun now uses https://game.kunps.cn/ for all connections. Server selection and the proxy address card are hidden in Kun mode; your custom proxy address is kept when Kun is turned off.</value>
   </data>
-  <data name="Changelog_DownloadSizeTitle" xml:space="preserve">
-    <value>Dynamic server-switch download size</value>
+  <data name="Changelog_DownloadSizePreloadTitle" xml:space="preserve">
+    <value>Server-switch size preload</value>
   </data>
-  <data name="Changelog_DownloadSizeDescription" xml:space="preserve">
-    <value>Calculate the required download from the installed version and target region, counting shared chunks once. The page and confirmation dialog show the same size; valid caches need no download.</value>
+  <data name="Changelog_DownloadSizePreloadDescription" xml:space="preserve">
+    <value>Calculate the required download in the background after startup and reuse the result on the server-switch page. Leaving the page keeps the calculation running; path or version changes trigger a refresh.</value>
   </data>
-  <data name="Changelog_ClientDetectionTitle" xml:space="preserve">
-    <value>More reliable client detection</value>
+  <data name="Changelog_SupportedVersionsTitle" xml:space="preserve">
+    <value>Multi-version compatibility checks</value>
   </data>
-  <data name="Changelog_ClientDetectionDescription" xml:space="preserve">
-    <value>Read the region and version only from client files and APMConfig.json, with timeouts, clear errors, and protection against stale requests. Synchronize the region after a successful switch.</value>
+  <data name="Changelog_SupportedVersionsDescription" xml:space="preserve">
+    <value>Kun checks the Global client against every game version supported by the server. Version mismatches list all supported versions, and region mismatches can open server switching.</value>
   </data>
-  <data name="Changelog_TunProxyTitle" xml:space="preserve">
-    <value>Improved VPN / TUN proxy compatibility</value>
-  </data>
-  <data name="Changelog_TunProxyDescription" xml:space="preserve">
-    <value>Identify game requests by their TLS server name. Launcher APIs are no longer forced through the game proxy, and other HTTPS traffic stays end-to-end.</value>
-  </data>
-  <data name="Changelog_VersionCheckTitle" xml:space="preserve">
-    <value>More accurate version checks</value>
-  </data>
-  <data name="Changelog_VersionCheckDescription" xml:space="preserve">
-    <value>Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.</value>
-  </data>
-  <data name="Changelog_TransferFlowTitle" xml:space="preserve">
-    <value>Improved transfers and progress logs</value>
-  </data>
-  <data name="Changelog_TransferFlowDescription" xml:space="preserve">
-    <value>Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.</value>
-  </data>
+  <!-- ChangelogDialog.xaml @ b40715cf793d409cd55003b295cf679e1c4088db; v0.1.9 -->
+  <data name="Changelog_History019" xml:space="preserve"><value>· New story-server endpoint: The story server now uses https://game.kunps.cn/ and queries the game version through /api/meta. The command-server address and API stay unchanged.
+· Dynamic server-switch download size: Calculate the required download from the installed version and target region, counting shared chunks once. The page and confirmation dialog show the same size; valid caches need no download.
+· More reliable client detection: Read the region and version only from client files and APMConfig.json, with timeouts, clear errors, and protection against stale requests. Synchronize the region after a successful switch.
+· Improved VPN / TUN proxy compatibility: Identify game requests by their TLS server name. Launcher APIs are no longer forced through the game proxy, and other HTTPS traffic stays end-to-end.
+· More accurate version checks: Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.
+· Improved transfers and progress logs: Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.</value></data>
   <!-- ChangelogDialog.xaml @ 56aca9fdad942f282a7c7051b9bb041c69fbaf9e -->
   <data name="Changelog_History018" xml:space="preserve"><value>· Version history: Expand or collapse archived release notes by version, in Chinese or English, even when offline.
 · Adjust background composition: Move default or custom still backgrounds horizontally and vertically, with a preview, automatic saving and a Center button.

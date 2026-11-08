@@ -59,26 +59,21 @@ public static class Lang
     public static string HomePage_ProxyNotStarted => _resourceManager.GetString("HomePage_ProxyNotStarted") ?? "Not Started";
     public static string HomePage_ProxyRunning => _resourceManager.GetString("HomePage_ProxyRunning") ?? "Running";
     public static string HomePage_ProxyAddress => _resourceManager.GetString("HomePage_ProxyAddress") ?? "Proxy Address";
-    public static string HomePage_KunServerLabel => _resourceManager.GetString("HomePage_KunServerLabel") ?? "Kun Server";
     public static string HomePage_KunCheckingVersion => _resourceManager.GetString("HomePage_KunCheckingVersion") ?? "Checking version...";
-    public static string HomePage_KunStoryServer => _resourceManager.GetString("HomePage_KunStoryServer") ?? "Story Server";
-    public static string HomePage_KunCommandServer => _resourceManager.GetString("HomePage_KunCommandServer") ?? "Command Server";
     public static string HomePage_KunProxyFailed => _resourceManager.GetString("HomePage_KunProxyFailed") ?? "Kun proxy could not start. Game launch was cancelled.";
     public static string HomePage_KunProxyMismatch => _resourceManager.GetString("HomePage_KunProxyMismatch") ?? "Kun proxy settings changed during launch. Please try again.";
-    public static string HomePage_KunServerInvalid => _resourceManager.GetString("HomePage_KunServerInvalid") ?? "Select a valid Kun server.";
     public static string HomePage_KunOsRequired => _resourceManager.GetString("HomePage_KunOsRequired") ?? "Kun mode requires a global client. Switch to the global version first.";
     public static string HomePage_KunClientDetectionFailed => _resourceManager.GetString("HomePage_KunClientDetectionFailed") ?? "Could not read the installed game region or version. Game launch was cancelled.";
-    public static string HomePage_KunVersionUnavailable => _resourceManager.GetString("HomePage_KunVersionUnavailable") ?? "Could not read the selected Kun server version. Check the server connection and try again.";
-    public static string HomePage_KunVersionMismatch => _resourceManager.GetString("HomePage_KunVersionMismatch") ?? "Your global client is version {0}, but the selected Kun server requires {1}. Install or switch to a {1} global client, or choose a Kun server that supports {0}, then try again.";
+    public static string HomePage_KunVersionUnavailable => _resourceManager.GetString("HomePage_KunVersionUnavailable") ?? "Could not read the game versions supported by Kun. Check the server connection and try again.";
+    public static string HomePage_KunVersionMismatch => _resourceManager.GetString("HomePage_KunVersionMismatch") ?? "Your global client is version {0}, but Kun supports {1}. Install a supported global client version, then try again.";
     public static string HomePage_KunMismatchTitle => _resourceManager.GetString("HomePage_KunMismatchTitle") ?? "Version mismatch";
-    public static string HomePage_KunMismatchSummary => _resourceManager.GetString("HomePage_KunMismatchSummary") ?? "The game was not started. Match the client version to the selected server first.";
+    public static string HomePage_KunMismatchSummary => _resourceManager.GetString("HomePage_KunMismatchSummary") ?? "The game was not started. Use a global client version supported by Kun.";
     public static string HomePage_KunClientVersion => _resourceManager.GetString("HomePage_KunClientVersion") ?? "Global client";
-    public static string HomePage_KunRequiredVersion => _resourceManager.GetString("HomePage_KunRequiredVersion") ?? "Server requires";
-    public static string HomePage_KunMismatchAction => _resourceManager.GetString("HomePage_KunMismatchAction") ?? "Install the required global client version, or choose a Kun server that supports your current client.";
-    public static string HomePage_KunChooseServer => _resourceManager.GetString("HomePage_KunChooseServer") ?? "Choose server";
+    public static string HomePage_KunRequiredVersion => _resourceManager.GetString("HomePage_KunRequiredVersion") ?? "Server supports";
+    public static string HomePage_KunMismatchAction => _resourceManager.GetString("HomePage_KunMismatchAction") ?? "Install a global client matching any supported version shown above, then launch the game again.";
     public static string HomePage_KunDismiss => _resourceManager.GetString("HomePage_KunDismiss") ?? "Got it";
     public static string HomePage_KunRegionTitle => _resourceManager.GetString("HomePage_KunRegionTitle") ?? "Global client required";
-    public static string HomePage_KunRegionSummary => _resourceManager.GetString("HomePage_KunRegionSummary") ?? "The selected Kun server cannot start with this client.";
+    public static string HomePage_KunRegionSummary => _resourceManager.GetString("HomePage_KunRegionSummary") ?? "Kun mode requires a global client. This client does not meet that requirement.";
     public static string HomePage_KunCurrentRegion => _resourceManager.GetString("HomePage_KunCurrentRegion") ?? "Current client";
     public static string HomePage_KunRequiredRegion => _resourceManager.GetString("HomePage_KunRequiredRegion") ?? "Kun requires";
     public static string HomePage_KunRegionAction => _resourceManager.GetString("HomePage_KunRegionAction") ?? "Switch the client to the global version on the Server Switch page, then try again.";
@@ -300,18 +295,12 @@ public static class Lang
 
     #region 更新日志
 
-    public static string Changelog_StoryEndpointTitle => _resourceManager.GetString("Changelog_StoryEndpointTitle") ?? "New story-server endpoint";
-    public static string Changelog_StoryEndpointDescription => _resourceManager.GetString("Changelog_StoryEndpointDescription") ?? "The story server now uses https://game.kunps.cn/ and queries the game version through /api/meta. The command-server address and API stay unchanged.";
-    public static string Changelog_DownloadSizeTitle => _resourceManager.GetString("Changelog_DownloadSizeTitle") ?? "Dynamic server-switch download size";
-    public static string Changelog_DownloadSizeDescription => _resourceManager.GetString("Changelog_DownloadSizeDescription") ?? "Calculate the required download from the installed version and target region, counting shared chunks once. The page and confirmation dialog show the same size; valid caches need no download.";
-    public static string Changelog_ClientDetectionTitle => _resourceManager.GetString("Changelog_ClientDetectionTitle") ?? "More reliable client detection";
-    public static string Changelog_ClientDetectionDescription => _resourceManager.GetString("Changelog_ClientDetectionDescription") ?? "Read the region and version only from client files and APMConfig.json, with timeouts, clear errors, and protection against stale requests. Synchronize the region after a successful switch.";
-    public static string Changelog_TunProxyTitle => _resourceManager.GetString("Changelog_TunProxyTitle") ?? "Improved VPN / TUN proxy compatibility";
-    public static string Changelog_TunProxyDescription => _resourceManager.GetString("Changelog_TunProxyDescription") ?? "Identify game requests by their TLS server name. Launcher APIs are no longer forced through the game proxy, and other HTTPS traffic stays end-to-end.";
-    public static string Changelog_VersionCheckTitle => _resourceManager.GetString("Changelog_VersionCheckTitle") ?? "More accurate version checks";
-    public static string Changelog_VersionCheckDescription => _resourceManager.GetString("Changelog_VersionCheckDescription") ?? "Use only the numeric game version, excluding annotations and SDK build identifiers, and normalize its format. Show guidance and block launch when versions do not match.";
-    public static string Changelog_TransferFlowTitle => _resourceManager.GetString("Changelog_TransferFlowTitle") ?? "Improved transfers and progress logs";
-    public static string Changelog_TransferFlowDescription => _resourceManager.GetString("Changelog_TransferFlowDescription") ?? "Use the same resource list for previews and downloads, fetch shared chunks once, and improve request cancellation. Batch log updates and display at most 200 lines.";
+    public static string Changelog_UnifiedKunTitle => _resourceManager.GetString("Changelog_UnifiedKunTitle") ?? "Unified Kun endpoint";
+    public static string Changelog_UnifiedKunDescription => _resourceManager.GetString("Changelog_UnifiedKunDescription") ?? "Kun now uses https://game.kunps.cn/ for all connections. Server selection and the proxy address card are hidden in Kun mode; your custom proxy address is kept when Kun is turned off.";
+    public static string Changelog_DownloadSizePreloadTitle => _resourceManager.GetString("Changelog_DownloadSizePreloadTitle") ?? "Server-switch size preload";
+    public static string Changelog_DownloadSizePreloadDescription => _resourceManager.GetString("Changelog_DownloadSizePreloadDescription") ?? "Calculate the required download in the background after startup and reuse the result on the server-switch page. Leaving the page keeps the calculation running; path or version changes trigger a refresh.";
+    public static string Changelog_SupportedVersionsTitle => _resourceManager.GetString("Changelog_SupportedVersionsTitle") ?? "Multi-version compatibility checks";
+    public static string Changelog_SupportedVersionsDescription => _resourceManager.GetString("Changelog_SupportedVersionsDescription") ?? "Kun checks the Global client against every game version supported by the server. Version mismatches list all supported versions, and region mismatches can open server switching.";
     public static string Changelog_HistoryBundledSource => _resourceManager.GetString("Changelog_HistoryBundledSource") ?? "Source: bundled {0} release notes";
 
     public static string Changelog_History => _resourceManager.GetString("Changelog_History") ?? "Version history";

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using NahidaTool.Models;
 
 namespace NahidaTool.Models.Service;
@@ -6,12 +8,12 @@ namespace NahidaTool.Models.Service;
 public sealed class KunVersionMismatchException : InvalidOperationException
 {
     public string ClientVersion { get; }
-    public string ServerVersion { get; }
+    public IReadOnlyList<string> SupportedVersions { get; }
 
-    public KunVersionMismatchException(string clientVersion, string serverVersion)
-        : base(string.Format(Lang.HomePage_KunVersionMismatch, clientVersion, serverVersion))
+    public KunVersionMismatchException(string clientVersion, IReadOnlyList<string> supportedVersions)
+        : base(string.Format(Lang.HomePage_KunVersionMismatch, clientVersion, string.Join(" / ", supportedVersions)))
     {
         ClientVersion = clientVersion;
-        ServerVersion = serverVersion;
+        SupportedVersions = Array.AsReadOnly(supportedVersions.ToArray());
     }
 }

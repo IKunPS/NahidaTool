@@ -190,6 +190,7 @@ public sealed partial class ServerSwitchPage : Page
 
     private async void DetectButton_Click(object sender, RoutedEventArgs e)
     {
+        _switchService.InvalidateDownloadSizePreview();
         LoadGamePath();
         await DetectCurrentServerAsync();
     }
@@ -209,7 +210,8 @@ public sealed partial class ServerSwitchPage : Page
         try
         {
             // Share the current preview instead of issuing another manifest request
-            // on click. Navigation/path changes cancel it and invalidate the dialog.
+            // on click. Navigation cancels this page's wait; path changes invalidate
+            // the shared preview as well as the dialog.
             if (_downloadSizeTask is { } calculation)
                 await calculation;
             if (!_isActive || _installation != source ||
@@ -301,6 +303,11 @@ public sealed partial class ServerSwitchPage : Page
         _isSwitching = false;
         RefreshServerDisplay();
         if (!_isActive) return;
+        if (_installation is { } installed)
+        {
+            CancelDownloadSizeCalculation();
+            _downloadSizeTask = CalculateDownloadSizeAsync(_gamePath, installed);
+        }
         try
         {
             await ShowMessageAsync(Lang.ServerSwitchPage_SwitchFailed,

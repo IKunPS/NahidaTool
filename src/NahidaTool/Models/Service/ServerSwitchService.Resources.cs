@@ -16,7 +16,7 @@ public partial class ServerSwitchService
         IReadOnlyList<ChunkInfo> Chunks, long DownloadBytes);
 
     /// <summary>Compressed transfer bytes for the same resources used by switching.</summary>
-    internal async Task<long> GetRequiredDownloadSizeAsync(ServerRegionType targetRegion, string version,
+    private async Task<long> CalculateRequiredDownloadSizeAsync(ServerRegionType targetRegion, string version,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

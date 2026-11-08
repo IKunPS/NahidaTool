@@ -61,8 +61,6 @@ public sealed partial class HomePage
         try
         {
             bool kunMode = KunServerConfig.IsEnabled(_lastSettings);
-            if (kunMode && !System.Enum.IsDefined(_lastSettings.KunServer))
-                throw new InvalidOperationException(Lang.HomePage_KunServerInvalid);
 
             // 启用了代理时，校验地址格式
             if (_lastSettings.EnableProxy && !kunMode)
@@ -96,13 +94,11 @@ public sealed partial class HomePage
             }
 
             if (kunMode)
-                ProxyStatusText.Text = Lang.HomePage_KunCheckingVersion;
+                StartGameButtonText.Text = Lang.HomePage_KunCheckingVersion;
             var process = await GameLauncherService.StartGameAsync(_currentRegion);
 
             if (process != null)
             {
-                if (kunMode)
-                    ProxyStatusText.Text = Lang.HomePage_ProxyRunning;
                 _gameProcess = process;
                 UpdateGameState(GameState.GameIsRunning);
                 StartMonitoringGameProcess();
@@ -119,21 +115,18 @@ public sealed partial class HomePage
         }
         catch (KunVersionMismatchException ex)
         {
-            LogService.Warn($"Kun 版本不匹配: 客户端={ex.ClientVersion}, 服务器={ex.ServerVersion}");
+            string supportedVersions = string.Join(" / ", ex.SupportedVersions);
+            LogService.Warn($"Kun 版本不匹配: 客户端={ex.ClientVersion}, 服务器支持={supportedVersions}");
             ProxyService.Stop();
             ProxyStatusText.Text = Lang.HomePage_ProxyNotStarted;
             RefreshGameStatus();
 
             var dialog = new KunCompatibilityDialog(
-                KunCompatibilityIssue.Version, ex.ClientVersion, ex.ServerVersion)
+                KunCompatibilityIssue.Version, ex.ClientVersion, supportedVersions)
             {
                 XamlRoot = XamlRoot
             };
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                KunServerComboBox.Focus(FocusState.Programmatic);
-                KunServerComboBox.IsDropDownOpen = true;
-            }
+            await dialog.ShowAsync();
         }
         catch (KunClientRegionException ex)
         {

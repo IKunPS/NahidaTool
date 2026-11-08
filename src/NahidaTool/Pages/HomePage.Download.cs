@@ -101,9 +101,9 @@ public sealed partial class HomePage
     {
         try
         {
-            string? version = await PrivateServerService.GetServerVersionAsync(_lastSettings);
-            if (!string.IsNullOrWhiteSpace(version))
-                dialog.SetRecommendedVersion(version);
+            var versions = await PrivateServerService.GetServerVersionsAsync(_lastSettings);
+            if (versions.Count > 0)
+                dialog.SetRecommendedVersion(versions[0]);
         }
         catch (Exception ex)
         {

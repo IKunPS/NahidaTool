@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using NahidaTool.Models;
@@ -165,10 +166,8 @@ public static class GameLauncherService
 
         if (KunServerConfig.IsEnabled(settings))
         {
-            if (!System.Enum.IsDefined(settings.KunServer))
-                throw new InvalidOperationException(Lang.HomePage_KunServerInvalid);
             if (!ProxyService.IsRunning ||
-                !string.Equals(ProxyService.CurrentTarget, KunServerConfig.GetAddress(settings.KunServer),
+                !string.Equals(ProxyService.CurrentTarget, KunServerConfig.BaseAddress,
                     StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException(Lang.HomePage_KunProxyMismatch);
             if (settings.EnableThirdPartyTool)
@@ -191,11 +190,11 @@ public static class GameLauncherService
                 throw new KunClientRegionException(installation.Region);
             gameVersion = installation.Version;
 
-            string? serverVersion = await PrivateServerService.GetServerVersionAsync(settings);
-            if (string.IsNullOrWhiteSpace(serverVersion))
+            var serverVersions = await PrivateServerService.GetServerVersionsAsync(settings);
+            if (serverVersions.Count == 0)
                 throw new InvalidOperationException(Lang.HomePage_KunVersionUnavailable);
-            if (!string.Equals(gameVersion, serverVersion, StringComparison.OrdinalIgnoreCase))
-                throw new KunVersionMismatchException(gameVersion, serverVersion);
+            if (!serverVersions.Contains(gameVersion, StringComparer.OrdinalIgnoreCase))
+                throw new KunVersionMismatchException(gameVersion, serverVersions);
         }
 
         // 确定启动的 exe 路径（两个区域都试，不因切服而找不到已安装的游戏）

@@ -18,8 +18,7 @@ public partial class ServerSwitchService
 {
     #region Singleton & Fields
 
-    private static ServerSwitchService? _instance;
-    public static ServerSwitchService Instance => _instance ??= new ServerSwitchService();
+    public static ServerSwitchService Instance { get; } = new();
 
     private readonly ApiService _apiService;
     private readonly ManifestParser _manifestParser;
@@ -182,7 +181,10 @@ public partial class ServerSwitchService
         if (Interlocked.CompareExchange(ref _isSwitching, 1, 0) != 0)
             return;
 
+        InvalidateDownloadSizePreview();
         ServerSwitchTransaction? transaction = null;
+        bool completed = false;
+        string? failureMessage = null;
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -243,26 +245,33 @@ public partial class ServerSwitchService
 
             NotifyStatus("转服完成!", dispatcherQueue);
             NotifyProgress(100, dispatcherQueue);
-            dispatcherQueue.TryEnqueue(() => SwitchCompleted?.Invoke(this, EventArgs.Empty));
+            completed = true;
         }
         catch (OperationCanceledException)
         {
             transaction?.Rollback();
             NotifyStatus("转服已取消", dispatcherQueue);
-            dispatcherQueue.TryEnqueue(() => SwitchFailed?.Invoke(this, "操作被取消"));
+            failureMessage = "操作被取消";
         }
         catch (Exception ex)
         {
             transaction?.Rollback();
             NotifyStatus($"转服失败: {ex.Message}", dispatcherQueue);
             NotifyDetail($"错误详情: {ex.Message}", dispatcherQueue);
-            dispatcherQueue.TryEnqueue(() => SwitchFailed?.Invoke(this, ex.Message));
+            failureMessage = ex.Message;
         }
         finally
         {
             transaction?.Dispose();
+            InvalidateDownloadSizePreview();
             Volatile.Write(ref _isSwitching, 0);
         }
+
+        // 完成事件可能立即启动新预览，必须先结束旧操作的失效处理和清理。
+        if (completed)
+            dispatcherQueue.TryEnqueue(() => SwitchCompleted?.Invoke(this, EventArgs.Empty));
+        else if (failureMessage != null)
+            dispatcherQueue.TryEnqueue(() => SwitchFailed?.Invoke(this, failureMessage));
     }
 
     #endregion
