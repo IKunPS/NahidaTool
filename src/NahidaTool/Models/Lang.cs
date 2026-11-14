@@ -171,6 +171,13 @@ public static class Lang
     public static string ServerSwitchPage_Cancel => _resourceManager.GetString("ServerSwitchPage_Cancel") ?? "Cancel";
 
     public static string HomePage_RsaPatchUnavailable => _resourceManager.GetString("HomePage_RsaPatchUnavailable") ?? "No compatible RSA patch was found for game version {0}. Game launch was cancelled.";
+    public static string HomePage_InjectorMissing => _resourceManager.GetString("HomePage_InjectorMissing") ?? "Nahida-Injector.exe was not found next to NahidaTool.exe.";
+    public static string HomePage_InjectorStartFailed => _resourceManager.GetString("HomePage_InjectorStartFailed") ?? "Nahida-Injector failed to start: {0}";
+    public static string HomePage_InjectorElevationRequired => _resourceManager.GetString("HomePage_InjectorElevationRequired") ?? "Nahida-Injector requires administrator privileges. Please run NahidaTool as administrator.";
+    public static string HomePage_InjectorTimeout => _resourceManager.GetString("HomePage_InjectorTimeout") ?? "Nahida-Injector timed out.";
+    public static string HomePage_InjectorFailed => _resourceManager.GetString("HomePage_InjectorFailed") ?? "Nahida-Injector failed (exit code {0}): {1}";
+    public static string HomePage_InjectorGameProcessMissing => _resourceManager.GetString("HomePage_InjectorGameProcessMissing") ?? "Injection completed, but the game process was not found.";
+    public static string HomePage_HookRsaWrapperUnsupported => _resourceManager.GetString("HomePage_HookRsaWrapperUnsupported") ?? "Hook RSA cannot be used together with a custom launcher or CMD launch.";
 
     // HomeSettingDialog
     public static string HomeSettingDialog_Title => _resourceManager.GetString("HomeSettingDialog_Title") ?? "Game Settings";

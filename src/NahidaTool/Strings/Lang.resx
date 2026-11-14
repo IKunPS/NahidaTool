@@ -181,6 +181,13 @@
   <data name="ServerSwitchPage_OK" xml:space="preserve"><value>OK</value></data>
   <data name="ServerSwitchPage_Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="HomePage_RsaPatchUnavailable" xml:space="preserve"><value>No compatible or usable RSA patch was found for game version {0}. Game launch was cancelled.</value></data>
+  <data name="HomePage_InjectorMissing" xml:space="preserve"><value>Nahida-Injector.exe was not found next to NahidaTool.exe.</value></data>
+  <data name="HomePage_InjectorStartFailed" xml:space="preserve"><value>Nahida-Injector failed to start: {0}</value></data>
+  <data name="HomePage_InjectorElevationRequired" xml:space="preserve"><value>Nahida-Injector requires administrator privileges. Please run NahidaTool as administrator.</value></data>
+  <data name="HomePage_InjectorTimeout" xml:space="preserve"><value>Nahida-Injector timed out.</value></data>
+  <data name="HomePage_InjectorFailed" xml:space="preserve"><value>Nahida-Injector failed (exit code {0}): {1}</value></data>
+  <data name="HomePage_InjectorGameProcessMissing" xml:space="preserve"><value>Injection completed, but the game process was not found.</value></data>
+  <data name="HomePage_HookRsaWrapperUnsupported" xml:space="preserve"><value>Hook RSA cannot be used together with a custom launcher or CMD launch.</value></data>
 
   <!-- HomeSettingDialog -->
   <data name="HomeSettingDialog_Title" xml:space="preserve"><value>Game Settings</value></data>

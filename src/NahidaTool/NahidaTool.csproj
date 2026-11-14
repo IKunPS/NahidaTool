@@ -55,6 +55,14 @@
     <Folder Include="Assets\Tutorials\" />
   </ItemGroup>
 
+  <!-- 将 Nahida-Injector.exe 复制到输出根目录，与 NahidaTool.exe 放在一起。 -->
+  <Target Name="CopyNahidaInjector" AfterTargets="Build"
+          Condition="Exists('$(MSBuildThisFileDirectory)Dependencies\Nahida-Injector.exe')">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Dependencies\Nahida-Injector.exe"
+          DestinationFolder="$(TargetDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
   <!-- Release 输出到 bin/App -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>$(MSBuildThisFileDirectory)..\..\bin\app\</OutputPath>
@@ -86,12 +94,17 @@
       <_NahidaWinUiPublishResource Include="$(TargetDir)**\*.xbf;$(TargetDir)$(AssemblyName).pri" />
       <_NahidaAssetPublishResource Include="$(TargetDir)Assets\**\*"
                                   Exclude="$(TargetDir)Assets\ServerSwitchCache\**\*" />
+      <_NahidaInjectorPublishResource Include="$(TargetDir)Nahida-Injector.exe" />
       <ResolvedFileToPublish Include="@(_NahidaWinUiPublishResource)" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
       <ResolvedFileToPublish Include="@(_NahidaAssetPublishResource)" Exclude="@(ResolvedFileToPublish)">
         <RelativePath>Assets\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(_NahidaInjectorPublishResource)" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>Nahida-Injector.exe</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
     </ItemGroup>

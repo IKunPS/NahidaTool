@@ -181,6 +181,13 @@
   <data name="ServerSwitchPage_OK" xml:space="preserve"><value>确定</value></data>
   <data name="ServerSwitchPage_Cancel" xml:space="preserve"><value>取消</value></data>
   <data name="HomePage_RsaPatchUnavailable" xml:space="preserve"><value>未找到适用于游戏版本 {0} 的可用 RSA 补丁，或补丁文件已损坏。已取消启动游戏。</value></data>
+  <data name="HomePage_InjectorMissing" xml:space="preserve"><value>未找到 Nahida-Injector.exe，请将其放在 NahidaTool.exe 同目录。</value></data>
+  <data name="HomePage_InjectorStartFailed" xml:space="preserve"><value>Nahida-Injector 启动失败：{0}</value></data>
+  <data name="HomePage_InjectorElevationRequired" xml:space="preserve"><value>Nahida-Injector 需要管理员权限，请以管理员身份运行 NahidaTool。</value></data>
+  <data name="HomePage_InjectorTimeout" xml:space="preserve"><value>Nahida-Injector 启动或注入超时。</value></data>
+  <data name="HomePage_InjectorFailed" xml:space="preserve"><value>Nahida-Injector 注入失败（退出码 {0}）：{1}</value></data>
+  <data name="HomePage_InjectorGameProcessMissing" xml:space="preserve"><value>注入已完成，但未找到游戏进程。</value></data>
+  <data name="HomePage_HookRsaWrapperUnsupported" xml:space="preserve"><value>Hook RSA 不能与自定义启动程序或 CMD 启动同时使用，请关闭 Hook RSA 或改用普通启动。</value></data>
 
   <!-- HomeSettingDialog -->
   <data name="HomeSettingDialog_Title" xml:space="preserve"><value>游戏设置</value></data>

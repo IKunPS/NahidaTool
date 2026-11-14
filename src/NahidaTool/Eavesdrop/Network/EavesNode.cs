@@ -186,6 +186,12 @@ namespace NahidaTool.Eavesdrop.Network
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
             }
+
+            // HTTP/1.0 无 Content-Length 时以连接结束标记正文完成。必须先发送 TLS close_notify，
+            // 否则 CN SDK 的 Schannel/curl 即使收到完整 JSON 仍报接收错误 56，拒绝登录结果。
+            await GetStream().FlushAsync().ConfigureAwait(false);
+            if (_secureStream != null)
+                await _secureStream.ShutdownAsync().ConfigureAwait(false);
         }
 
         public Stream GetStream()

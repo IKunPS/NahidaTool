@@ -220,24 +220,34 @@ public static class GameLauncherService
 
         bool useRsa = settings.EnableRSA;
         bool useHookRsa = useRsa && settings.EnableHookRSA;
-        if (useRsa && RsaService.FindMatchingRsaDll(gameVersion) == null)
+        string? rsaDllPath = null;
+        if (useRsa)
         {
-            throw new InvalidOperationException(string.Format(
-                Lang.HomePage_RsaPatchUnavailable,
-                string.IsNullOrWhiteSpace(gameVersion)
-                    ? Lang.DownloadPage_UnknownVersion
-                    : gameVersion));
-        }
-
-        if (useRsa && !useHookRsa)
-        {
-            LogService.Info("RSA: 正在部署 RSA DLL 到游戏目录...");
-            if (!RsaService.CopyRsaToGameDirectory(gameVersion, path))
+            rsaDllPath = RsaService.FindMatchingRsaDll(gameVersion);
+            if (rsaDllPath == null)
             {
                 throw new InvalidOperationException(string.Format(
                     Lang.HomePage_RsaPatchUnavailable,
-                    gameVersion));
+                    string.IsNullOrWhiteSpace(gameVersion)
+                        ? Lang.DownloadPage_UnknownVersion
+                        : gameVersion));
             }
+
+            if (!useHookRsa)
+            {
+                LogService.Info("RSA: 正在部署 RSA DLL 到游戏目录...");
+                if (!RsaService.CopyRsaToGameDirectory(gameVersion, path))
+                {
+                    throw new InvalidOperationException(string.Format(
+                        Lang.HomePage_RsaPatchUnavailable,
+                        gameVersion));
+                }
+            }
+        }
+
+        if (useHookRsa && (thirdPartyTool || settings.StartGameWithCMD))
+        {
+            throw new InvalidOperationException(Lang.HomePage_HookRsaWrapperUnsupported);
         }
 
         return await Task.Run(async () =>
@@ -252,44 +262,55 @@ public static class GameLauncherService
                     arg = string.IsNullOrEmpty(arg) ? "-popupwindow" : $"{arg} -popupwindow";
                 }
 
-                // 非第三方工具且启用 StartGameWithCMD 时，包装为 cmd.exe /c start
-                if (!thirdPartyTool && settings.StartGameWithCMD)
+                Process? gameProcess;
+                if (useHookRsa)
                 {
-                    var dir = Path.GetDirectoryName(exePath) ?? path;
-                    arg = $"""/c start "" /d "{EscapeCmdArgument(dir)}" "{EscapeCmdArgument(exePath)}" {arg}""";
-                    exePath = "cmd.exe";
-                    verb = "";
+                    // Hook RSA 改为由同目录的 Nahida-Injector.exe 在游戏启动前注入。
+                    gameProcess = await NahidaInjectorService.StartGameAsync(
+                        exePath!, rsaDllPath!, arg, region);
+                    LogService.Info($"Nahida-Injector 已启动游戏并注入 RSA 补丁 (PID: {gameProcess.Id})");
                 }
-
-                var info = new ProcessStartInfo
+                else
                 {
-                    FileName = exePath,
-                    Arguments = arg,
-                    UseShellExecute = true,
-                    Verb = verb,
-                    WorkingDirectory = Path.GetDirectoryName(exePath) ?? path,
-                };
-
-                var startedProcess = Process.Start(info);
-
-                if (startedProcess != null)
-                {
-                    LogService.Info($"启动命令已执行: {Path.GetFileName(exePath)} (PID: {startedProcess.Id})");
-                }
-
-                Process? gameProcess = startedProcess;
-                bool launchedThroughWrapper = thirdPartyTool || settings.StartGameWithCMD;
-                if (startedProcess != null && (useHookRsa || launchedThroughWrapper) && !IsGameProcess(startedProcess))
-                {
-                    LogService.Info("正在等待实际游戏进程启动...");
-                    gameProcess = await WaitForGameProcessAsync(region, TimeSpan.FromSeconds(60));
-                    if (gameProcess != null)
+                    // 非第三方工具且启用 StartGameWithCMD 时，包装为 cmd.exe /c start
+                    if (!thirdPartyTool && settings.StartGameWithCMD)
                     {
-                        LogService.Info($"已找到实际游戏进程: {gameProcess.ProcessName}.exe (PID: {gameProcess.Id})");
+                        var dir = Path.GetDirectoryName(exePath) ?? path;
+                        arg = $"""/c start "" /d "{EscapeCmdArgument(dir)}" "{EscapeCmdArgument(exePath)}" {arg}""";
+                        exePath = "cmd.exe";
+                        verb = "";
                     }
-                    else
+
+                    var info = new ProcessStartInfo
                     {
-                        LogService.Error("等待实际游戏进程超时，已跳过 Hook RSA 注入");
+                        FileName = exePath,
+                        Arguments = arg,
+                        UseShellExecute = true,
+                        Verb = verb,
+                        WorkingDirectory = Path.GetDirectoryName(exePath) ?? path,
+                    };
+
+                    var startedProcess = Process.Start(info);
+
+                    if (startedProcess != null)
+                    {
+                        LogService.Info($"启动命令已执行: {Path.GetFileName(exePath)} (PID: {startedProcess.Id})");
+                    }
+
+                    gameProcess = startedProcess;
+                    bool launchedThroughWrapper = thirdPartyTool || settings.StartGameWithCMD;
+                    if (startedProcess != null && launchedThroughWrapper && !IsGameProcess(startedProcess))
+                    {
+                        LogService.Info("正在等待实际游戏进程启动...");
+                        gameProcess = await WaitForGameProcessAsync(region, TimeSpan.FromSeconds(60));
+                        if (gameProcess != null)
+                        {
+                            LogService.Info($"已找到实际游戏进程: {gameProcess.ProcessName}.exe (PID: {gameProcess.Id})");
+                        }
+                        else
+                        {
+                            LogService.Error("等待实际游戏进程超时");
+                        }
                     }
                 }
 
@@ -308,22 +329,6 @@ public static class GameLauncherService
                             LogService.Debug($"CPU 亲和性设置失败 (非关键): {ex.Message}");
                         }
                     }
-                }
-
-                if (gameProcess != null && IsGameProcess(gameProcess) && useHookRsa)
-                {
-                    var hookTarget = gameProcess;
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await RsaService.InjectHookRsaAsync(hookTarget, gameVersion);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error("Hook RSA 注入失败", ex);
-                        }
-                    });
                 }
 
                 return gameProcess;
